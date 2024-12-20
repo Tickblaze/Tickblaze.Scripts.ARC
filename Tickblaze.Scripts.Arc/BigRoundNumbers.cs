@@ -1,186 +1,160 @@
-﻿
-using System.Drawing;
-using System.Security.Cryptography.X509Certificates;
-using System.Xml.Linq;
+﻿using System.Diagnostics;
+using DrawingColor = System.Drawing.Color;
 
-namespace Tickblaze.Scripts.Indicators;
+namespace Tickblaze.Scripts.Arc;
 
 /// <summary>
 /// ARC_BigRoundNumbers [ABRN]
 /// </summary>
-
 public partial class BigRoundNumbers : Indicator
 {
-    [Parameter("Base Price"), NumericRange(0, double.MaxValue)]
-    public double BasePrice { get; set; } = 0;
-
-    [Parameter("Interval Size"), NumericRange(0, double.MaxValue)]
-    public double IntervalSize { get; set; } = 5;
-
-    [Parameter("Interval Price")]
-    public IntervalType Interval { get; set; } = IntervalType.Points;
-
-    [Plot("L1")]
-    public PlotSeries Line1 { get; set; } = new(Color.Red);
-
-    [Plot("L2")]
-    public PlotSeries Line2 { get; set; } = new(Color.Red);
-
-    [Plot("L3")]
-    public PlotSeries Line3 { get; set; } = new(Color.Red);
-
-    [Plot("L4")]
-    public PlotSeries Line4 { get; set; } = new(Color.Blue);
-
-    [Plot("L5")]
-    public PlotSeries Line5 { get; set; } = new(Color.Blue);
-
-    [Plot("L6")]
-    public PlotSeries Line6 { get; set; } = new(Color.Blue);
-
-    public enum IntervalType
-    {
-        Points,
-        Ticks,
-        Pips
-    };
-
-    private double _intervalPoints;
-    private double _basePriceCalibrated = double.MinValue;
-    private int _priorIndex = -1;
-    private Dictionary<int, double> _values = new();
-
     public BigRoundNumbers()
     {
-        Name = "ARC BigRoundNumbers";
-        ShortName = "ABRN";
         IsOverlay = true;
+        ShortName = "ABRN";
+        Name = "ARC BigRoundNumbers";
+    }
+
+    private double _intervalInPoints;
+
+    [NumericRange(MaxValue = double.MaxValue)]
+    [Parameter("Base Price", GroupName = "Parameters")]
+    public double BasePrice { get; set; }
+
+    [Parameter("Interval Price", GroupName = "Parameters")]
+    public IntervalType IntervalTypeValue { get; set; } = IntervalType.Points;
+
+    [NumericRange(MinValue = 1)]
+    [Parameter("Interval in Pts", GroupName = "Parameters")]
+    public int IntervalInPoints { get; set; } = 10;
+
+    [NumericRange(MinValue = 1)]
+    [Parameter("Interval in Ticks", GroupName = "Parameters")]
+    public int IntervalInTicks { get; set; } = 10;
+
+    [NumericRange(MinValue = 1)]
+    [Parameter("Interval in Pips", GroupName = "Parameters")]
+    public int IntervalInPips { get; set; } = 1;
+
+    [Parameter("Highlight Color", GroupName = "Level Visuals")]
+    public Color HighlightColor { get; set; } = Color.New(Color.FromDrawingColor(DrawingColor.Gold), 0);
+
+    [Parameter("Highlight Thickness Type", GroupName = "Level Visuals")]
+    public HighlightRegionHeightType HighlightThicknessTypeValue { get; set; } = HighlightRegionHeightType.Ticks;
+
+    [NumericRange(MinValue = 1)]
+    [Parameter("Highlight Thickness Ticks", GroupName = "Level Visuals")]
+    public int HighlightRegionHeightInTicks { get; set; } = 1;
+
+    [NumericRange(MinValue = 1)]
+    [Parameter("Highlight Thickness Pixels", GroupName = "Level Visuals")]
+    public int HighlightRegionHeightInPixels { get; set; } = 5;
+
+    // Question: is it relevant?
+    // [Parameter("Draw as HLine Objects", GroupName = "Level Visuals")]
+    // public bool ArePlotSettingsUsed { get; set; }
+
+    [Plot("Lvl")]
+    public PlotSeries Level { get; set; } = new(Color.FromDrawingColor(DrawingColor.Navy));
+
+    protected override Parameters GetParameters(Parameters parameters)
+    {
+        List<string> intervalPropertyNames =
+        [
+            nameof(IntervalInPoints),
+            nameof(IntervalInTicks),
+            nameof(IntervalInPips),
+        ];
+
+        var intervalPropertyName = IntervalTypeValue switch
+        {
+            IntervalType.Points => nameof(IntervalInPoints),
+            IntervalType.Ticks => nameof(IntervalInTicks),
+            IntervalType.Pips => nameof(IntervalInPips),
+            _ => throw new UnreachableException()
+        };
+
+        intervalPropertyNames.Remove(intervalPropertyName);
+
+        intervalPropertyNames.ForEach(intervalPropertyName => parameters.Remove(intervalPropertyName));
+
+        var _ = HighlightThicknessTypeValue switch
+        {
+            HighlightRegionHeightType.Points => parameters.Remove(nameof(HighlightRegionHeightInTicks)),
+            HighlightRegionHeightType.Ticks => parameters.Remove(nameof(HighlightRegionHeightInPixels)),
+            _ => throw new UnreachableException()
+        };
+
+        return parameters;
     }
 
     protected override void Initialize()
     {
-        _values[1] = 0;
-        _values[2] = 0;
-        _values[3] = 0;
-        _values[4] = 0;
-        _values[5] = 0;
-        _values[6] = 0;
+        var tickSize = Bars.Symbol.TickSize;
 
-        if (Interval == IntervalType.Points)
+        _intervalInPoints = IntervalTypeValue switch
         {
-            _intervalPoints = IntervalSize < Bars.Symbol.TickSize * 2 ? Bars.Symbol.TickSize * 2 : IntervalSize;
-        }
-        else if (Interval == IntervalType.Ticks)
-        {
-            _intervalPoints = Math.Max(2, IntervalSize) * Bars.Symbol.TickSize;
-        }
-        else if (Interval == IntervalType.Pips)
-        {
-            _intervalPoints = Math.Max(1, IntervalSize) * 10 * Bars.Symbol.TickSize;
-        }
+            IntervalType.Points => Math.Max(IntervalInPoints, tickSize),
+            IntervalType.Ticks => IntervalInTicks * tickSize,
+            IntervalType.Pips => 10 * IntervalInPips * tickSize,
+            _ => throw new UnreachableException(),
+        };
     }
 
-    protected override void Calculate(int index)
-    {
-        var price = _basePriceCalibrated;
-
-        if (Bars[index].Close > _values[2] || Bars[index].Close < _values[5])
-        {
-            _basePriceCalibrated = double.MinValue;
-        }
-
-        if (_basePriceCalibrated == double.MinValue)
-        {
-            price = BasePrice;
-            if (price > Bars[index].Close)
-            {
-                while (price > Bars[index].Close)
-                {
-                    price -= _intervalPoints;
-                }
-
-                price += _intervalPoints;
-            }
-            else
-            {
-                while (price < Bars[index].Close)
-                {
-                    price += _intervalPoints;
-                }
-            }
-
-            _basePriceCalibrated = price;
-            _values[3] = price;
-            _values[2] = _values[3] + _intervalPoints;
-            _values[1] = _values[2] + _intervalPoints;
-            _values[4] = price - _intervalPoints;
-            _values[5] = _values[4] + -_intervalPoints;
-            _values[6] = _values[5] - _intervalPoints;
-        }
-
-        Line1[index] = _values[1];
-        Line2[index] = _values[2];
-        Line3[index] = _values[3];
-        Line4[index] = _values[4];
-        Line5[index] = _values[5];
-        Line6[index] = _values[6];
-    }
     public override void OnRender(IDrawingContext context)
     {
-        if (ChartScale == null || Chart == null)
-        {
-            return;
-        }
+        var maxPrice = ChartScale.MaxPrice;
+        var priceLevel = GetFirstBigRoundNumber();
+        var regionHeight = GetRegionHeight();
 
-        var index = Bars.Count - 1;
-        if (index != _priorIndex)
+        while (priceLevel <= maxPrice)
         {
-            _priorIndex = index;
-            _basePriceCalibrated = double.MinValue;
-        }
+            var yCoordinate = ChartScale.GetYCoordinateByValue(priceLevel);
 
-        if (_basePriceCalibrated == double.MinValue)
-        {
-            var price = BasePrice;
-            if (price > Bars[index].Close)
+            var startPoint = new Point(0, yCoordinate);
+            var endPoint = new Point(Chart.Width, yCoordinate);
+
+            context.DrawLine(startPoint, endPoint, Level.Color, Level.Thickness);
+
+            if (HighlightColor.A is not 0)
             {
-                while (price > Bars[index].Close)
-                {
-                    price -= _intervalPoints;
-                }
+                var startRegionPoint = new Point(0, yCoordinate - regionHeight / 2.0);
 
-                price += _intervalPoints;
-            }
-            else
-            {
-                while (price < Bars[index].Close)
-                {
-                    price += _intervalPoints;
-                }
+                context.DrawRectangle(startRegionPoint, Chart.Width, regionHeight, HighlightColor);
             }
 
-            _basePriceCalibrated = price;
+            priceLevel += _intervalInPoints;
         }
+    }
 
-        var maxPrice = ChartScale.GetValueByYCoordinate(0);
-        var minPrice = ChartScale.GetValueByYCoordinate(Chart.Height);
+    private double GetRegionHeight()
+    {
+        var tickSize = Bars.Symbol.TickSize;
+        var tickHeight = ChartScale.GetYCoordinateByValue(tickSize) - ChartScale.GetYCoordinateByValue(0);
 
-        var pointL = new Point(0, 0);
-        var pointR = new Point(Chart.Width, 0);
-        var priceLevel = _basePriceCalibrated;
-
-        while (priceLevel < maxPrice)
+        return HighlightThicknessTypeValue switch
         {
-            priceLevel += _intervalPoints;
+            HighlightRegionHeightType.Points => HighlightRegionHeightInPixels,
+            HighlightRegionHeightType.Ticks => HighlightRegionHeightInTicks * tickHeight,
+            _ => throw new UnreachableException(),
+        };
+    }
+
+    private double GetFirstBigRoundNumber()
+    {
+        var minPrice = ChartScale.MinPrice;
+
+        if (minPrice >= BasePrice)
+        {
+            var intervalMultiplier = (minPrice - BasePrice) / _intervalInPoints;
+
+            return BasePrice + Math.Floor(intervalMultiplier) * _intervalInPoints;
         }
-
-        priceLevel -= _intervalPoints;
-
-        while (priceLevel > minPrice)
+        else
         {
-            pointL.Y = pointR.Y = ChartScale.GetYCoordinateByValue(priceLevel);
-            context.DrawLine(pointL, pointR, Plots[0].Color, Plots[0].Thickness);
-            priceLevel -= _intervalPoints;
+            var intervalMultiplier = (BasePrice - minPrice) / _intervalInPoints;
+
+            return BasePrice - Math.Ceiling(intervalMultiplier) * _intervalInPoints;
         }
     }
 }
