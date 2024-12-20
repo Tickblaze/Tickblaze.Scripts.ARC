@@ -12,7 +12,7 @@ public partial class BigRoundNumbers : Indicator
     {
         IsOverlay = true;
         ShortName = "ABRN";
-        Name = "ARC BigRoundNumbers";
+        Name = "ARC Big Round Numbers";
     }
 
     private double _intervalInPoints;
@@ -76,7 +76,7 @@ public partial class BigRoundNumbers : Indicator
 
         intervalPropertyNames.Remove(intervalPropertyName);
 
-        intervalPropertyNames.ForEach(intervalPropertyName => parameters.Remove(intervalPropertyName));
+        intervalPropertyNames.ForEach(propertyName => parameters.Remove(propertyName));
 
         var _ = HighlightThicknessTypeValue switch
         {

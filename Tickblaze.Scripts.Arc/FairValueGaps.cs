@@ -1,4 +1,5 @@
-﻿using Tickblaze.Scripts.Indicators;
+﻿using System.Diagnostics;
+using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc;
 
@@ -7,6 +8,10 @@ public partial class FairValueGaps : Indicator
     public FairValueGaps()
     {
         _menu = new(this);
+
+        IsOverlay = true;
+        ShortName = "AFVG";
+        Name = "ARC Fair Value Gaps";
     }
 
     private readonly FairValueGapsMenu _menu;
@@ -31,13 +36,13 @@ public partial class FairValueGaps : Indicator
     public int AtrPeriod { get; set; } = 14;
 
     [Parameter("Show Fresh FVGs", GroupName = "Visuals")]
-    public bool ShowFreshFvgs { get; set; } = true;
+    public bool ShowFreshGaps { get; set; } = true;
 
     [Parameter("Fresh FGV Color", GroupName = "Visuals")]
-    public Color FreshFvgColor { get; set; } = Color.New(Color.Orange, 0.5f);
+    public Color FreshGapColor { get; set; } = Color.New(Color.Orange, 0.5f);
 
     [Parameter("Show Tested FGVs", GroupName = "Visuals")]
-    public bool ShowTestedFvgs { get; set; } = true;
+    public bool ShowTestedGaps { get; set; } = true;
 
     [Parameter("Tested FGV Color", GroupName = "Visuals")]
     public Color TestedGapColor { get; set; } = Color.New(Color.Silver, 0.5f);
@@ -75,12 +80,12 @@ public partial class FairValueGaps : Indicator
             parameters.Remove(nameof(AtrMultiple));
         }
 
-        if (!ShowFreshFvgs)
+        if (!ShowFreshGaps)
         {
-            parameters.Remove(nameof(FreshFvgColor));
+            parameters.Remove(nameof(FreshGapColor));
         }
 
-        if (!ShowTestedFvgs)
+        if (!ShowTestedGaps)
         {
             parameters.Remove(nameof(TestedGapColor));
         }
@@ -105,7 +110,7 @@ public partial class FairValueGaps : Indicator
 
     protected override void Calculate(int index)
     {
-        if (index <= 2)
+        if (index <= 1)
         {
             return;
         }
@@ -117,9 +122,12 @@ public partial class FairValueGaps : Indicator
 
     private void CalculateFreshGaps(int index)
     {
-        var minFvgHeight = GapMeasurementValue is GapMeasurement.Atr
-            ? _averageTrueRange[index] * AtrMultiple
-            : GapTickCount * Symbol.TickSize;
+        var minGapHeight = GapMeasurementValue switch
+        {
+            GapMeasurement.Atr => AtrMultiple * _averageTrueRange[index],
+            GapMeasurement.Tick => GapTickCount * Symbol.TickSize,
+            _ => throw new UnreachableException()
+        };
 
         Gap[] gaps =
         [
@@ -141,7 +149,7 @@ public partial class FairValueGaps : Indicator
 
         foreach (var gap in gaps)
         {
-            if (gap.TopPrice - gap.BottomPrice > minFvgHeight)
+            if (gap.TopPrice - gap.BottomPrice > minGapHeight)
             {
                 _freshGaps.Add(gap);
             }
@@ -172,19 +180,20 @@ public partial class FairValueGaps : Indicator
 
     private void CalculateBrokenGaps(int index)
     {
+        var lastBar = Bars[index]!;
+        
         for (var gapIndex = _testedGaps.Count - 1; gapIndex >= 0; gapIndex--)
         {
-            var lastBar = Bars[index]!;
-            var fairValueGap = _freshGaps[gapIndex];
+            var gap = _testedGaps[gapIndex];
 
-            if (lastBar.High >= fairValueGap.TopPrice && fairValueGap.IsResistance
-                || lastBar.Low <= fairValueGap.BottomPrice && fairValueGap.IsSupport)
+            if (lastBar.High >= gap.TopPrice && gap.IsResistance
+                || lastBar.Low <= gap.BottomPrice && gap.IsSupport)
             {
-                fairValueGap.ToIndex = index;
+                gap.ToIndex = index;
 
                 _testedGaps.RemoveAt(gapIndex);
 
-                _brokenGaps.Add(fairValueGap);
+                _brokenGaps.Add(gap);
 
                 gapIndex++;
             }
@@ -193,12 +202,12 @@ public partial class FairValueGaps : Indicator
 
     public override void OnRender(IDrawingContext context)
     {
-        if (ShowFreshFvgs)
+        if (ShowFreshGaps)
         {
-            RenderGaps(context, FreshFvgColor, _freshGaps);
+            RenderGaps(context, FreshGapColor, _freshGaps);
         }
 
-        if (ShowTestedFvgs)
+        if (ShowTestedGaps)
         {
             RenderGaps(context, TestedGapColor, _testedGaps);
         }

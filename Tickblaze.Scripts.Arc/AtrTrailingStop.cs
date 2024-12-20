@@ -6,31 +6,43 @@ namespace Tickblaze.Scripts.Arc;
 /// <summary>
 /// ARC ATRTrailingStop [AATS]
 /// </summary>
-public partial class ArcAtrTrailingStop : Indicator
+public partial class AtrTrailingStop : Indicator
 {
-    [Parameter("ATR Period"), NumericRange(1, int.MaxValue)]
-    public int ATRPeriod { get; set; } = 14;
+    public AtrTrailingStop()
+    {
+        IsOverlay = true;
+        ShortName = "AATS";
+        Name = "ARC ATR Trailing Stop";
+    }
 
-    [Parameter("ATR Multiplier"), NumericRange(0.01, double.MaxValue)]
-    public double ATRMultiplier { get; set; } = 2.5;
+    [NumericRange(MinValue = 1)]
+    [Parameter("ATR Period", GroupName = "Input Parameters")]
+    public int AtrPeriod { get; set; } = 14;
 
-    [Parameter("ATR Band Period"), NumericRange(1, int.MaxValue)]
-    public int ATRBandPeriod { get; set; } = 14;
+    [NumericRange(MinValue = 1)]
+    [Parameter("ATR Multiplier", GroupName = "Input Parameters")]
+    public int AtrMultiplier { get; set; } = 3;
+
+    [Parameter("Show stop dots", GroupName = "Display Options")]
+    public bool ShowStopDots { get; set; } = true;
+
+    [Parameter("Show stop line", GroupName = "Display Options")]
+    public bool ShowStopLine { get; set; } = true;
+
+    [Parameter("Show Triangles", GroupName = "Display Options")]
+    public bool ShowMarkers { get; set; }
+
+    [Parameter("Bullish Color", GroupName = "Plots")]
+    public Color BullishColor { get; set; } = Color.Blue;
+
+    [Parameter("Bearish Color", GroupName = "Plots")]
+    public Color BearishColor { get; set; } = Color.Red;
 
     [Parameter("Round band to tick")]
     public bool RoundBandToTick { get; set; } = true;
 
     [Parameter("Show opposite bands")]
     public bool ShowOppositeBands { get; set; } = true;
-
-    [Parameter("Band 1 Multiplier"), NumericRange(0, double.MaxValue)]
-    public double Band1Multiplier { get; set; } = 1;
-
-    [Parameter("Band 2 Multiplier"), NumericRange(0, double.MaxValue)]
-    public double Band2Multiplier { get; set; } = 2;
-
-    [Parameter("Band 3 Multiplier"), NumericRange(0, double.MaxValue)]
-    public double Band3Multiplier { get; set; } = 3;
 
     [Plot("Stop Dot")]
     public PlotSeries StopDot { get; set; } = new("#808080", PlotStyle.Dot);
@@ -41,49 +53,10 @@ public partial class ArcAtrTrailingStop : Indicator
     [Plot("Reverse Dot")]
     public PlotSeries ReverseDot { get; set; } = new("#000000", PlotStyle.Dot);
 
-    [Plot("BandEdge U3")]
-    public PlotSeries BandEdgeU3 { get; set; } = new(Color.Red, PlotStyle.Hash);
-
-    [Plot("BandEdge U2")]
-    public PlotSeries BandEdgeU2 { get; set; } = new(Color.Red, PlotStyle.Hash);
-
-    [Plot("BandEdge U1")]
-    public PlotSeries BandEdgeU1 { get; set; } = new(Color.Red, PlotStyle.Hash);
-
-    [Plot("BandEdge L1")]
-    public PlotSeries BandEdgeL1 { get; set; } = new(Color.Cyan, PlotStyle.Hash);
-
-    [Plot("BandEdge L2")]
-    public PlotSeries BandEdgeL2 { get; set; } = new(Color.Cyan, PlotStyle.Hash);
-
-    [Plot("BandEdge L3")]
-    public PlotSeries BandEdgeL3 { get; set; } = new(Color.Cyan, PlotStyle.Hash);
-
     private AverageTrueRange _offsetSeries;
     private DataSeries _preliminaryTrend, _trend, _currentStopLong, _currentStopShort;
     private int _regionID;
     private int _priorIndex = -1;
-    private Dictionary<BandType, PlotSeries> _bandPlots = [];
-    private Dictionary<BandType, double> _bandMults = [];
-    private List<BandType> _upperBands = [];
-    private List<BandType> _lowerBands = [];
-
-    private enum BandType
-    {
-        L1,
-        L2,
-        L3,
-        U1,
-        U2,
-        U3
-    }
-
-    public ArcAtrTrailingStop()
-    {
-        Name = "ARC ATRTrailingStop";
-        ShortName = "AATS";
-        IsOverlay = true;
-    }
 
     protected override void Initialize()
     {
@@ -91,28 +64,7 @@ public partial class ArcAtrTrailingStop : Indicator
         _trend = new DataSeries();
         _currentStopLong = new DataSeries();
         _currentStopShort = new DataSeries();
-        _offsetSeries = new AverageTrueRange(ATRPeriod, MovingAverageType.Simple);
-
-        _bandPlots[BandType.L1] = BandEdgeL1;
-        _bandPlots[BandType.U1] = BandEdgeU1;
-        _bandPlots[BandType.L2] = BandEdgeL2;
-        _bandPlots[BandType.U2] = BandEdgeU2;
-        _bandPlots[BandType.L3] = BandEdgeL3;
-        _bandPlots[BandType.U3] = BandEdgeU3;
-
-        _bandMults[BandType.L1] = -Band1Multiplier;
-        _bandMults[BandType.U1] = Band1Multiplier;
-        _bandMults[BandType.L2] = -Band2Multiplier;
-        _bandMults[BandType.U2] = Band2Multiplier;
-        _bandMults[BandType.L3] = -Band3Multiplier;
-        _bandMults[BandType.U3] = Band3Multiplier;
-
-        _upperBands.Add(BandType.U1);
-        _upperBands.Add(BandType.U2);
-        _upperBands.Add(BandType.U3);
-        _lowerBands.Add(BandType.L1);
-        _lowerBands.Add(BandType.L2);
-        _lowerBands.Add(BandType.L3);
+        _offsetSeries = new AverageTrueRange(AtrPeriod, MovingAverageType.Simple);
     }
 
     protected override void Calculate(int index)
@@ -150,7 +102,7 @@ public partial class ArcAtrTrailingStop : Indicator
             }
         }
 
-        var trailingAmount = ATRMultiplier * Math.Max(Bars.Symbol.TickSize, _offsetSeries[index - 1]);
+        var trailingAmount = AtrMultiplier * Math.Max(Bars.Symbol.TickSize, _offsetSeries[index - 1]);
         var close1 = Bars[^1].Close;
 
         if (_preliminaryTrend[^1] > 0.5)
@@ -217,10 +169,5 @@ public partial class ArcAtrTrailingStop : Indicator
         }
 
         _priorIndex = index;
-    }
-
-    private static int ToTime(DateTime t)
-    {
-        return t.Hour * 10000 + t.Minute * 100 + t.Second;
     }
 }

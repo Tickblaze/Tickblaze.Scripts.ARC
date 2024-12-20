@@ -1,24 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc;
+
+// Note: maybe to move common logic to a base class [if that would simplify things].
 
 public partial class GapFinder : Indicator
 {
     public GapFinder()
     {
         IsOverlay = true;
+        ShortName = "AGF";
+        Name = "ARC Gap Finder";
     }
 
+    private readonly List<Gap> _freshGaps = [];
+    private readonly List<Gap> _testedGaps = [];
+    private readonly List<Gap> _brokenGaps = [];
     private AverageTrueRange _averageTrueRange = default!;
-
-    private readonly List<Gap> _freshFvgs = [];
-    private readonly List<Gap> _testedFvgs = [];
-    private readonly List<Gap> _brokenFvgs = [];
 
     [Parameter("Measurement", GroupName = "Parameters")]
     public GapMeasurement GapMeasurementValue { get; set; } = GapMeasurement.Atr;
@@ -73,6 +72,21 @@ public partial class GapFinder : Indicator
     [Parameter("Gap Hit WAV", GroupName = "Alerts")]
     public string? GapHitWav { get; set; }
 
+    private bool IsNewSessionBar(int index)
+    {
+        var exchangeCalendar = Bars.Symbol.ExchangeCalendar;
+
+        var currentBarTimeUtc = Bars.Time[index];
+        var previousBarTimeUtc = Bars.Time[index - 1];
+
+        var currentSession = exchangeCalendar.GetSession(currentBarTimeUtc);
+        var previousSession = exchangeCalendar.GetSession(previousBarTimeUtc);
+
+        return currentSession is not null
+            && previousSession is not null
+            && DateTime.Equals(currentSession.StartUtcDateTime, previousSession.StartUtcDateTime);
+    }
+
     protected override Parameters GetParameters(Parameters parameters)
     {
         List<string> gapSizePropertyNames =
@@ -83,6 +97,18 @@ public partial class GapFinder : Indicator
             nameof(AtrMultiple),
             nameof(AtrPeriod),
         ];
+
+        var _ = GapMeasurementValue switch
+        {
+            GapMeasurement.Tick => gapSizePropertyNames.Remove(nameof(GapTickCount)),
+            GapMeasurement.Point => gapSizePropertyNames.Remove(nameof(GapPointCount)),
+            GapMeasurement.Pip => gapSizePropertyNames.Remove(nameof(GapPipCount)),
+            GapMeasurement.Atr => gapSizePropertyNames.Remove(nameof(AtrMultiple))
+                & gapSizePropertyNames.Remove(nameof(AtrPeriod)),
+            _ => throw new UnreachableException()
+        };
+
+        gapSizePropertyNames.ForEach(propertyName => parameters.Remove(propertyName));
 
         if (!ShowFreshGaps)
         {
@@ -100,5 +126,151 @@ public partial class GapFinder : Indicator
         }
 
         return parameters;
+    }
+
+    protected override void Initialize()
+    {
+        _averageTrueRange = new AverageTrueRange(AtrPeriod, MovingAverageType.Simple);
+    }
+
+    protected override void Calculate(int index)
+    {
+        if (index <= 1)
+        {
+            return;
+        }
+
+        CalculateFreshGaps(index);
+        CalculateTestedGaps(index);
+        CalculateBrokenGaps(index);
+    }
+
+    private void CalculateFreshGaps(int index)
+    {
+        if (IsRestrictedToNewSessions && !IsNewSessionBar(index))
+        {
+            return;
+        }
+
+        var tickSize = Symbol.TickSize;
+        var minGapHeight = GapMeasurementValue switch
+        {
+            GapMeasurement.Point => GapPointCount,
+            GapMeasurement.Pip => 10 * GapPipCount * tickSize,
+            GapMeasurement.Tick => GapTickCount * tickSize,
+            GapMeasurement.Atr => AtrMultiple * _averageTrueRange[index],
+            _ => throw new UnreachableException()
+        };
+
+        Gap[] gaps =
+        [
+            new()
+            {
+                IsSupport = true,
+                FromIndex = index - 1,
+                TopPrice = Bars.Open[index],
+                BottomPrice = Bars.Close[index - 1],
+            },
+            new()
+            {
+                IsSupport = false,
+                FromIndex = index - 1,
+                TopPrice = Bars.Close[index - 1],
+                BottomPrice = Bars.Open[index],
+            },
+        ];
+
+        foreach (var gap in gaps)
+        {
+            if (gap.TopPrice - gap.BottomPrice > minGapHeight)
+            {
+                _freshGaps.Add(gap);
+            }
+        }
+    }
+
+    private void CalculateTestedGaps(int index)
+    {
+        var lastBar = Bars[index]!;
+        
+        for (var gapIndex = _freshGaps.Count - 1; gapIndex >= 0; gapIndex--)
+        {
+            var gap = _freshGaps[gapIndex];
+
+            if (gap.IsInPriceGap(lastBar.Low) || gap.IsInPriceGap(lastBar.High))
+            {
+                gap.ToIndex = index;
+
+                _freshGaps.RemoveAt(gapIndex);
+
+                _testedGaps.Add(gap);
+
+                gapIndex++;
+
+                // Todo: sound alerts.
+            }
+        }
+    }
+
+    private void CalculateBrokenGaps(int index)
+    {
+        var lastBar = Bars[index]!;
+
+        for (var gapIndex = _testedGaps.Count - 1; gapIndex >= 0; gapIndex--)
+        {
+            var gap = _testedGaps[gapIndex];
+
+            if (lastBar.High >= gap.TopPrice && gap.IsResistance
+                || lastBar.Low <= gap.BottomPrice && gap.IsSupport)
+            {
+                gap.ToIndex = index;
+
+                _testedGaps.RemoveAt(gapIndex);
+
+                _brokenGaps.Add(gap);
+
+                gapIndex++;
+            }
+        }
+    }
+
+    public override void OnRender(IDrawingContext context)
+    {
+        if (ShowFreshGaps)
+        {
+            RenderGaps(context, FreshGapColor, _freshGaps);
+        }
+
+        if (ShowTestedGaps)
+        {
+            RenderGaps(context, TestedGapColor, _testedGaps);
+        }
+
+        if (ShowBrokenGaps)
+        {
+            RenderGaps(context, BrokenGapColor, _brokenGaps);
+        }
+    }
+
+    private void RenderGaps(IDrawingContext drawingContext, Color fillColor, List<Gap> gaps)
+    {
+        foreach (var gap in gaps)
+        {
+            var fromIndex = gap.FromIndex;
+            var toIndex = gap.ToIndex ?? Math.Max(gap.FromIndex, Chart.LastVisibleBarIndex);
+
+            if (toIndex - fromIndex >= 1
+                && fromIndex <= Chart.LastVisibleBarIndex
+                && Chart.FirstVisibleBarIndex <= toIndex)
+            {
+                var fromCoordinate = Chart.GetXCoordinateByBarIndex(fromIndex);
+                var toCoordinate = Chart.GetXCoordinateByBarIndex(toIndex);
+
+                var topLeftPoint = new Point(fromCoordinate, gap.TopPrice);
+                var bottomRightPoint = new Point(toCoordinate, gap.BottomPrice);
+
+                drawingContext.DrawRectangle(topLeftPoint, bottomRightPoint, fillColor);
+            }
+        }
     }
 }
