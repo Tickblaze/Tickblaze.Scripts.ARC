@@ -22,8 +22,6 @@
             Header="{Binding ShowFreshFvgs}"
             Foreground="Black"
             StaysOpenOnClick="True"
-            FontWeight="Normal"
-            Cl
-            />
+            FontWeight="Normal" />
     </MenuItem>
 </Menu>

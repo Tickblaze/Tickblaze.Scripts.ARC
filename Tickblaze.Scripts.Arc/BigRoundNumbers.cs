@@ -111,17 +111,17 @@ public partial class BigRoundNumbers : Indicator
         {
             var yCoordinate = ChartScale.GetYCoordinateByValue(priceLevel);
 
-            var startPoint = new Point(0, yCoordinate);
-            var endPoint = new Point(Chart.Width, yCoordinate);
-
-            context.DrawLine(startPoint, endPoint, Level.Color, Level.Thickness);
-
             if (HighlightColor.A is not 0)
             {
                 var startRegionPoint = new Point(0, yCoordinate - regionHeight / 2.0);
 
                 context.DrawRectangle(startRegionPoint, Chart.Width, regionHeight, HighlightColor);
             }
+            
+            var startPoint = new Point(0, yCoordinate);
+            var endPoint = new Point(Chart.Width, yCoordinate);
+
+            context.DrawLine(startPoint, endPoint, Level.Color, Level.Thickness);
 
             priceLevel += _intervalInPoints;
         }

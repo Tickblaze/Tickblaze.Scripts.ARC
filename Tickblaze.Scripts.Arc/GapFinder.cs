@@ -3,8 +3,6 @@ using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc;
 
-// Note: maybe to move common logic to a base class [if that would simplify things].
-
 public partial class GapFinder : Indicator
 {
     public GapFinder()
@@ -14,10 +12,11 @@ public partial class GapFinder : Indicator
         Name = "ARC Gap Finder";
     }
 
-    private readonly List<Gap> _freshGaps = [];
-    private readonly List<Gap> _testedGaps = [];
-    private readonly List<Gap> _brokenGaps = [];
-    private AverageTrueRange _averageTrueRange = default!;
+    private AverageTrueRange _averageTrueRange;
+
+    private readonly OrderedDictionary<int, Gap> _freshGaps = [];
+    private readonly OrderedDictionary<int, Gap> _testedGaps = [];
+    private readonly OrderedDictionary<int, Gap> _brokenGaps = [];
 
     [Parameter("Measurement", GroupName = "Parameters")]
     public GapMeasurement GapMeasurementValue { get; set; } = GapMeasurement.Atr;
@@ -34,7 +33,7 @@ public partial class GapFinder : Indicator
     [Parameter("Gap Pts", GroupName = "Parameters")]
     public int GapPipCount { get; set; } = 20;
 
-    [NumericRange(MinValue = 0.01, MaxValue = double.MaxValue)]
+    [NumericRange(MinValue = 0.01, MaxValue = double.MaxValue, Step = 0.5d)]
     [Parameter("Gap ATR Multiple", GroupName = "Parameters")]
     public double AtrMultiple { get; set; } = 0.5;
 
@@ -46,19 +45,19 @@ public partial class GapFinder : Indicator
     public bool IsRestrictedToNewSessions { get; set; }
 
     [Parameter("Show Fresh Gaps", GroupName = "Visuals")]
-    public bool ShowFreshGaps { get; set; }
+    public bool ShowFreshGaps { get; set; } = true;
 
     [Parameter("Fresh Gap Color", GroupName = "Visuals")]
     public Color FreshGapColor { get; set; } = Color.New(Color.Orange, 0.5f);
 
     [Parameter("Show Tested Gaps", GroupName = "Visuals")]
-    public bool ShowTestedGaps { get; set; }
+    public bool ShowTestedGaps { get; set; } = true;
 
     [Parameter("Tested Gap Color", GroupName = "Visuals")]
     public Color TestedGapColor { get; set; } = Color.New(Color.Silver, 0.5f);
 
     [Parameter("Show Broken Gaps", GroupName = "Visuals")]
-    public bool ShowBrokenGaps { get; set; }
+    public bool ShowBrokenGaps { get; set; } = true;
 
     [Parameter("Broken Gap Color", GroupName = "Visuals")]
     public Color BrokenGapColor { get; set; } = Color.New(Color.DimGray, 0.5f);
@@ -180,11 +179,13 @@ public partial class GapFinder : Indicator
             },
         ];
 
+        _freshGaps.Remove(index - 1);
+
         foreach (var gap in gaps)
         {
             if (gap.TopPrice - gap.BottomPrice > minGapHeight)
             {
-                _freshGaps.Add(gap);
+                _freshGaps.Add(gap.FromIndex, gap);
             }
         }
     }
@@ -195,17 +196,21 @@ public partial class GapFinder : Indicator
         
         for (var gapIndex = _freshGaps.Count - 1; gapIndex >= 0; gapIndex--)
         {
-            var gap = _freshGaps[gapIndex];
+            var (_, gap) = _freshGaps.GetAt(gapIndex);
 
-            if (gap.IsInPriceGap(lastBar.Low) || gap.IsInPriceGap(lastBar.High))
+            if (index - gap.FromIndex <= 1)
+            {
+                continue;
+            }
+
+            if (lastBar.Low < gap.TopPrice && gap.IsSupport
+                || lastBar.High > gap.BottomPrice && gap.IsResistance)
             {
                 gap.ToIndex = index;
 
                 _freshGaps.RemoveAt(gapIndex);
 
-                _testedGaps.Add(gap);
-
-                gapIndex++;
+                _testedGaps.Add(gap.FromIndex, gap);
 
                 // Todo: sound alerts.
             }
@@ -218,18 +223,16 @@ public partial class GapFinder : Indicator
 
         for (var gapIndex = _testedGaps.Count - 1; gapIndex >= 0; gapIndex--)
         {
-            var gap = _testedGaps[gapIndex];
+            var (_, gap) = _testedGaps.GetAt(gapIndex);
 
-            if (lastBar.High >= gap.TopPrice && gap.IsResistance
-                || lastBar.Low <= gap.BottomPrice && gap.IsSupport)
+            if (lastBar.Low < gap.BottomPrice && gap.IsSupport
+                || lastBar.High > gap.TopPrice && gap.IsResistance)
             {
                 gap.ToIndex = index;
 
                 _testedGaps.RemoveAt(gapIndex);
 
-                _brokenGaps.Add(gap);
-
-                gapIndex++;
+                _brokenGaps.Add(gap.FromIndex, gap);
             }
         }
     }
@@ -238,21 +241,21 @@ public partial class GapFinder : Indicator
     {
         if (ShowFreshGaps)
         {
-            RenderGaps(context, FreshGapColor, _freshGaps);
+            RenderGaps(context, FreshGapColor, _freshGaps.Values);
         }
 
         if (ShowTestedGaps)
         {
-            RenderGaps(context, TestedGapColor, _testedGaps);
+            RenderGaps(context, TestedGapColor, _testedGaps.Values);
         }
 
         if (ShowBrokenGaps)
         {
-            RenderGaps(context, BrokenGapColor, _brokenGaps);
+            RenderGaps(context, BrokenGapColor, _brokenGaps.Values);
         }
     }
 
-    private void RenderGaps(IDrawingContext drawingContext, Color fillColor, List<Gap> gaps)
+    private void RenderGaps(IDrawingContext drawingContext, Color fillColor, IEnumerable<Gap> gaps)
     {
         foreach (var gap in gaps)
         {
@@ -260,17 +263,26 @@ public partial class GapFinder : Indicator
             var toIndex = gap.ToIndex ?? Math.Max(gap.FromIndex, Chart.LastVisibleBarIndex);
 
             if (toIndex - fromIndex >= 1
-                && fromIndex <= Chart.LastVisibleBarIndex
-                && Chart.FirstVisibleBarIndex <= toIndex)
+                && AreIntervalsIntersect(gap.BottomPrice, gap.TopPrice, ChartScale.MinPrice, ChartScale.MaxPrice)
+                && AreIntervalsIntersect(fromIndex, toIndex, Chart.FirstVisibleBarIndex, Chart.LastVisibleBarIndex))
             {
-                var fromCoordinate = Chart.GetXCoordinateByBarIndex(fromIndex);
-                var toCoordinate = Chart.GetXCoordinateByBarIndex(toIndex);
+                var fromXCoordinate = Chart.GetXCoordinateByBarIndex(fromIndex);
+                var fromYCoordinate = ChartScale.GetYCoordinateByValue(gap.TopPrice);
 
-                var topLeftPoint = new Point(fromCoordinate, gap.TopPrice);
-                var bottomRightPoint = new Point(toCoordinate, gap.BottomPrice);
+                var toXCoordinate = Chart.GetXCoordinateByBarIndex(toIndex);
+                var toYCoordinate = ChartScale.GetYCoordinateByValue(gap.BottomPrice);
+
+                var topLeftPoint = new Point(fromXCoordinate, fromYCoordinate);
+                var bottomRightPoint = new Point(toXCoordinate, toYCoordinate);
 
                 drawingContext.DrawRectangle(topLeftPoint, bottomRightPoint, fillColor);
             }
         }
+    }
+
+    private static bool AreIntervalsIntersect(double firstIntervalStart,
+        double firstIntervalEnd, double secondIntervalStart, double secondIntervalEnd)
+    {
+        return firstIntervalStart <= secondIntervalEnd && secondIntervalStart <= firstIntervalEnd;
     }
 }

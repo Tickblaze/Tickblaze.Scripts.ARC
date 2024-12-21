@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0-windows</TargetFramework>
+		<TargetFramework>net9.0-windows</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<UseWPF>true</UseWPF>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.45-pre.2" />
+	  <PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.45-pre.20" />
 	</ItemGroup>
 
 </Project>

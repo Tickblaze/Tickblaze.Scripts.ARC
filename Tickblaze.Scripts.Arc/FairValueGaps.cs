@@ -7,32 +7,32 @@ public partial class FairValueGaps : Indicator
 {
     public FairValueGaps()
     {
-        _menu = new(this);
+        //_menu = new(this);
 
         IsOverlay = true;
         ShortName = "AFVG";
         Name = "ARC Fair Value Gaps";
     }
 
-    private readonly FairValueGapsMenu _menu;
-    private readonly List<Gap> _freshGaps = [];
-    private readonly List<Gap> _testedGaps = [];
-    private readonly List<Gap> _brokenGaps = [];
-    private AverageTrueRange _averageTrueRange = default!;
+    //private readonly FairValueGapsMenu _menu;
+    private AverageTrueRange _averageTrueRange;
+    private readonly OrderedDictionary<int, Gap> _freshGaps = [];
+    private readonly OrderedDictionary<int, Gap> _testedGaps = [];
+    private readonly OrderedDictionary<int, Gap> _brokenGaps = [];
     
     [Parameter("Measurement", GroupName = "Parameters")]
     public GapMeasurement GapMeasurementValue { get; set; } = GapMeasurement.Atr;
 
-    [Parameter("FVG Ticks", GroupName = "Parameters")]
     [NumericRange(MinValue = 1)]
+    [Parameter("FVG Ticks", GroupName = "Parameters")]
     public int GapTickCount { get; set; } = 8;
 
+    [NumericRange(MinValue = 0.01d, MaxValue = double.MaxValue, Step = 0.5d)]
     [Parameter("FVG ATR Multiple", GroupName = "Parameters")]
-    [NumericRange(MinValue = 0.01d, MaxValue = double.MaxValue)]
     public double AtrMultiple { get; set; } = 0.5d;
 
-    [Parameter("ATR Period", GroupName = "Parameters")]
     [NumericRange(MinValue = 1)]
+    [Parameter("ATR Period", GroupName = "Parameters")]
     public int AtrPeriod { get; set; } = 14;
 
     [Parameter("Show Fresh FVGs", GroupName = "Visuals")]
@@ -98,10 +98,10 @@ public partial class FairValueGaps : Indicator
         return parameters;
     }
 
-    public override object? CreateChartToolbarMenuItem()
-    {
-        return _menu;
-    }
+    //public override object? CreateChartToolbarMenuItem()
+    //{
+    //    return _menu;
+    //}
     
     protected override void Initialize()
     {
@@ -124,7 +124,7 @@ public partial class FairValueGaps : Indicator
     {
         var minGapHeight = GapMeasurementValue switch
         {
-            GapMeasurement.Atr => AtrMultiple * _averageTrueRange[index],
+            GapMeasurement.Atr => AtrMultiple * _averageTrueRange![index],
             GapMeasurement.Tick => GapTickCount * Symbol.TickSize,
             _ => throw new UnreachableException()
         };
@@ -147,31 +147,38 @@ public partial class FairValueGaps : Indicator
             },
         ];
 
+        _freshGaps.Remove(index - 1);
+
         foreach (var gap in gaps)
         {
             if (gap.TopPrice - gap.BottomPrice > minGapHeight)
             {
-                _freshGaps.Add(gap);
+                _freshGaps.Add(gap.FromIndex, gap);
             }
         }
     }
 
     private void CalculateTestedGaps(int index)
     {
+        var lastBar = Bars[index]!;
+        
         for (var gapIndex = _freshGaps.Count - 1; gapIndex >= 0; gapIndex--)
         {
-            var lastBar = Bars[index]!;
-            var gap = _freshGaps[gapIndex];
+            var (_, gap) = _freshGaps.GetAt(gapIndex);
 
-            if (gap.IsInPriceGap(lastBar.Low) || gap.IsInPriceGap(lastBar.High))
+            if (index - gap.FromIndex <= 1)
+            {
+                continue;
+            }
+
+            if (lastBar.Low < gap.TopPrice && gap.IsSupport
+                || lastBar.High > gap.BottomPrice && gap.IsResistance)
             {
                 gap.ToIndex = index;
 
                 _freshGaps.RemoveAt(gapIndex);
 
-                _testedGaps.Add(gap);
-
-                gapIndex++;
+                _testedGaps.Add(gap.FromIndex, gap);
 
                 // Todo: sound alerts.
             }
@@ -181,21 +188,23 @@ public partial class FairValueGaps : Indicator
     private void CalculateBrokenGaps(int index)
     {
         var lastBar = Bars[index]!;
-        
+
         for (var gapIndex = _testedGaps.Count - 1; gapIndex >= 0; gapIndex--)
         {
-            var gap = _testedGaps[gapIndex];
+            var (_, gap) = _testedGaps.GetAt(gapIndex);
 
-            if (lastBar.High >= gap.TopPrice && gap.IsResistance
-                || lastBar.Low <= gap.BottomPrice && gap.IsSupport)
+            gapIndex--;
+
+            if (lastBar.Low < gap.BottomPrice && gap.IsSupport
+                || lastBar.High > gap.TopPrice && gap.IsResistance)
             {
+                gapIndex++;
+                
                 gap.ToIndex = index;
 
                 _testedGaps.RemoveAt(gapIndex);
 
-                _brokenGaps.Add(gap);
-
-                gapIndex++;
+                _brokenGaps.Add(gap.FromIndex, gap);
             }
         }
     }
@@ -204,21 +213,21 @@ public partial class FairValueGaps : Indicator
     {
         if (ShowFreshGaps)
         {
-            RenderGaps(context, FreshGapColor, _freshGaps);
+            RenderGaps(context, FreshGapColor, _freshGaps.Values);
         }
 
         if (ShowTestedGaps)
         {
-            RenderGaps(context, TestedGapColor, _testedGaps);
+            RenderGaps(context, TestedGapColor, _testedGaps.Values);
         }
 
         if (ShowBrokenGaps)
         {
-            RenderGaps(context, BrokenGapColor, _brokenGaps);
+            RenderGaps(context, BrokenGapColor, _brokenGaps.Values);
         }
     }
 
-    private void RenderGaps(IDrawingContext drawingContext, Color fillColor, List<Gap> gaps)
+    private void RenderGaps(IDrawingContext drawingContext, Color fillColor, IEnumerable<Gap> gaps)
     {
         foreach (var gap in gaps)
         {
@@ -226,17 +235,26 @@ public partial class FairValueGaps : Indicator
             var toIndex = gap.ToIndex ?? Math.Max(gap.FromIndex, Chart.LastVisibleBarIndex);
 
             if (toIndex - fromIndex >= 1
-                && fromIndex <= Chart.LastVisibleBarIndex
-                && Chart.FirstVisibleBarIndex <= toIndex)
+                && AreIntervalsIntersect(gap.BottomPrice, gap.TopPrice, ChartScale.MinPrice, ChartScale.MaxPrice)
+                && AreIntervalsIntersect(fromIndex, toIndex, Chart.FirstVisibleBarIndex, Chart.LastVisibleBarIndex))
             {
-                var fromCoordinate = Chart.GetXCoordinateByBarIndex(fromIndex);
-                var toCoordinate = Chart.GetXCoordinateByBarIndex(toIndex);
+                var fromXCoordinate = Chart.GetXCoordinateByBarIndex(fromIndex);
+                var fromYCoordinate = ChartScale.GetYCoordinateByValue(gap.TopPrice);
 
-                var topLeftPoint = new Point(fromCoordinate, gap.TopPrice);
-                var bottomRightPoint = new Point(toCoordinate, gap.BottomPrice);
+                var toXCoordinate = Chart.GetXCoordinateByBarIndex(toIndex);
+                var toYCoordinate = ChartScale.GetYCoordinateByValue(gap.BottomPrice);
+                
+                var topLeftPoint = new Point(fromXCoordinate, fromYCoordinate);
+                var bottomRightPoint = new Point(toXCoordinate, toYCoordinate);
 
                 drawingContext.DrawRectangle(topLeftPoint, bottomRightPoint, fillColor);
             }
         }
+    }
+
+    private static bool AreIntervalsIntersect(double firstIntervalStart,
+        double firstIntervalEnd, double secondIntervalStart, double secondIntervalEnd)
+    {
+        return firstIntervalStart <= secondIntervalEnd && secondIntervalStart <= firstIntervalEnd;
     }
 }

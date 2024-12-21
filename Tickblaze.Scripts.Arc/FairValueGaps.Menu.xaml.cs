@@ -19,5 +19,7 @@ public partial class FairValueGapsMenu : Menu
     public FairValueGapsMenu(FairValueGaps fairValueGaps)
     {
         _fairValueGaps = fairValueGaps;
+
+        InitializeComponent();
     }
 }

@@ -13,9 +13,4 @@ public class Gap
     public required double BottomPrice { get; init; }
 
     public required bool IsSupport { get; init; }
-
-    public bool IsInPriceGap(double price)
-    {
-        return BottomPrice < price && price < TopPrice;
-    }
 }
