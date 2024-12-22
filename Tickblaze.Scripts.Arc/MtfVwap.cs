@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Tickblaze.Scripts.Arc
+namespace Tickblaze.Scripts.Arc;
+
+public class MtfVwap
 {
-    internal class GlobalUsings
-    {
-    }
 }
