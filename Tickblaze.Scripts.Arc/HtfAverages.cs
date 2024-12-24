@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Tickblaze.Scripts.Indicators;
 using DrawingColor = System.Drawing.Color;
 
@@ -14,19 +15,20 @@ public partial class HtfAverages : Indicator
     }
 
     private const int _maCount = 7;
+    private const int _barLookbackCount = 256;
     private const string _autoLabel = "<auto>";
 
     private BarSeries _higherTimeframeBars = default!;
-    private ISeries<double>?[] _movingAverages = new ISeries<double>?[_maCount];
+    private Indicator?[] _maIndicators = new Indicator?[_maCount];
 
-    [Parameter("Bkg Timeframe", GroupName = "Parameters")]
+    [Parameter("Bkg Timeframe")]
     public Timeframe TimeframeValue { get; set; } = Timeframe.Day;
 
     [NumericRange(MinValue = 1)]
-    [Parameter("Bkg Time Value", GroupName = "Parameters")]
+    [Parameter("Bkg Time Value")]
     public int TimeInMinutes { get; set; } = 240;
 
-    [Parameter("MA Type", GroupName = "Parameters")]
+    [Parameter("MA Type")]
     public MovingAverageType MovingAverageTypeValue { get; set; } = MovingAverageType.Exponential;
 
     [Parameter("Show Label?", GroupName = "Lines & Labels")]
@@ -46,70 +48,70 @@ public partial class HtfAverages : Indicator
     public LineOrigin HorizontalLineAligmentValue { get; set; } = LineOrigin.FromLeft;
 
     [NumericRange]
-    [Parameter("MA Period", GroupName = "Moving Average 1")]
+    [Parameter("MA Period", GroupName = "MA 1")]
     public int MaPeriod1 { get; set; } = 6;
 
-    [Parameter("MA Label", GroupName = "Moving Average 1")]
+    [Parameter("MA Label", GroupName = "MA 1")]
     public string MaLabel1 { get; set; } = _autoLabel;
 
     [Plot("Plot1")]
     public PlotSeries MaPlot1 { get; set; } = new(Color.FromDrawingColor(DrawingColor.Goldenrod));
 
     [NumericRange]
-    [Parameter("MA Period", GroupName = "Moving Average 2")]
+    [Parameter("MA Period", GroupName = "MA 2")]
     public int MaPeriod2 { get; set; } = 12;
 
-    [Parameter("MA Label", GroupName = "Moving Average 2")]
+    [Parameter("MA Label", GroupName = "MA 2")]
     public string MaLabel2 { get; set; } = _autoLabel;
 
     [Plot("Plot2")]
     public PlotSeries MaPlot2 { get; set; } = new(Color.White);
 
     [NumericRange]
-    [Parameter("MA Period", GroupName = "Moving Average 3")]
+    [Parameter("MA Period", GroupName = "MA 3")]
     public int MaPeriod3 { get; set; } = 25;
 
-    [Parameter("MA Label", GroupName = "Moving Average 3")]
+    [Parameter("MA Label", GroupName = "MA 3")]
     public string MaLabel3 { get; set; } = _autoLabel;
 
     [Plot("Plot3")]
     public PlotSeries MaPlot3 { get; set; } = new(Color.Yellow);
 
     [NumericRange]
-    [Parameter("MA Period", GroupName = "Moving Average 4")]
+    [Parameter("MA Period", GroupName = "MA 4")]
     public int MaPeriod4 { get; set; } = 50;
 
-    [Parameter("MA Label", GroupName = "Moving Average 4")]
+    [Parameter("MA Label", GroupName = "MA 4")]
     public string MaLabel4 { get; set; } = _autoLabel;
 
     [Plot("Plot4")]
     public PlotSeries MaPlot4 { get; set; } = new(Color.Black);
 
     [NumericRange]
-    [Parameter("MA Period", GroupName = "Moving Average 5")]
+    [Parameter("MA Period", GroupName = "MA 5")]
     public int MaPeriod5 { get; set; } = 100;
 
-    [Parameter("MA Label", GroupName = "Moving Average 5")]
+    [Parameter("MA Label", GroupName = "MA 5")]
     public string MaLabel5 { get; set; } = _autoLabel;
 
     [Plot("Plot5")]
     public PlotSeries MaPlot5 { get; set; } = new(Color.Red);
 
     [NumericRange]
-    [Parameter("MA Period", GroupName = "Moving Average 6")]
+    [Parameter("MA Period", GroupName = "MA 6")]
     public int MaPeriod6 { get; set; }
 
-    [Parameter("MA Label", GroupName = "Moving Average 6")]
+    [Parameter("MA Label", GroupName = "MA 6")]
     public string MaLabel6 { get; set; } = _autoLabel;
 
     [Plot("Plot6")]
     public PlotSeries MaPlot6 { get; set; } = new(Color.Cyan);
 
     [NumericRange]
-    [Parameter("MA Period", GroupName = "Moving Average 7")]
+    [Parameter("MA Period", GroupName = "MA 7")]
     public int MaPeriod7 { get; set; }
 
-    [Parameter("MA Label", GroupName = "Moving Average 7")]
+    [Parameter("MA Label", GroupName = "MA 7")]
     public string MaLabel7 { get; set; } = _autoLabel;
 
     [Plot("Plot7")]
@@ -141,9 +143,11 @@ public partial class HtfAverages : Indicator
         var barSeriesRequest = new BarSeriesRequest
         {
             // What to do with series contract?
-
-            Symbol = Bars.Symbol,
+            SymbolCode = Symbol.Code,
+            Exchange = Symbol.Exchange,
+            InstrumentType = Symbol.Type,
             Period = GetBarType(TimeframeValue, TimeInMinutes),
+            StartTimeUtc = GetStartTimeUtc(TimeframeValue, TimeInMinutes),
         };
 
         _higherTimeframeBars = GetBarSeries(barSeriesRequest);
@@ -152,11 +156,11 @@ public partial class HtfAverages : Indicator
         {
             var maPeriod = maPeriods[maIndex];
 
-            _movingAverages[maIndex] = null;
+            _maIndicators[maIndex] = null;
 
             if (maPeriod is not 0)
             {
-                _movingAverages[maIndex] = GetMovingAverageSeries(_higherTimeframeBars.Close, maPeriod, MovingAverageTypeValue);
+                _maIndicators[maIndex] = GetMovingAverageSeries(_higherTimeframeBars, maPeriod, MovingAverageTypeValue);
             }
         }
     }
@@ -168,7 +172,7 @@ public partial class HtfAverages : Indicator
             MaPlot1,
             MaPlot2,
             MaPlot3,
-            MaPlot4,
+            MaPlot4, 
             MaPlot5,
             MaPlot6,
             MaPlot7,
@@ -177,9 +181,16 @@ public partial class HtfAverages : Indicator
         for (var maIndex = 0; maIndex < _maCount; maIndex++)
         {
             var maPlot = maPlots[maIndex];
-            var movingAverage = _movingAverages[maIndex];
+            var maIndicator = _maIndicators[maIndex];
 
-            maPlot[index] = movingAverage is not { Count: >= 1 } ? double.NaN : movingAverage.Last();
+            if (maIndicator is null || _higherTimeframeBars.Count is 0)
+            {
+                continue;
+            }
+
+            maIndicator.Calculate();
+
+            maPlot[index] = maIndicator.Plots is not [var plot] ? double.NaN : plot.Last();
         }
     }
 
@@ -193,15 +204,41 @@ public partial class HtfAverages : Indicator
         };
     }
 
-    private static ISeries<double> GetMovingAverageSeries(ISeries<double> bars, int period, MovingAverageType movingAverageType)
+    private DateTime? GetStartTimeUtc(Timeframe timeframe, int timeInMinutes)
     {
-        Indicator movingAverage = movingAverageType switch
+        var utcNow = DateTime.UtcNow;
+
+        return timeframe switch
         {
-            MovingAverageType.Simple => new SimpleMovingAverage(bars, period),
-            MovingAverageType.Exponential => new ExponentialMovingAverage(bars, period),
+            Timeframe.Day => utcNow.AddDays(-_barLookbackCount),
+            Timeframe.Minute => utcNow.AddMinutes(-timeInMinutes * _barLookbackCount),
+            _ => throw new UnreachableException()
+        };
+    }
+
+    private static Indicator GetMovingAverageSeries(BarSeries barSeries, int period, MovingAverageType movingAverageType)
+    {
+        return movingAverageType switch
+        {
+            MovingAverageType.Simple => new SimpleMovingAverage(barSeries.Close, period)
+            {
+                Bars = barSeries
+            },
+            MovingAverageType.Exponential => new ExponentialMovingAverage(barSeries.Close, period)
+            {
+                Bars = barSeries
+            },
             _ => throw new UnreachableException(),
         };
+    }
 
-        return movingAverage.Plots.Single();
+    private static bool ContainSourceBars([NotNullWhen(true)] Indicator? indicator)
+    {
+        return indicator switch
+        {
+            SimpleMovingAverage smaIndicator => smaIndicator is { Source.Count: not 0 },
+            ExponentialMovingAverage emaIndicator => emaIndicator is { Source.Count: not 0 },
+            _ => false,
+        };
     }
 }
