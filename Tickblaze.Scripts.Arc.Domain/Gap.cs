@@ -1,6 +1,6 @@
-﻿namespace Tickblaze.Scripts.Arc;
+﻿namespace Tickblaze.Scripts.Arc.Domain;
 
-public class Gap
+public sealed class Gap
 {
     public int? ToIndex { get; set; }
 

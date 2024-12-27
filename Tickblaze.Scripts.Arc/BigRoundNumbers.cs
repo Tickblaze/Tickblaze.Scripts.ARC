@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using DrawingColor = System.Drawing.Color;
 
 namespace Tickblaze.Scripts.Arc;
 

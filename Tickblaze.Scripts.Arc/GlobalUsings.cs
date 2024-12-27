@@ -1,0 +1,1 @@
+﻿global using DrawingColor = System.Drawing.Color;

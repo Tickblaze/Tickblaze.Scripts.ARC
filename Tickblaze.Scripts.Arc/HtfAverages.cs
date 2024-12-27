@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Tickblaze.Scripts.Indicators;
-using DrawingColor = System.Drawing.Color;
 
 namespace Tickblaze.Scripts.Arc;
 
@@ -45,7 +44,7 @@ public partial class HtfAverages : Indicator
     public int MaxLineLengthInPixels { get; set; } = 100;
 
     [Parameter("Line Origin", GroupName = "Lines & Labels")]
-    public LineOrigin HorizontalLineAligmentValue { get; set; } = LineOrigin.FromLeft;
+    public LineOrigin LineOriginValue { get; set; } = LineOrigin.FromLeft;
 
     [NumericRange]
     [Parameter("MA Period", GroupName = "MA 1")]
@@ -220,14 +219,8 @@ public partial class HtfAverages : Indicator
     {
         return movingAverageType switch
         {
-            MovingAverageType.Simple => new SimpleMovingAverage(barSeries.Close, period)
-            {
-                Bars = barSeries
-            },
-            MovingAverageType.Exponential => new ExponentialMovingAverage(barSeries.Close, period)
-            {
-                Bars = barSeries
-            },
+            MovingAverageType.Simple => new SimpleMovingAverage(barSeries, barSeries.Close, period),
+            MovingAverageType.Exponential => new ExponentialMovingAverage(barSeries, barSeries.Close, period),
             _ => throw new UnreachableException(),
         };
     }
