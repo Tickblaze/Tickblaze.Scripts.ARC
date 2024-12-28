@@ -42,4 +42,14 @@ public static class CollectionExtensions
 
         return ~lowerIndex;
     }
+
+	public static TValue GetValueAt<TKey, TValue>(this OrderedDictionary<TKey, TValue> orderedDictionary, int index)
+		where TKey : notnull
+	{
+		ArgumentNullException.ThrowIfNull(orderedDictionary);
+
+		var (_, value) = orderedDictionary.GetAt(index);
+
+		return value;
+	}
 }

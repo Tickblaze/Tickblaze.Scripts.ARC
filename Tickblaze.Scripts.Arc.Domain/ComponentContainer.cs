@@ -5,6 +5,12 @@ public sealed class ComponentContainer<TComponent>
 {
     private readonly OrderedDictionary<int, TComponent> _components = [];
 
+	public bool IsEmpty => _components.Count is 0;
+
+	public int Count => _components.Count;
+
+	public TComponent LastComponent => GetComponentAt(^1);
+
     public IEnumerable<TComponent> GetVisibleComponents(Rectangle visibleRectangle)
     {
         var fromBarIndex = visibleRectangle.FromBarIndex;
@@ -18,13 +24,16 @@ public sealed class ComponentContainer<TComponent>
 
         while (componentIndex < _components.Count)
         {
-            var (_, component) = _components.GetAt(componentIndex);
-            
-            yield return component;
+            yield return _components.GetValueAt(componentIndex);
 
-            componentIndex++;
+			componentIndex++;
         }
     }
+
+	public TComponent GetComponentAt(Index index)
+	{
+        return _components.Values[index];
+	}
 
     public void Upsert(TComponent component)
     {
