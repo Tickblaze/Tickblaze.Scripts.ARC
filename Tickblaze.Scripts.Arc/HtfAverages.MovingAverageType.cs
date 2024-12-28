@@ -2,12 +2,12 @@
 
 public partial class HtfAverages
 {
-    public enum MovingAverageType
-    {
-        [DisplayName("SMA")]
-        Simple,
+	public enum MovingAverageType
+	{
+		[DisplayName("SMA")]
+		Simple,
 
-        [DisplayName("EMA")]
-        Exponential,
-    }
+		[DisplayName("EMA")]
+		Exponential,
+	}
 }

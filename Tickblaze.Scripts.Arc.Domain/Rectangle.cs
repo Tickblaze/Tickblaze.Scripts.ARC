@@ -1,14 +1,29 @@
-﻿namespace Tickblaze.Scripts.Arc.Domain;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Tickblaze.Scripts.Arc.Domain;
 
 public class Rectangle
 {
-    public int FromBarIndex { get; init; }
+    public Rectangle()
+    {
+        
+    }
 
-	public double FromPrice { get; init; }
+    [SetsRequiredMembers]
+    public Rectangle(Point fromPoint, Point toPoint)
+    {
+        (FromBarIndex, FromPrice) = fromPoint;
 
-	public int ToBarIndex { get; init; }
+        (ToBarIndex, ToPrice) = toPoint;
+    }
 
-	public double ToPrice { get; init; }
+    public required int FromBarIndex { get; init; }
+
+	public required double FromPrice { get; init; }
+
+	public required int ToBarIndex { get; init; }
+
+	public required double ToPrice { get; init; }
     
     public Point TopRight => new(ToBarIndex, ToPrice);
     

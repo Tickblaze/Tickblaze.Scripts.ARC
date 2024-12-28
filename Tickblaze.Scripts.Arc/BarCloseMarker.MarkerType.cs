@@ -2,15 +2,15 @@
 
 public partial class BarCloseMarker
 {
-    public enum MarkerType
-    {
-        [DisplayName("None")]
-        None,
-        
-        [DisplayName("Price")]
-        Price,
+	public enum MarkerType
+	{
+		[DisplayName("None")]
+		None,
+		
+		[DisplayName("Price")]
+		Price,
 
-        [DisplayName("Extended Lines")]
-        ExtendedLines,
-    }
+		[DisplayName("Extended Lines")]
+		ExtendedLines,
+	}
 }

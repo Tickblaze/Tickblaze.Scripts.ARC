@@ -2,12 +2,12 @@
 
 public partial class HtfAverages
 {
-    public enum LineOrigin
-    {
-        [DisplayName("From Left")]
-        FromLeft,
+	public enum LineOrigin
+	{
+		[DisplayName("From Left")]
+		FromLeft,
 
-        [DisplayName("From Right")]
-        FromRight,
-    }
+		[DisplayName("From Right")]
+		FromRight,
+	}
 }

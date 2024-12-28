@@ -2,15 +2,15 @@
 
 public partial class LeadersAndLaggers
 {
-    public enum ResetType
-    {
-        [DisplayName("Session")]
-        Session,
+	public enum ResetType
+	{
+		[DisplayName("Session")]
+		Session,
 
-        [DisplayName("Chart Start")]
-        ChartStart,
+		[DisplayName("Chart Start")]
+		ChartStart,
 
-        [DisplayName("Date")]
-        Custom,
-    }
+		[DisplayName("Date")]
+		Custom,
+	}
 }

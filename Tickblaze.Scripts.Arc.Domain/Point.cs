@@ -21,4 +21,10 @@ public class Point
 
     public required double Price { get; init; }
 
+    public void Deconstruct(out int barIndex, out double price)
+    {
+        barIndex = BarIndex;
+
+        price = Price;
+    }
 }

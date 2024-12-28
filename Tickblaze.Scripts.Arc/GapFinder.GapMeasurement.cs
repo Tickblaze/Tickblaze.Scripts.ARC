@@ -2,11 +2,11 @@
 
 public partial class GapFinder
 {
-    public enum GapMeasurement
-    {
-        Tick,
-        Point,
-        Pip,
-        Atr,
-    }
+	public enum GapMeasurement
+	{
+		Tick,
+		Point,
+		Pip,
+		Atr,
+	}
 }

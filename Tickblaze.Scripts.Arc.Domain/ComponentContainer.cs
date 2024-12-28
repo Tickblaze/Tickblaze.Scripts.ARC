@@ -50,4 +50,9 @@ public sealed class ComponentContainer<TComponent>
     {
         return _components.Remove(component.FromBarIndex);
     }
+
+    public void Clear()
+    {
+        _components.Clear();
+    }
 }

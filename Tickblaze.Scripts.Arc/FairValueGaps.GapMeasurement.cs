@@ -2,12 +2,12 @@
 
 public partial class FairValueGaps
 {
-    public enum GapMeasurement
-    {
-        [DisplayName("ATR")]
-        Atr,
+	public enum GapMeasurement
+	{
+		[DisplayName("ATR")]
+		Atr,
 
-        [DisplayName("Ticks")]
-        Tick,
-    }
+		[DisplayName("Ticks")]
+		Tick,
+	}
 }

@@ -2,12 +2,12 @@
 
 public partial class HtfAverages
 {
-    public enum Timeframe
-    {
-        [DisplayName("Day")]
-        Day,
+	public enum Timeframe
+	{
+		[DisplayName("Day")]
+		Day,
 
-        [DisplayName("Minutes")]
-        Minute,
-    }
+		[DisplayName("Minutes")]
+		Minute,
+	}
 }
