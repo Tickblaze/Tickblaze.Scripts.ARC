@@ -3,6 +3,7 @@
 namespace Tickblaze.Scripts.Arc;
 
 // Todo: RenkoBXT part.
+// Todo: price markers support.
 // Todo: parameter descriptions.
 public partial class BarCloseMarker : Indicator
 {
@@ -17,6 +18,7 @@ public partial class BarCloseMarker : Indicator
 	private double _lastClose;
 	private double _potentialLow;
 	private double _potentialHigh;
+	private const double _epsilon = 1e-10;
 
 	private Bar? _lastRealtimeBar;
 
@@ -99,39 +101,42 @@ public partial class BarCloseMarker : Indicator
 
     protected override void Calculate(int index)
     {
-        if (Bars is not ([.., var lastCachedBar])
-            || lastCachedBar is null
-            || lastCachedBar.Time < _realtimeThresholdUtc)
+        if (Bars is not ([.., var lastBar]) || lastBar is null)
         {
 			return;
         }
         
-		_lastOpen = lastCachedBar.Open;
-        _lastClose = lastCachedBar.Close;
-		_lastRealtimeBar = lastCachedBar;
-
-		CalculatePotentialHighLow();
+		CalculatePotentialHighLow(lastBar);
     }
 
-    private void CalculatePotentialHighLow()
+    private void CalculatePotentialHighLow(Bar lastBar)
     {
 		var barTypeSettings = Bars.Period;
 
 		if (barTypeSettings.Type is BarType.Range)
 		{
-			CalculateRangePotentialHighLow();
+			CalculateRangePotentialHighLow(lastBar);
 		}
 	}
 
-	private void CalculateRangePotentialHighLow()
+	private void CalculateRangePotentialHighLow(Bar lastBar)
 	{
 		var barTypeSettings = Bars.Period;
 		var tickSize = Bars.Symbol.TickSize;
 		var rangeDelta = barTypeSettings.Size * tickSize;
-		
+
+		var currentDelta = Math.Abs(lastBar.Close - lastBar.Open);
+
+		if (currentDelta + _epsilon >= rangeDelta)
+		{
+			return;
+		}
+
+		_lastRealtimeBar = lastBar;
+		_lastOpen = _lastRealtimeBar.Open;
+		_lastClose = _lastRealtimeBar.Close;
 		_potentialLow = Math.Max(0.0, _lastOpen - rangeDelta);
 		_potentialLow = Math.Round(_potentialLow, Symbol.Decimals);
-
 		_potentialHigh = Math.Round(_lastOpen + rangeDelta, Symbol.Decimals);
 	}
 
@@ -165,9 +170,9 @@ public partial class BarCloseMarker : Indicator
 
 		if (MarkerTypeValue is MarkerType.ExtendedLines)
 		{
-			context.DrawHorizontalRay(barStartX, potentialLowY, HorizontalDirection.Right, MarkerLowColor);
-			context.DrawHorizontalRay(barStartX, lastCloseY, HorizontalDirection.Right, CurrentPriceColor);
-			context.DrawHorizontalRay(barStartX, potentialHighY, HorizontalDirection.Right, MarkerHighColor);
+			context.DrawHorizontalRay(barStartX, potentialLowY, HorizontalDirection.Right, MarkerLowColor, MarkerThickness);
+			context.DrawHorizontalRay(barStartX, lastCloseY, HorizontalDirection.Right, CurrentPriceColor, MarkerThickness);
+			context.DrawHorizontalRay(barStartX, potentialHighY, HorizontalDirection.Right, MarkerHighColor, MarkerThickness);
 
 			context.DrawHorizontalLine(barStartX, potentialLowY, barEndX, _markerLowSolidColor, MarkerThickness);
 			context.DrawHorizontalLine(barStartX, potentialHighY, barEndX, _markerHighSolidColor, MarkerThickness);

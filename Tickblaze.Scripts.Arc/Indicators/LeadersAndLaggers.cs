@@ -7,7 +7,7 @@ public partial class LeadersAndLaggers : Indicator
 {
 	public LeadersAndLaggers()
 	{
-		ShortName = "TBCLL";
+		ShortName = "TBC LL";
 		Name = "TB Core Leaders and Laggers";
 	}
 

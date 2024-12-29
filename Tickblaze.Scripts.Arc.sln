@@ -7,16 +7,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tickblaze.Scripts.Arc", "Ti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tickblaze.Scripts.Arc.Source", "Tickblaze.Scripts.Arc.Source\Tickblaze.Scripts.Arc.Source.csproj", "{71CCDB83-1D9C-46E0-81BE-E16F5739D177}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tickblaze.Scripts.Test", "Tickblaze.Scripts.Test\Tickblaze.Scripts.Test.csproj", "{6898240A-800B-404B-AAD6-8CC9FAA5FE37}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BA8495CF-8452-4A12-8DB2-DDBED37B7BB6}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tickblaze.Scripts.Arc.Domain", "Tickblaze.Scripts.Arc.Domain\Tickblaze.Scripts.Arc.Domain.csproj", "{C7AE89DD-CF6C-40BB-A9C2-0754109021EF}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tickblaze.Scripts.Test.Domain", "Tickblaze.Scripts.Test.Domain\Tickblaze.Scripts.Test.Domain.csproj", "{9525FE23-13CF-4184-9C2D-19CF11ECAFB2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,18 +28,10 @@ Global
 		{71CCDB83-1D9C-46E0-81BE-E16F5739D177}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{71CCDB83-1D9C-46E0-81BE-E16F5739D177}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{71CCDB83-1D9C-46E0-81BE-E16F5739D177}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6898240A-800B-404B-AAD6-8CC9FAA5FE37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6898240A-800B-404B-AAD6-8CC9FAA5FE37}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6898240A-800B-404B-AAD6-8CC9FAA5FE37}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6898240A-800B-404B-AAD6-8CC9FAA5FE37}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C7AE89DD-CF6C-40BB-A9C2-0754109021EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C7AE89DD-CF6C-40BB-A9C2-0754109021EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7AE89DD-CF6C-40BB-A9C2-0754109021EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7AE89DD-CF6C-40BB-A9C2-0754109021EF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9525FE23-13CF-4184-9C2D-19CF11ECAFB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9525FE23-13CF-4184-9C2D-19CF11ECAFB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9525FE23-13CF-4184-9C2D-19CF11ECAFB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9525FE23-13CF-4184-9C2D-19CF11ECAFB2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

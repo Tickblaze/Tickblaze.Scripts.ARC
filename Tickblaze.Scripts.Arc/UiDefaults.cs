@@ -1,6 +1,6 @@
 ﻿namespace Tickblaze.Scripts.Arc;
 
-public static class DefaultSettings
+public static class UiDefaults
 {
 	public static readonly float TextVerticalOffset = 3.0f;
 

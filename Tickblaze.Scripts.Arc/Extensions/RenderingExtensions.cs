@@ -43,7 +43,7 @@ public static class RenderingExtensions
 		ArgumentNullException.ThrowIfNull(drawingContext);
 
 		var fromPoint = new Point(rayX, rayY);
-		var toPoint = new Point(rayX, rayY + horizontalDirection.GetSign());
+		var toPoint = new Point(rayX + horizontalDirection.GetSign(), rayY);
 
 		drawingContext.DrawRay(fromPoint, toPoint, color, thickness, lineStyle);
 	}

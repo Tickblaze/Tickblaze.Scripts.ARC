@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc;
@@ -9,8 +8,8 @@ public partial class HtfAverages : Indicator
 	public HtfAverages()
 	{
 		IsOverlay = true;
-		ShortName = "HTFMA";
-		Name = "ARC HTF Averages";
+		ShortName = "TBC HTFMA";
+		Name = "TB Core HTF Averages";
 	}
 
 	private const int _maCount = 7;

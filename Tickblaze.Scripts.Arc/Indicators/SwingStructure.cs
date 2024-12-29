@@ -1,14 +1,17 @@
 ﻿using System.Diagnostics;
-using System.IO.Pipelines;
 using Tickblaze.Scripts.Arc.Domain;
 using static System.Collections.Generic.EqualityComparer<Tickblaze.Scripts.Arc.Domain.StrictTrend>;
 
 namespace Tickblaze.Scripts.Arc;
 
+// Todo: menu.
 public partial class SwingStructure : Indicator
 {
 	public SwingStructure()
 	{
+		IsOverlay = true;
+		ShortName = "TBC SS";
+		Name = "TB Core Swing Structure";
 	}
 
 	private int _barOffset;
@@ -43,7 +46,7 @@ public partial class SwingStructure : Indicator
 	[Parameter("Label Font", Description = "Font for structure labels")]
 	public Font LabelFont { get; set; } = new("Arial", 12);
 
-	[Parameter("  Header", Description = "Quick access menu header")]
+	[Parameter("Menu Header", Description = "Quick access menu header")]
 	public string MenuHeader { get; set; } = "TBC Swing";
 
 	private double GetTrendPrice(StrictTrend trend, int barIndex)
@@ -151,15 +154,15 @@ public partial class SwingStructure : Indicator
         }
 
 		var barIndex = index - _barOffset;
-        
+
+		RemoveSwing(barIndex);
+
 		if (_previousTrend is null)
 		{
 			TryInitializeStructure(barIndex);
 
 			return;
 		}
-
-		RemoveSwing(index);
 
 		// Todo: approve barIndex with Jon [differs from NT].
 		var currentLow = Bars.Low[barIndex];
@@ -305,6 +308,11 @@ public partial class SwingStructure : Indicator
 
 			lastSwing.Label = SwingLabel.None;
 		}
+
+		if (_swingContainer.IsEmpty)
+		{
+			_previousTrend = default;
+		}
 	}
 
 	private SwingLabel UpdateLastSwingLabel()
@@ -399,8 +407,8 @@ public partial class SwingStructure : Indicator
 				var labelSize = context.MeasureText(label, LabelFont);
 				var labelOffset = swing.Trend switch
 				{
-					StrictTrend.Up => -3.0f - labelSize.Height,
-					StrictTrend.Down => 3.0f,
+					StrictTrend.Up => -TextVerticalOffset - labelSize.Height,
+					StrictTrend.Down => TextVerticalOffset,
 					_ => throw new UnreachableException(),
 				};
 

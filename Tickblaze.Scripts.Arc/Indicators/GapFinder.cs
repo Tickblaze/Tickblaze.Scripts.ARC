@@ -10,8 +10,8 @@ public partial class GapFinder : Indicator
 	public GapFinder()
 	{
 		IsOverlay = true;
-		ShortName = "AGF";
-		Name = "ARC Gap Finder";
+		ShortName = "TBC GF";
+		Name = "TB Core Gap Finder";
 	}
 
 	private AverageTrueRange _averageTrueRange;

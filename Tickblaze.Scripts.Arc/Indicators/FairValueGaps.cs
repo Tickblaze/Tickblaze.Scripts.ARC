@@ -12,8 +12,8 @@ public partial class FairValueGaps : Indicator
 		//_menu = new(this);
 
 		IsOverlay = true;
-		ShortName = "AFVG";
-		Name = "ARC Fair Value Gaps";
+		ShortName = "TBC FVG";
+		Name = "TB Core Fair Value Gaps";
 	}
 
 	//private readonly FairValueGapsMenu _menu;

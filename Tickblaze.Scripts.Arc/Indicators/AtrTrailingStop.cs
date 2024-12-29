@@ -1,5 +1,8 @@
-﻿namespace Tickblaze.Scripts.Arc;
+﻿using Tickblaze.Scripts.Indicators;
 
+namespace Tickblaze.Scripts.Arc;
+
+// Todo: parameter descriptions.
 public partial class AtrTrailingStop : Indicator
 {
 	public AtrTrailingStop()
@@ -9,45 +12,49 @@ public partial class AtrTrailingStop : Indicator
 		Name = "TB Core ATR Trailing Stop";
 	}
 
-	[NumericRange(MinValue = 1)]
-	[Parameter("ATR Period", GroupName = "Input Parameters")]
-	public int AtrPeriod { get; set; } = 14;
+	//private ComponentContainer<>
+	private AverageTrueRange _averageTrueRange = new();
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("ATR Multiplier", GroupName = "Input Parameters")]
+	[Parameter("ATR Period")]
+	public int AtrPeriod { get; set; } = 10;
+
+	[NumericRange(MinValue = 1)]
+	[Parameter("ATR Multiplier")]
 	public int AtrMultiplier { get; set; } = 3;
 
-	[Parameter("Show stop dots", GroupName = "Display Options")]
-	public bool ShowStopDots { get; set; } = true;
-
-	[Parameter("Show stop line", GroupName = "Display Options")]
-	public bool ShowStopLine { get; set; } = true;
-
-	[Parameter("Show Triangles", GroupName = "Display Options")]
+	[Parameter("Show Triangles")]
 	public bool ShowMarkers { get; set; }
 
-	[Parameter("Bullish Color", GroupName = "Plots")]
-	public Color BullishColor { get; set; } = Color.Blue;
+	[Parameter("Triangle Size")]
+	public int MarkerSize { get; set; } = 10;
 
-	[Parameter("Bearish Color", GroupName = "Plots")]
-	public Color BearishColor { get; set; } = Color.Red;
+	[Plot("Stop Dot")]
+	public PlotSeries StopDots { get; set; } = new(Color.Transparent, LineStyle.Dot, 2);
 
-	[Parameter("Plotstyle stop dots", GroupName = "Plots")]
-	public PlotStyle PlotStyleStopDots { get; set; } = PlotStyle.Dot;
+	[Plot("Stop Line")]
+	public PlotSeries TopStopLine { get; set; } = new(Color.Red);
 
-	public PlotSeries StopDots { get; set; } = new();
+	[Plot("Stop Line")]
+	public PlotSeries BottomStopLine { get; set; } = new(Color.Blue);
 
-	public PlotSeries StopLine { get; set; } = new();
+    protected override Parameters GetParameters(Parameters parameters)
+    {
+		if (!ShowMarkers)
+		{
+			parameters.Remove(nameof(MarkerSize));
+		}
 
-	public PlotSeries StopMarkers { get; set; } = new();
+		return parameters;
+    }
 
-	protected override void Initialize()
+    protected override void Initialize()
 	{
-
+		_averageTrueRange = new AverageTrueRange(AtrPeriod, MovingAverageType.Simple);
 	}
 
 	protected override void Calculate(int index)
 	{
-		
+		var x = AtrMultiplier * _averageTrueRange[index];
 	}
 }
