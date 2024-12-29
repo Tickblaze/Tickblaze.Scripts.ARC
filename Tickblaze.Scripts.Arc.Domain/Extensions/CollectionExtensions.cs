@@ -52,4 +52,24 @@ public static class CollectionExtensions
 
 		return value;
 	}
+
+	public static void RemoveRange<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, params ReadOnlySpan<TKey> keys)
+	{
+		ArgumentNullException.ThrowIfNull(dictionary);
+
+		foreach (var key in keys)
+		{
+			dictionary.Remove(key);
+		}
+	}
+
+	public static void RemoveRange<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, IEnumerable<TKey> keys)
+	{
+		ArgumentNullException.ThrowIfNull(dictionary);
+
+		foreach (var key in keys)
+		{
+			dictionary.Remove(key);
+		}
+	}
 }

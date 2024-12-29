@@ -116,6 +116,8 @@ public partial class HtfAverages : Indicator
 	[Plot("Plot7")]
 	public PlotSeries MaPlot7 { get; set; } = new(Color.FromDrawingColor(DrawingColor.Lime));
 
+	// Todo: add lookback days.
+
 	protected override Parameters GetParameters(Parameters parameters)
 	{
 		if (TimeframeValue is Timeframe.Day)
@@ -222,16 +224,6 @@ public partial class HtfAverages : Indicator
 			MovingAverageType.Simple => new SimpleMovingAverage(barSeries, barSeries.Close, period),
 			MovingAverageType.Exponential => new ExponentialMovingAverage(barSeries, barSeries.Close, period),
 			_ => throw new UnreachableException(),
-		};
-	}
-
-	private static bool ContainSourceBars([NotNullWhen(true)] Indicator? indicator)
-	{
-		return indicator switch
-		{
-			SimpleMovingAverage smaIndicator => smaIndicator is { Source.Count: not 0 },
-			ExponentialMovingAverage emaIndicator => emaIndicator is { Source.Count: not 0 },
-			_ => false,
 		};
 	}
 }

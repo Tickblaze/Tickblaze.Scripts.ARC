@@ -260,7 +260,7 @@ public partial class LeadersAndLaggers : Indicator
 		var boxWidth = 2 * verticalMargin + Math.Max(laggingSymbolTextSize.Width, leadingSymbolTextSize.Width);
 		var boxHeight = 3 * horizontalMargin + leadingSymbolTextSize.Height + laggingSymbolTextSize.Height;
 
-		var topLeftPoint = this.GetTopLeftPoint();
+		var topLeftPoint = this.GetTopLeft();
 		var leadingSymbolTextPoint = new Point
 		{
 			X = topLeftPoint.X + verticalMargin,

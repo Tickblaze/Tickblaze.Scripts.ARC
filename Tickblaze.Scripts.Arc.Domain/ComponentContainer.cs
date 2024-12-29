@@ -1,4 +1,6 @@
-﻿namespace Tickblaze.Scripts.Arc.Domain;
+﻿using System.Runtime.InteropServices;
+
+namespace Tickblaze.Scripts.Arc.Domain;
 
 public sealed class ComponentContainer<TComponent>
     where TComponent : IBoundable
@@ -13,7 +15,7 @@ public sealed class ComponentContainer<TComponent>
 
     public IEnumerable<TComponent> GetVisibleComponents(Rectangle visibleRectangle)
     {
-        var fromBarIndex = visibleRectangle.FromBarIndex;
+		var fromBarIndex = visibleRectangle.FromBarIndex;
 
         var componentIndex = _components.Keys.BinarySearch(fromBarIndex);
 
@@ -32,7 +34,9 @@ public sealed class ComponentContainer<TComponent>
 
 	public TComponent GetComponentAt(Index index)
 	{
-        return _components.Values[index];
+		var indexOffset = index.GetOffset(_components.Count);
+
+        return _components.GetValueAt(indexOffset);
 	}
 
     public void Upsert(TComponent component)
@@ -55,12 +59,27 @@ public sealed class ComponentContainer<TComponent>
         }
     }
 
-    public bool Remove(TComponent component)
+	public int IndexOf(int barIndex)
+	{
+		return _components.IndexOf(barIndex);
+	}
+
+	public bool Remove(TComponent component)
     {
         return _components.Remove(component.FromBarIndex);
     }
 
-    public void Clear()
+	public bool Remove(int barIndex)
+	{
+		return _components.Remove(barIndex);
+	}
+
+	public void RemoveAt(int index)
+	{
+		_components.RemoveAt(index);
+	}
+
+	public void Clear()
     {
         _components.Clear();
     }

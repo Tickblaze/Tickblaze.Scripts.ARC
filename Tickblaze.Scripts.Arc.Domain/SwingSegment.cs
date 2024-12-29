@@ -8,7 +8,7 @@ public class SwingSegment : IBoundable
 
     public required StrictTrend Trend { get; init; }
 
-	public SwingLabel FromLabel { get; init; } = SwingLabel.None;
+	public SwingLabel Label { get; set; } = SwingLabel.None;
 
 	public Rectangle Boundary => new(FromPoint, ToPoint);
 }

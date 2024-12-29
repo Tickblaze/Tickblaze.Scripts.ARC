@@ -1,15 +1,12 @@
 ﻿namespace Tickblaze.Scripts.Arc;
 
-/// <summary>
-/// ARC ATRTrailingStop [AATS]
-/// </summary>
 public partial class AtrTrailingStop : Indicator
 {
 	public AtrTrailingStop()
 	{
 		IsOverlay = true;
-		ShortName = "AATS";
-		Name = "ARC ATR Trailing Stop";
+		ShortName = "TBC ATS";
+		Name = "TB Core ATR Trailing Stop";
 	}
 
 	[NumericRange(MinValue = 1)]

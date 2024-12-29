@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO.Pipelines;
 using Tickblaze.Scripts.Arc.Domain;
 using static System.Collections.Generic.EqualityComparer<Tickblaze.Scripts.Arc.Domain.StrictTrend>;
 
@@ -42,7 +43,7 @@ public partial class SwingStructure : Indicator
 	[Parameter("Label Font", Description = "Font for structure labels")]
 	public Font LabelFont { get; set; } = new("Arial", 12);
 
-	[Parameter("Menu Header", Description = "Quick access menu header")]
+	[Parameter("  Header", Description = "Quick access menu header")]
 	public string MenuHeader { get; set; } = "TBC Swing";
 
 	private double GetTrendPrice(StrictTrend trend, int barIndex)
@@ -69,41 +70,8 @@ public partial class SwingStructure : Indicator
 	{
 		return trend switch
 		{
-			StrictTrend.Up => SwingLabel.LowerLow,
-			StrictTrend.Down => SwingLabel.HigherHigh,
-			_ => throw new UnreachableException(),
-		};
-	}
-
-	private SwingLabel GetSwingLabel(double price)
-	{
-		if (_swingContainer.IsEmpty)
-		{
-			throw new InvalidOperationException(nameof(GetSwingLabel));
-		}
-
-		if (_swingContainer.Count is 1)
-		{
-			var lastSwing = _swingContainer.LastComponent;
-
-			var oppositeTrend = lastSwing.Trend.GetOppositeTrend();
-
-			return GetInitialSwingLabel(oppositeTrend);
-		}
-
-		var secondLastSwing = _swingContainer.GetComponentAt(^2);
-
-		var secondLastTrend = secondLastSwing.Trend;
-		var secondLastPrice = secondLastSwing.FromPoint.Price;
-
-		return price.CompareTo(secondLastPrice) switch
-		{
-			> 0 when secondLastTrend is StrictTrend.Up => SwingLabel.HigherLow,
-			< 0 when secondLastTrend is StrictTrend.Up => SwingLabel.LowerLow,
-			0 when secondLastTrend is StrictTrend.Up => SwingLabel.DoubleBottom,
-			> 0 when secondLastTrend is StrictTrend.Down => SwingLabel.HigherHigh,
-			< 0 when secondLastTrend is StrictTrend.Down => SwingLabel.LowerHigh,
-			0 when secondLastTrend is StrictTrend.Down => SwingLabel.DoubleTop,
+			StrictTrend.Up => SwingLabel.HigherHigh,
+			StrictTrend.Down => SwingLabel.LowerLow,
 			_ => throw new UnreachableException(),
 		};
 	}
@@ -191,7 +159,9 @@ public partial class SwingStructure : Indicator
 			return;
 		}
 
-		// Todo: approve barIndex with Jon [differ from NT].
+		RemoveSwing(index);
+
+		// Todo: approve barIndex with Jon [differs from NT].
 		var currentLow = Bars.Low[barIndex];
 		var currentHigh = Bars.High[barIndex];
 		var currentClose = Bars.Close[barIndex];
@@ -231,7 +201,7 @@ public partial class SwingStructure : Indicator
 		_previousTrend = _currentTrend;
     }
 
-	private bool TryInitializeStructure(int barIndex)
+    private bool TryInitializeStructure(int barIndex)
 	{
 		var isUpTrend = Bars.High[barIndex] > Bars.High[barIndex - 1];
 		var isDownTrend = Bars.Low[barIndex] < Bars.Low[barIndex - 1];
@@ -244,7 +214,7 @@ public partial class SwingStructure : Indicator
 		_currentTrend = isUpTrend ? StrictTrend.Up : StrictTrend.Down;
 
 		var oppositeTrend = _currentTrend.GetOppositeTrend();
-		var currentSwingLabel = GetInitialSwingLabel(_currentTrend);
+		var previousSwingLabel = GetInitialSwingLabel(oppositeTrend);
 		var currentToPrice = GetTrendPrice(_currentTrend, barIndex);
 		var previousToPrice = GetTrendPrice(oppositeTrend, barIndex);
 		var previousFromPrice = GetTrendPrice(_currentTrend, 0);
@@ -254,22 +224,22 @@ public partial class SwingStructure : Indicator
 			var previousSwing = new SwingSegment
 			{
 				Trend = oppositeTrend,
+				Label = previousSwingLabel,
 				ToPoint = new(barIndex, previousToPrice),
 				FromPoint = new(0, previousFromPrice),
 			};
 
-			_swingContainer.Upsert(previousSwing);
+			AddSwing(previousSwing);
 		}
 
 		var currentSwing = new SwingSegment
 		{
 			Trend = _currentTrend,
-			FromLabel = currentSwingLabel,
 			ToPoint = new(barIndex, currentToPrice),
 			FromPoint = new(barIndex, previousToPrice),
 		};
 
-		_swingContainer.Upsert(currentSwing);
+		AddSwing(currentSwing);
 
 		_previousTrend = _currentTrend;
 
@@ -308,6 +278,67 @@ public partial class SwingStructure : Indicator
 		}
     }
 
+	private void AddSwing(SwingSegment swing)
+	{
+		if (!_swingContainer.IsEmpty)
+		{
+			UpdateLastSwingLabel();
+		}
+
+		_swingContainer.Upsert(swing);
+	}
+
+	private void RemoveSwing(int barIndex)
+	{
+		var index = _swingContainer.IndexOf(barIndex);
+
+		if (index is -1)
+		{
+			return;
+		}
+
+		_swingContainer.RemoveAt(index);
+
+		if (index >= 1)
+		{
+			var lastSwing = _swingContainer.LastComponent;
+
+			lastSwing.Label = SwingLabel.None;
+		}
+	}
+
+	private SwingLabel UpdateLastSwingLabel()
+	{
+		if (_swingContainer.IsEmpty)
+		{
+			throw new InvalidOperationException(nameof(UpdateLastSwingLabel));
+		}
+
+		var lastSwing = _swingContainer.LastComponent;
+		
+		if (_swingContainer.Count is 1)
+		{
+			return GetInitialSwingLabel(lastSwing.Trend);
+		}
+
+		var secondLastSwing = _swingContainer.GetComponentAt(^2);
+
+		var lastTrend = lastSwing.Trend;
+		var lastPrice = lastSwing.ToPoint.Price;
+		var secondLastPrice = secondLastSwing.FromPoint.Price;
+
+		return lastPrice.CompareTo(secondLastPrice) switch
+		{
+			> 0 when lastTrend is StrictTrend.Up => SwingLabel.HigherHigh,
+			< 0 when lastTrend is StrictTrend.Up => SwingLabel.LowerHigh,
+			0 when lastTrend is StrictTrend.Up => SwingLabel.DoubleTop,
+			> 0 when lastTrend is StrictTrend.Down => SwingLabel.HigherLow,
+			< 0 when lastTrend is StrictTrend.Down => SwingLabel.LowerLow,
+			0 when lastTrend is StrictTrend.Down => SwingLabel.DoubleBottom,
+			_ => throw new UnreachableException(),
+		};
+	}
+
 	private void UpdateSwing(int barIndex)
 	{
 		var currentSwing = _swingContainer.LastComponent;
@@ -328,19 +359,18 @@ public partial class SwingStructure : Indicator
 		var previousSwing = _swingContainer.LastComponent;
 
 		var previousTrend = previousSwing.Trend;
+		var previousToPoint = previousSwing.ToPoint;
 		var currentTrend = previousTrend.GetOppositeTrend();
 		var currentTrendPrice = GetTrendPrice(currentTrend, barIndex);
-		var currentSwingLabel = GetSwingLabel(currentTrendPrice);
-
+		
 		var currentSwing = new SwingSegment
 		{
 			Trend = currentTrend,
-			FromLabel = currentSwingLabel,
-			FromPoint = previousSwing.ToPoint,
+			FromPoint = previousToPoint,
 			ToPoint = new(barIndex, currentTrendPrice),
 		};
 
-		_swingContainer.Upsert(currentSwing);
+		AddSwing(currentSwing);
 	}
 
     public override void OnRender(IDrawingContext context)
@@ -356,8 +386,8 @@ public partial class SwingStructure : Indicator
 		foreach (var swing in swings)
 		{
 			var color = GetTrendColor(swing.Trend);
-			var toPoint = this.GetPoint(swing.ToPoint);
-			var fromPoint = this.GetPoint(swing.FromPoint);
+			var toPoint = this.ToApiPoint(swing.ToPoint);
+			var fromPoint = this.ToApiPoint(swing.FromPoint);
 			var oppositeTrend = swing.Trend.GetOppositeTrend();
 			var oppositeColor = GetTrendColor(oppositeTrend);
 
@@ -365,18 +395,18 @@ public partial class SwingStructure : Indicator
 
 			if (ShowSwingLabels)
 			{
-				var label = swing.FromLabel.ShortName;
+				var label = swing.Label.ShortName;
 				var labelSize = context.MeasureText(label, LabelFont);
 				var labelOffset = swing.Trend switch
 				{
-					StrictTrend.Up => 3.0f,
-					StrictTrend.Down => - 3.0f - labelSize.Height,
+					StrictTrend.Up => -3.0f - labelSize.Height,
+					StrictTrend.Down => 3.0f,
 					_ => throw new UnreachableException(),
 				};
 
-				fromPoint.Y += labelOffset;
+				toPoint.Y += labelOffset;
 
-				context.DrawText(fromPoint, label, oppositeColor, LabelFont);
+				context.DrawText(toPoint, label, oppositeColor, LabelFont);
 			}
 		}
     }

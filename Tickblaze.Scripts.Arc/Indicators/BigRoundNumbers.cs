@@ -2,41 +2,46 @@
 
 namespace Tickblaze.Scripts.Arc;
 
-/// <summary>
-/// ARC_BigRoundNumbers [ABRN]
-/// </summary>
+// Todo: parameter descriptions.
 public partial class BigRoundNumbers : Indicator
 {
 	public BigRoundNumbers()
 	{
 		IsOverlay = true;
-		ShortName = "ABRN";
-		Name = "ARC Big Round Numbers";
+		ShortName = "TBC BRN";
+		Name = "TB Core Big Round Numbers";
 	}
 
 	private double _intervalInPoints;
 
 	[NumericRange(MaxValue = double.MaxValue)]
-	[Parameter("Base Price", GroupName = "Parameters")]
+	[Parameter("Base Price")]
 	public double BasePrice { get; set; }
 
-	[Parameter("Interval Price", GroupName = "Parameters")]
+	[Parameter("Level Color")]
+	public Color LevelColor { get; set; } = DrawingColor.Navy.ToApiColor();
+
+	[NumericRange(MinValue = 1, MaxValue = 10)]
+	[Parameter("Level Thickness")]
+	public int LevelThickness { get; set; } = 2;
+
+	[Parameter("Interval Price")]
 	public IntervalType IntervalTypeValue { get; set; } = IntervalType.Points;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Interval in Pts", GroupName = "Parameters")]
+	[Parameter("Interval in Pts")]
 	public int IntervalInPoints { get; set; } = 10;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Interval in Ticks", GroupName = "Parameters")]
+	[Parameter("Interval in Ticks")]
 	public int IntervalInTicks { get; set; } = 10;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Interval in Pips", GroupName = "Parameters")]
+	[Parameter("Interval in Pips")]
 	public int IntervalInPips { get; set; } = 1;
 
 	[Parameter("Highlight Color", GroupName = "Level Visuals")]
-	public Color HighlightColor { get; set; } = Color.New(Color.FromDrawingColor(DrawingColor.Gold), 0);
+	public Color HighlightColor { get; set; } = DrawingColor.Gold.ToApiColor(0.0f);
 
 	[Parameter("Highlight Thickness Type", GroupName = "Level Visuals")]
 	public HighlightRegionHeightType HighlightThicknessTypeValue { get; set; } = HighlightRegionHeightType.Ticks;
@@ -49,40 +54,35 @@ public partial class BigRoundNumbers : Indicator
 	[Parameter("Highlight Thickness Pixels", GroupName = "Level Visuals")]
 	public int HighlightRegionHeightInPixels { get; set; } = 5;
 
-	// Question: is it relevant?
-	// [Parameter("Draw as HLine Objects", GroupName = "Level Visuals")]
-	// public bool ArePlotSettingsUsed { get; set; }
-
-	[Plot("Lvl")]
-	public PlotSeries Level { get; set; } = new(Color.FromDrawingColor(DrawingColor.Navy));
-
 	protected override Parameters GetParameters(Parameters parameters)
 	{
-		List<string> intervalPropertyNames =
+		List<string> propertyNames =
 		[
 			nameof(IntervalInPoints),
 			nameof(IntervalInTicks),
 			nameof(IntervalInPips),
 		];
 
-		var intervalPropertyName = IntervalTypeValue switch
+		var propertyName = IntervalTypeValue switch
 		{
 			IntervalType.Points => nameof(IntervalInPoints),
 			IntervalType.Ticks => nameof(IntervalInTicks),
 			IntervalType.Pips => nameof(IntervalInPips),
-			_ => throw new UnreachableException()
+			_ => throw new UnreachableException(),
 		};
 
-		intervalPropertyNames.Remove(intervalPropertyName);
+		propertyNames.Remove(propertyName);
 
-		intervalPropertyNames.ForEach(propertyName => parameters.Remove(propertyName));
+		parameters.RemoveRange(propertyNames);
 
-		var _ = HighlightThicknessTypeValue switch
+		propertyName = HighlightThicknessTypeValue switch
 		{
-			HighlightRegionHeightType.Points => parameters.Remove(nameof(HighlightRegionHeightInTicks)),
-			HighlightRegionHeightType.Ticks => parameters.Remove(nameof(HighlightRegionHeightInPixels)),
-			_ => throw new UnreachableException()
+			HighlightRegionHeightType.Points => nameof(HighlightRegionHeightInTicks),
+			HighlightRegionHeightType.Ticks => nameof(HighlightRegionHeightInPixels),
+			_ => throw new UnreachableException(),
 		};
+
+		parameters.Remove(propertyName);
 
 		return parameters;
 	}
@@ -103,24 +103,21 @@ public partial class BigRoundNumbers : Indicator
 	public override void OnRender(IDrawingContext context)
 	{
 		var maxPrice = ChartScale.MaxPrice;
-		var priceLevel = GetFirstBigRoundNumber();
 		var regionHeight = GetRegionHeight();
+		var priceLevel = GetFirstBigRoundNumber();
 
 		while (priceLevel <= maxPrice)
 		{
-			var yCoordinate = ChartScale.GetYCoordinateByValue(priceLevel);
+			var priceY = ChartScale.GetYCoordinateByValue(priceLevel);
 
 			if (HighlightColor.A is not 0)
 			{
-				var startRegionPoint = new Point(0, yCoordinate - regionHeight / 2.0);
+				var startRegionPoint = new Point(0, priceY - regionHeight / 2.0);
 
 				context.DrawRectangle(startRegionPoint, Chart.Width, regionHeight, HighlightColor);
 			}
 			
-			var startPoint = new Point(0, yCoordinate);
-			var endPoint = new Point(Chart.Width, yCoordinate);
-
-			context.DrawLine(startPoint, endPoint, Level.Color, Level.Thickness);
+			context.DrawHorizontalLine(0, priceY, Chart.Width, LevelColor, LevelThickness);
 
 			priceLevel += _intervalInPoints;
 		}

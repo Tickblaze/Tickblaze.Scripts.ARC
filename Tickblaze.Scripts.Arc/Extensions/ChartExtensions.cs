@@ -6,6 +6,16 @@ namespace Tickblaze.Scripts.Arc;
 
 public static class ChartExtensions
 {
+	public static double GetAbsoluteBarWidth(this IChart chart)
+	{
+		ArgumentNullException.ThrowIfNull(chart);
+
+		var startBarX = chart.GetXCoordinateByBarIndex(0);
+		var endBarX = chart.GetXCoordinateByBarIndex(1);
+
+		return endBarX - startBarX;
+	}
+
 	public static Rectangle GetVisibleRectangle(this IChartObject chartObject)
     {
         var (chart, chartScale) = Deconstruct(chartObject);
@@ -19,70 +29,70 @@ public static class ChartExtensions
         };
     }
 
-	public static Point GetPoint(this IChartObject chartObject, DomainPoint point)
+	public static Point ToApiPoint(this IChartObject chartObject, DomainPoint point)
 	{
 		var (chart, chartScale) = Deconstruct(chartObject);
 
-		var xCoordinate = chart.GetXCoordinateByBarIndex(point.BarIndex);
-		var yCoordinate = chartScale.GetYCoordinateByValue(point.Price);
+		var pointX = chart.GetXCoordinateByBarIndex(point.BarIndex);
+		var pointY = chartScale.GetYCoordinateByValue(point.Price);
 
-		return new(xCoordinate, yCoordinate);
+		return new(pointX, pointY);
 	}
 
-    public static double GetTopYCoordinate(this IChartScale chartScale)
+    public static double GetTopY(this IChartScale chartScale)
 	{
 		ArgumentNullException.ThrowIfNull(chartScale);
 
 		return chartScale.GetYCoordinateByValue(chartScale.MaxPrice);
 	}
 
-	public static double GetBottomYCoordinate(this IChartScale chartScale)
+	public static double GetBottomY(this IChartScale chartScale)
 	{
 		ArgumentNullException.ThrowIfNull(chartScale);
 
 		return chartScale.GetYCoordinateByValue(chartScale.MinPrice);
 	}
 
-	public static double GetLeftXCoordinate(this IChart chart)
+	public static double GetLeftX(this IChart chart)
 	{
 		ArgumentNullException.ThrowIfNull(chart);
 
 		return chart.GetXCoordinateByBarIndex(chart.FirstVisibleBarIndex);
 	}
 
-	public static double GetRightXCoordinate(this IChart chart)
+	public static double GetRightX(this IChart chart)
 	{
 		ArgumentNullException.ThrowIfNull(chart);
 
-		return GetLeftXCoordinate(chart) + chart.Width;
+		return GetLeftX(chart) + chart.Width;
 	}
 
-	public static Point GetBottomLeftPoint(this IChartObject chartObject)
+	public static Point GetBottomLeft(this IChartObject chartObject)
 	{
 		ArgumentNullException.ThrowIfNull(chartObject);
 
-		return GetPoint(chartObject.Chart, chartObject.ChartScale, GetLeftXCoordinate, GetBottomYCoordinate);
+		return GetPoint(chartObject.Chart, chartObject.ChartScale, GetLeftX, GetBottomY);
 	}
 
-	public static Point GetBottomRightPoint(this IChartObject chartObject)
+	public static Point GetBottomRight(this IChartObject chartObject)
 	{
 		ArgumentNullException.ThrowIfNull(chartObject);
 
-		return GetPoint(chartObject.Chart, chartObject.ChartScale, GetRightXCoordinate, GetBottomYCoordinate);
+		return GetPoint(chartObject.Chart, chartObject.ChartScale, GetRightX, GetBottomY);
 	}
 
-	public static Point GetTopLeftPoint(this IChartObject chartObject)
+	public static Point GetTopLeft(this IChartObject chartObject)
 	{
 		ArgumentNullException.ThrowIfNull(chartObject);
 
-		return GetPoint(chartObject.Chart, chartObject.ChartScale, GetLeftXCoordinate, GetTopYCoordinate);
+		return GetPoint(chartObject.Chart, chartObject.ChartScale, GetLeftX, GetTopY);
 	}
 
-	public static Point GetTopRightPoint(this IChartObject chartObject)
+	public static Point GetTopRight(this IChartObject chartObject)
 	{
 		ArgumentNullException.ThrowIfNull(chartObject);
 
-		return GetPoint(chartObject.Chart, chartObject.ChartScale, GetRightXCoordinate, GetTopYCoordinate);
+		return GetPoint(chartObject.Chart, chartObject.ChartScale, GetRightX, GetTopY);
 	}
 
 	private static Point GetPoint(IChart? chart, IChartScale? chartScale,
@@ -91,10 +101,10 @@ public static class ChartExtensions
 		ArgumentNullException.ThrowIfNull(chart);
 		ArgumentNullException.ThrowIfNull(chartScale);
 
-		var xCoordinate = xCoordinateSelector(chart);
-		var yCoordinate = yCoordinateSelector(chartScale);
+		var pointX = xCoordinateSelector(chart);
+		var pointY = yCoordinateSelector(chartScale);
 
-		return new(xCoordinate, yCoordinate);
+		return new(pointX, pointY);
 	}
 
 	private static (IChart, IChartScale) Deconstruct(IChartObject chartObject)
