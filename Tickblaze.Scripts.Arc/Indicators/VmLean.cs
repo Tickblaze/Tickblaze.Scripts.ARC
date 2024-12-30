@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Tickblaze.Scripts.Arc;
 
-internal class VmLean
+public class VmLean : Indicator
 {
+
 }

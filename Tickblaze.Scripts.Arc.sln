@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tickblaze.Scripts.Arc.Domain", "Tickblaze.Scripts.Arc.Domain\Tickblaze.Scripts.Arc.Domain.csproj", "{C7AE89DD-CF6C-40BB-A9C2-0754109021EF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tickblaze.Scripts.Arc.Presentation", "Tickblaze.Scripts.Arc.Presentation\Tickblaze.Scripts.Arc.Presentation.csproj", "{A4691D35-D455-466B-8F80-AFC64AD0BB3E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{C7AE89DD-CF6C-40BB-A9C2-0754109021EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7AE89DD-CF6C-40BB-A9C2-0754109021EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7AE89DD-CF6C-40BB-A9C2-0754109021EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4691D35-D455-466B-8F80-AFC64AD0BB3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4691D35-D455-466B-8F80-AFC64AD0BB3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4691D35-D455-466B-8F80-AFC64AD0BB3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4691D35-D455-466B-8F80-AFC64AD0BB3E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,19 +1,25 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Tickblaze.Scripts.Arc.Domain;
 
-public sealed class ComponentContainer<TComponent>
+public class ComponentContainer<TComponent> : IEnumerable<TComponent>
     where TComponent : IBoundable
 {
-    private readonly OrderedDictionary<int, TComponent> _components = [];
-
-	public bool IsEmpty => _components.Count is 0;
+    protected readonly OrderedDictionary<int, TComponent> _components = [];
 
 	public int Count => _components.Count;
 
+    public bool IsEmpty => _components.Count is 0;
+
 	public TComponent LastComponent => GetComponentAt(^1);
 
-    public IEnumerable<TComponent> GetVisibleComponents(Rectangle visibleRectangle)
+	public bool TryGetComponent(int barIndex, [NotNullWhen(true)] out TComponent? component)
+	{
+		return _components.TryGetValue(barIndex, out component);
+	}
+
+    public virtual IEnumerable<TComponent> GetVisibleComponents(Rectangle visibleRectangle)
     {
 		var fromBarIndex = visibleRectangle.FromBarIndex;
 
@@ -26,7 +32,12 @@ public sealed class ComponentContainer<TComponent>
 
         while (componentIndex < _components.Count)
         {
-            yield return _components.GetValueAt(componentIndex);
+			var component = _components.GetValueAt(componentIndex);
+
+			if (visibleRectangle.Intersects(component.Boundary))
+			{
+				yield return _components.GetValueAt(componentIndex);
+			}
 
 			componentIndex++;
         }
@@ -38,8 +49,13 @@ public sealed class ComponentContainer<TComponent>
 
         return _components.GetValueAt(indexOffset);
 	}
+	
+	public int IndexOf(int barIndex)
+	{
+		return _components.IndexOf(barIndex);
+	}
 
-    public void Upsert(TComponent component)
+	public void Upsert(TComponent component)
     {
         var fromBarIndex = component.FromBarIndex;
 
@@ -59,11 +75,6 @@ public sealed class ComponentContainer<TComponent>
         }
     }
 
-	public int IndexOf(int barIndex)
-	{
-		return _components.IndexOf(barIndex);
-	}
-
 	public bool Remove(TComponent component)
     {
         return _components.Remove(component.FromBarIndex);
@@ -82,5 +93,18 @@ public sealed class ComponentContainer<TComponent>
 	public void Clear()
     {
         _components.Clear();
+    }
+
+    public IEnumerator<TComponent> GetEnumerator()
+    {
+		foreach (var (_, component) in _components)
+		{
+			yield return component;
+		}
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+		return GetEnumerator();
     }
 }

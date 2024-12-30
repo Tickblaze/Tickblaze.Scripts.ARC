@@ -6,13 +6,18 @@ public static class EnumerationExtensions
 {
 	public static StrictTrend GetOppositeTrend(this StrictTrend strictTrend)
 	{
+		return strictTrend.Map(StrictTrend.Down, StrictTrend.Up);
+	}
+
+	public static TResult Map<TResult>(this StrictTrend strictTrend, TResult upTrendResult, TResult downTrendResult)
+	{
 		return strictTrend switch
 		{
-			StrictTrend.Up => StrictTrend.Down,
-			StrictTrend.Down => StrictTrend.Up,
+			StrictTrend.Up => upTrendResult,
+			StrictTrend.Down => downTrendResult,
 			_ => throw new UnreachableException(),
 		};
-	}
+	}	
 
 	public static int GetSign(this HorizontalDirection horizontalDirection)
 	{

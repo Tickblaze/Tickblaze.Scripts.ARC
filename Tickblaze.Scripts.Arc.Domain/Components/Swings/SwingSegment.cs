@@ -2,6 +2,8 @@
 
 public class SwingSegment : IBoundable
 {
+	public int FromBarIndex => FromPoint.BarIndex;
+
 	public required Point ToPoint { get; set; }
 	
 	public required Point FromPoint { get; init; }
