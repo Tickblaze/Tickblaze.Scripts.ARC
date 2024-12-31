@@ -14,10 +14,6 @@ public partial class SwingStructure : Indicator
 		Name = "TB Core Swing Structure";
 	}
 
-	private int _barOffset;
-	private StrictTrend _currentTrend;
-	private StrictTrend? _previousTrend;
-
 	private SwingContainer _swingContainer = default!;
 
 	[Parameter("Calculation Mode", Description = "Whether to calculate the structure by current or closed bar highs and lows")]
@@ -75,6 +71,8 @@ public partial class SwingStructure : Indicator
 
 	protected override void Initialize()
     {
+		_swingContainer?.Clear();
+
 		_swingContainer = new SwingContainer
 		{
 			BarSeries = Bars,
@@ -100,21 +98,23 @@ public partial class SwingStructure : Indicator
 
 		foreach (var visibleSwing in visibleSwings)
 		{
-			var toPoint = this.ToApiPoint(visibleSwing.ToPoint);
-			var fromPoint = this.ToApiPoint(visibleSwing.FromPoint);
+			var endPoint = this.ToApiPoint(visibleSwing.EndPoint);
+			var startPoint = this.ToApiPoint(visibleSwing.StartPoint);
 			var color = visibleSwing.Trend.Map(UpLineColor, DownLineColor);
 
-			context.DrawLine(fromPoint, toPoint, color, LineThickness);
+			context.DrawLine(startPoint, endPoint, color, LineThickness);
 
 			if (ShowSwingLabels)
 			{
 				var label = visibleSwing.Label.ShortName;
 				var labelSize = context.MeasureText(label, LabelFont);
-				var labelOffset = visibleSwing.Trend.Map(-TextVerticalOffset - labelSize.Height, TextVerticalOffset);
+				var labelVerticalOffset = visibleSwing.Trend.Map(-TextVerticalOffset - labelSize.Height, TextVerticalOffset);
+				var labelHorizontalOffset = -labelSize.Width / 2.0;
 
-				toPoint.Y += labelOffset;
+				endPoint.Y += labelVerticalOffset;
+				endPoint.X += labelHorizontalOffset;
 
-				context.DrawText(toPoint, label, color, LabelFont);
+				context.DrawText(endPoint, label, color, LabelFont);
 			}
 		}
     }

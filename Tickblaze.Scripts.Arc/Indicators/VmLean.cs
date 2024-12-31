@@ -8,5 +8,5 @@ namespace Tickblaze.Scripts.Arc;
 
 public class VmLean : Indicator
 {
-
+	
 }

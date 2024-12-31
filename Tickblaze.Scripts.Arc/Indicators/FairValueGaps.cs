@@ -125,16 +125,16 @@ public partial class FairValueGaps : Indicator
 			new()
 			{
 				IsSupport = true,
-				FromIndex = index - 1,
-				TopPrice = Bars.Low[index],
-				BottomPrice = Bars.High[index - 2],
+				StartBarIndex = index - 1,
+				EndPrice = Bars.Low[index],
+				StartPrice = Bars.High[index - 2],
 			},
 			new()
 			{
 				IsSupport = false,
-				FromIndex = index - 1,
-				TopPrice = Bars.Low[index - 2],
-				BottomPrice = Bars.High[index],
+				StartBarIndex = index - 1,
+				EndPrice = Bars.Low[index - 2],
+				StartPrice = Bars.High[index],
 			},
 		];
 
@@ -142,9 +142,9 @@ public partial class FairValueGaps : Indicator
 
 		foreach (var gap in gaps)
 		{
-			if (gap.TopPrice - gap.BottomPrice > minGapHeight)
+			if (gap.EndPrice - gap.StartPrice > minGapHeight)
 			{
-				_freshGaps.Add(gap.FromIndex, gap);
+				_freshGaps.Add(gap.StartBarIndex, gap);
 			}
 		}
 	}
@@ -157,19 +157,19 @@ public partial class FairValueGaps : Indicator
 		{
 			var gap = _freshGaps.GetValueAt(gapIndex);
 
-			if (index - gap.FromIndex <= 1)
+			if (index - gap.StartBarIndex <= 1)
 			{
 				continue;
 			}
 
-			if (lastBar.Low < gap.TopPrice && gap.IsSupport
-				|| lastBar.High > gap.BottomPrice && gap.IsResistance)
+			if (lastBar.Low < gap.EndPrice && gap.IsSupport
+				|| lastBar.High > gap.StartPrice && gap.IsResistance)
 			{
-				gap.ToIndex = index;
+				gap.EndBarIndex = index;
 
 				_freshGaps.RemoveAt(gapIndex);
 
-				_testedGaps.Add(gap.FromIndex, gap);
+				_testedGaps.Add(gap.StartBarIndex, gap);
 			}
 		}
 	}
@@ -184,16 +184,16 @@ public partial class FairValueGaps : Indicator
 
 			gapIndex--;
 
-			if (lastBar.Low < gap.BottomPrice && gap.IsSupport
-				|| lastBar.High > gap.TopPrice && gap.IsResistance)
+			if (lastBar.Low < gap.StartPrice && gap.IsSupport
+				|| lastBar.High > gap.EndPrice && gap.IsResistance)
 			{
 				gapIndex++;
 				
-				gap.ToIndex = index;
+				gap.EndBarIndex = index;
 
 				_testedGaps.RemoveAt(gapIndex);
 
-				_brokenGaps.Add(gap.FromIndex, gap);
+				_brokenGaps.Add(gap.StartBarIndex, gap);
 			}
 		}
 	}
@@ -220,18 +220,18 @@ public partial class FairValueGaps : Indicator
 	{
 		foreach (var gap in gaps)
 		{
-			var fromIndex = gap.FromIndex;
-			var toIndex = gap.ToIndex ?? Math.Max(gap.FromIndex, Chart.LastVisibleBarIndex);
+			var fromIndex = gap.StartBarIndex;
+			var toIndex = gap.EndBarIndex ?? Math.Max(gap.StartBarIndex, Chart.LastVisibleBarIndex);
 
 			if (toIndex - fromIndex >= 1
-				&& AreIntervalsIntersect(gap.BottomPrice, gap.TopPrice, ChartScale.MinPrice, ChartScale.MaxPrice)
+				&& AreIntervalsIntersect(gap.StartPrice, gap.EndPrice, ChartScale.MinPrice, ChartScale.MaxPrice)
 				&& AreIntervalsIntersect(fromIndex, toIndex, Chart.FirstVisibleBarIndex, Chart.LastVisibleBarIndex))
 			{
 				var fromX = Chart.GetXCoordinateByBarIndex(fromIndex);
-				var fromY = ChartScale.GetYCoordinateByValue(gap.TopPrice);
+				var fromY = ChartScale.GetYCoordinateByValue(gap.EndPrice);
 
 				var toX = Chart.GetXCoordinateByBarIndex(toIndex);
-				var toY = ChartScale.GetYCoordinateByValue(gap.BottomPrice);
+				var toY = ChartScale.GetYCoordinateByValue(gap.StartPrice);
 				
 				var topLeftPoint = new Point(fromX, fromY);
 				var bottomRightPoint = new Point(toX, toY);

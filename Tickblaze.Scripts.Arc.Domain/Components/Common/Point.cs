@@ -2,7 +2,7 @@
 
 namespace Tickblaze.Scripts.Arc.Domain;
 
-public class Point
+public readonly record struct Point
 {
     public Point()
     {

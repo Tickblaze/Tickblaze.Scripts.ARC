@@ -22,10 +22,10 @@ public static class ChartExtensions
 
         return new Rectangle
         {
-            ToPrice = chartScale.MaxPrice,
-            FromPrice = chartScale.MinPrice,
-            ToBarIndex = chart.LastVisibleBarIndex,
-            FromBarIndex = chart.FirstVisibleBarIndex,
+            EndPrice = chartScale.MaxPrice,
+            StartPrice = chartScale.MinPrice,
+            EndBarIndex = chart.LastVisibleBarIndex,
+            StartBarIndex = chart.FirstVisibleBarIndex,
         };
     }
 

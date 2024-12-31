@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using Tickblaze.Scripts.Arc.Domain;
+using Point = Tickblaze.Scripts.Api.Models.Point;
 
 namespace Tickblaze.Scripts.Arc;
 

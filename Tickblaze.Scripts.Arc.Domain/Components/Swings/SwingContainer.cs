@@ -1,14 +1,15 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using static System.Collections.Generic.EqualityComparer<Tickblaze.Scripts.Arc.Domain.StrictTrend>;
 
 namespace Tickblaze.Scripts.Arc.Domain;
 
-public sealed class SwingContainer : ComponentContainer<SwingSegment>
+public sealed class SwingContainer : ComponentContainer<Point, SwingLine>
 {
 	private int _currentIndex = 1;
 	private StrictTrend _currentTrend;
 	private StrictTrend? _previousTrend;
-	private readonly ComponentContainer<SwingSegment> _pendingSwings = [];
+	private readonly ComponentContainer<Point, SwingLine> _pendingSwings = [];
 
 	public required int SwingStrength { get; init; }
 
@@ -25,11 +26,11 @@ public sealed class SwingContainer : ComponentContainer<SwingSegment>
 
 	private double GetLookbackHigh(int barIndex)
 	{
-		var toBarIndex = barIndex;
+		var endBarIndex = barIndex;
 		var lookbackHigh = double.MinValue;
-		var fromBarIndex = Math.Max(toBarIndex - SwingStrength, 0);
+		var startBarIndex = Math.Max(endBarIndex - SwingStrength, 0);
 
-		for (var index = fromBarIndex; index < toBarIndex; index++)
+		for (var index = startBarIndex; index < endBarIndex; index++)
 		{
 			lookbackHigh = Math.Max(lookbackHigh, BarSeries.High[index]);
 		}
@@ -39,11 +40,11 @@ public sealed class SwingContainer : ComponentContainer<SwingSegment>
 
 	private double GetLookbackLow(int barIndex)
 	{
-		var toBarIndex = barIndex;
+		var endBarIndex = barIndex;
 		var lookbackLow = double.MaxValue;
-		var fromBarIndex = Math.Max(toBarIndex - SwingStrength, 0);
+		var startBarIndex = Math.Max(endBarIndex - SwingStrength, 0);
 
-		for (var index = fromBarIndex; index < toBarIndex; index++)
+		for (var index = startBarIndex; index < endBarIndex; index++)
 		{
 			lookbackLow = Math.Min(lookbackLow, BarSeries.Low[index]);
 		}
@@ -51,19 +52,19 @@ public sealed class SwingContainer : ComponentContainer<SwingSegment>
 		return lookbackLow;
 	}
 
-	public override IEnumerable<SwingSegment> GetVisibleComponents(Rectangle visibleRectangle)
+	public override IEnumerable<SwingLine> GetVisibleComponents(Rectangle visibleRectangle)
 	{
 		var visibleSwings = base.GetVisibleComponents(visibleRectangle);
 
-		var pendingVisibleSwings = _pendingSwings
+		var visiblePendingSwings = _pendingSwings
 			.GetVisibleComponents(visibleRectangle)
-			.ToSortedDictionary(swing => swing.FromBarIndex);
+			.ToDictionary(swing => swing.StartPoint);
 
 		foreach (var visibleSwing in visibleSwings)
 		{
-			if (_pendingSwings.TryGetComponent(visibleSwing.FromBarIndex, out var pendingVisibleSwing))
+			if (_pendingSwings.TryGetComponent(visibleSwing.StartPoint, out var pendingVisibleSwing))
 			{
-				pendingVisibleSwings.Remove(visibleSwing.FromBarIndex);
+				visiblePendingSwings.Remove(visibleSwing.StartPoint);
 
 				yield return pendingVisibleSwing;
 			}
@@ -73,7 +74,7 @@ public sealed class SwingContainer : ComponentContainer<SwingSegment>
 			}
 		}
 
-		foreach (var visibleSwing in pendingVisibleSwings.Values)
+		foreach (var visibleSwing in visiblePendingSwings.Values)
 		{
 			yield return visibleSwing;
 		}
@@ -92,27 +93,27 @@ public sealed class SwingContainer : ComponentContainer<SwingSegment>
 		_currentTrend = isUpTrend ? StrictTrend.Up : StrictTrend.Down;
 
 		var oppositeTrend = _currentTrend.GetOppositeTrend();
-		var currentToPrice = GetTrendPrice(_currentTrend, barIndex);
-		var previousToPrice = GetTrendPrice(oppositeTrend, barIndex);
-		var previousFromPrice = GetTrendPrice(_currentTrend, 0);
+		var currentEndPrice = GetTrendPrice(_currentTrend, barIndex);
+		var previousEndPrice = GetTrendPrice(oppositeTrend, barIndex);
+		var previousStartPrice = GetTrendPrice(_currentTrend, 0);
 
 		if (barIndex >= 2)
 		{
-			var previousSwing = new SwingSegment
+			var previousSwing = new SwingLine
 			{
 				Trend = oppositeTrend,
-				ToPoint = new(barIndex, previousToPrice),
-				FromPoint = new(0, previousFromPrice),
+				EndPoint = new(barIndex, previousEndPrice),
+				StartPoint = new(0, previousStartPrice),
 			};
 
 			_pendingSwings.Upsert(previousSwing);
 		}
 
-		var currentSwing = new SwingSegment
+		var currentSwing = new SwingLine
 		{
 			Trend = _currentTrend,
-			ToPoint = new(barIndex, currentToPrice),
-			FromPoint = new(barIndex, previousToPrice),
+			EndPoint = new(barIndex, currentEndPrice),
+			StartPoint = new(barIndex, previousEndPrice),
 		};
 
 		_pendingSwings.Upsert(currentSwing);
@@ -131,13 +132,20 @@ public sealed class SwingContainer : ComponentContainer<SwingSegment>
 
 		_currentIndex = barIndex;
 
+		if (IsEmpty && _pendingSwings.IsEmpty)
+		{
+			return;
+		}
+
 		_previousTrend = _currentTrend;
 
 		foreach (var pendingSwing in _pendingSwings)
 		{
 			if (!IsEmpty)
 			{
-				UpdateLastSwingLabel();
+				var lastSwing = LastComponent;
+
+				lastSwing.Label = GetLastSwingLabel();
 			}
 
 			Upsert(pendingSwing);
@@ -170,7 +178,7 @@ public sealed class SwingContainer : ComponentContainer<SwingSegment>
 
 		var lookbackLow = GetLookbackLow(barIndex);
 		var lookbackHigh = GetLookbackHigh(barIndex);
-
+		  
 		var isUpTrend = currentHigh > lookbackHigh;
 		var isDownTrend = currentLow < lookbackLow;
 		var isOutsideBar = isUpTrend && isDownTrend;
@@ -187,7 +195,7 @@ public sealed class SwingContainer : ComponentContainer<SwingSegment>
 		else if (isUpTrend)
 		{
 			_currentTrend = StrictTrend.Up;
-		}
+		} 
 		else if (isDownTrend)
 		{
 			_currentTrend = StrictTrend.Down;
@@ -236,17 +244,17 @@ public sealed class SwingContainer : ComponentContainer<SwingSegment>
 	{
 		var currentSwing = LastComponent;
 		var currentTrend = currentSwing.Trend;
-		var currentToPrice = currentSwing.ToPoint.Price;
+		var currentEndPrice = currentSwing.EndPoint.Price;
 		var currentTrendPrice = GetTrendPrice(currentTrend, barIndex);
 
-		if (currentTrend is StrictTrend.Up && currentToPrice <= currentTrendPrice
-			|| currentTrend is StrictTrend.Down && currentToPrice >= currentTrendPrice)
+		if (currentTrend is StrictTrend.Up && currentEndPrice <= currentTrendPrice
+			|| currentTrend is StrictTrend.Down && currentEndPrice >= currentTrendPrice)
 		{
-			var updatedSwing = new SwingSegment
+			var updatedSwing = new SwingLine
 			{
 				Trend = currentTrend,
-				FromPoint = currentSwing.FromPoint,
-				ToPoint = new(barIndex, currentTrendPrice),
+				StartPoint = currentSwing.StartPoint,
+				EndPoint = new(barIndex, currentTrendPrice),
 			};
 
 			_pendingSwings.Upsert(updatedSwing);
@@ -255,27 +263,28 @@ public sealed class SwingContainer : ComponentContainer<SwingSegment>
 
 	private void AlternateSwing(int barIndex)
 	{
-		var previousSwing = LastComponent;
+		var previousSwing = _pendingSwings.IsEmpty
+			? LastComponent : _pendingSwings.LastComponent;
 		var previousTrend = previousSwing.Trend;
-		var previousToPoint = previousSwing.ToPoint;
+		var previousStartPoint = previousSwing.EndPoint;
 		var currentTrend = previousTrend.GetOppositeTrend();
 		var currentTrendPrice = GetTrendPrice(currentTrend, barIndex);
 
-		var currentSwing = new SwingSegment
+		var currentSwing = new SwingLine
 		{
 			Trend = currentTrend,
-			FromPoint = previousToPoint,
-			ToPoint = new(barIndex, currentTrendPrice),
+			StartPoint = previousStartPoint,
+			EndPoint = new(barIndex, currentTrendPrice),
 		};
 
 		_pendingSwings.Upsert(currentSwing);
 	}
 
-	private SwingLabel UpdateLastSwingLabel()
+	private SwingLabel GetLastSwingLabel()
 	{
 		if (IsEmpty)
 		{
-			throw new InvalidOperationException(nameof(UpdateLastSwingLabel));
+			throw new InvalidOperationException(nameof(GetLastSwingLabel));
 		}
 
 		var lastSwing = LastComponent;
@@ -288,8 +297,8 @@ public sealed class SwingContainer : ComponentContainer<SwingSegment>
 		var secondLastSwing = GetComponentAt(^2);
 
 		var lastTrend = lastSwing.Trend;
-		var lastPrice = lastSwing.ToPoint.Price;
-		var secondLastPrice = secondLastSwing.FromPoint.Price;
+		var lastPrice = lastSwing.EndPoint.Price;
+		var secondLastPrice = secondLastSwing.StartPoint.Price;
 
 		return lastPrice.CompareTo(secondLastPrice) switch
 		{
