@@ -1,10 +1,8 @@
-﻿using System.Diagnostics;
-using Tickblaze.Scripts.Arc.Domain;
-using static System.Collections.Generic.EqualityComparer<Tickblaze.Scripts.Arc.Domain.StrictTrend>;
+﻿using Tickblaze.Scripts.Arc.Domain;
 
 namespace Tickblaze.Scripts.Arc;
 
-// Todo: menu.
+// Todo: quick access settings.
 public partial class SwingStructure : Indicator
 {
 	public SwingStructure()
@@ -27,7 +25,7 @@ public partial class SwingStructure : Indicator
 	public bool ShowSwingLines { get; set; } = true;
 
 	[Parameter("Up-trend line color", Description = "Line color for up-trending structure")]
-	public Color UpLineColor { get; set; } = Color.FromDrawingColor(DrawingColor.DarkGreen);
+	public Color UpLineColor { get; set; } = DrawingColor.DarkGreen;
 
 	[Parameter("Down-trend line color", Description = "Line color for down-trending structure")]
 	public Color DownLineColor { get; set; } = Color.Red;

@@ -14,7 +14,7 @@ public partial class GapFinder : Indicator
 		Name = "TB Core Gap Finder";
 	}
 
-	private AverageTrueRange _averageTrueRange;
+	private AverageTrueRange _averageTrueRange = new();
 
 	private readonly OrderedDictionary<int, Gap> _freshGaps = [];
 	private readonly OrderedDictionary<int, Gap> _testedGaps = [];
