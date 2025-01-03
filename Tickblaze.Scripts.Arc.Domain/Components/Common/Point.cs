@@ -2,7 +2,7 @@
 
 namespace Tickblaze.Scripts.Arc.Domain;
 
-public readonly record struct Point
+public readonly record struct Point : IBoundable
 {
     public Point()
     {
@@ -16,6 +16,8 @@ public readonly record struct Point
         
         Price = price;
     }
+
+	public Rectangle Boundary => new(this, this);
 
     public required int BarIndex { get; init; }
 

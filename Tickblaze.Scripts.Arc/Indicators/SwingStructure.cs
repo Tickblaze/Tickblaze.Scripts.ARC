@@ -47,7 +47,7 @@ public partial class SwingStructure : Indicator
     {
 		if (!ShowSwingLines)
 		{
-			string[] swingLinePropertyNames =
+			ReadOnlySpan<string> propertyNames =
 			[
 				nameof(LabelFont),
 				nameof(UpLineColor),
@@ -56,7 +56,7 @@ public partial class SwingStructure : Indicator
 				nameof(ShowSwingLabels),
 			];
 
-			Array.ForEach(swingLinePropertyNames, propertyName => parameters.Remove(propertyName));
+			parameters.RemoveRange(propertyNames);
 		}
 
 		if (!ShowSwingLabels)
@@ -69,7 +69,7 @@ public partial class SwingStructure : Indicator
 
 	protected override void Initialize()
     {
-		_swingContainer?.Clear();
+		_swingContainer?.Dispose();
 
 		_swingContainer = new SwingContainer
 		{

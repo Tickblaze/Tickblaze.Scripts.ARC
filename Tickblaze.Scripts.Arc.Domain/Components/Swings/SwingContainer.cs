@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using static System.Collections.Generic.EqualityComparer<Tickblaze.Scripts.Arc.Domain.StrictTrend>;
 
 namespace Tickblaze.Scripts.Arc.Domain;
 
-public sealed class SwingContainer : ComponentContainer<Point, SwingLine>
+public class SwingContainer : ComponentContainer<Point, SwingLine>
 {
 	private int _currentIndex = 1;
 	private StrictTrend _currentTrend;
@@ -13,7 +13,23 @@ public sealed class SwingContainer : ComponentContainer<Point, SwingLine>
 
 	public required int SwingStrength { get; init; }
 
-	public required BarSeries BarSeries { get; init; }
+	public required BarSeries BarSeries
+	{
+		get;
+		init
+		{
+			field = value;
+
+			SwingDeviation ??= field.Map(bar => 0.0d);
+			DoubleTopBottomDeviation ??= field.Map(bar => 0.0d);
+		}
+	}
+
+	[NotNull]
+	public ISeries<double>? SwingDeviation { get; init; }
+
+	[NotNull]
+	public ISeries<double>? DoubleTopBottomDeviation { get; init; }
 
 	public required SwingCalculationMode CalculationMode { get; init; }
 
@@ -24,7 +40,7 @@ public sealed class SwingContainer : ComponentContainer<Point, SwingLine>
 		return trend.Map(BarSeries.High[barIndex], BarSeries.Low[barIndex]);
 	}
 
-	private double GetLookbackHigh(int barIndex)
+	protected virtual double GetLookbackHigh(int barIndex)
 	{
 		var endBarIndex = barIndex;
 		var lookbackHigh = double.MinValue;
@@ -35,10 +51,18 @@ public sealed class SwingContainer : ComponentContainer<Point, SwingLine>
 			lookbackHigh = Math.Max(lookbackHigh, BarSeries.High[index]);
 		}
 
+		if (!IsEmpty && LastComponent is { Trend: StrictTrend.Down } lastSwing)
+		{
+			var lastLowPrice = lastSwing.EndPoint.Price;
+			var swingDeviation = SwingDeviation[barIndex];
+
+			lookbackHigh = Math.Max(lookbackHigh, lastLowPrice + swingDeviation);
+		}
+
 		return lookbackHigh;
 	}
 
-	private double GetLookbackLow(int barIndex)
+	protected virtual double GetLookbackLow(int barIndex)
 	{
 		var endBarIndex = barIndex;
 		var lookbackLow = double.MaxValue;
@@ -47,6 +71,14 @@ public sealed class SwingContainer : ComponentContainer<Point, SwingLine>
 		for (var index = startBarIndex; index < endBarIndex; index++)
 		{
 			lookbackLow = Math.Min(lookbackLow, BarSeries.Low[index]);
+		}
+
+		if (!IsEmpty && LastComponent is { Trend: StrictTrend.Up } lastSwing)
+		{
+			var lastHighPrice = lastSwing.EndPoint.Price;
+			var swingDeviation = SwingDeviation[barIndex];
+
+			lookbackLow = Math.Min(lookbackLow, lastHighPrice - swingDeviation);
 		}
 
 		return lookbackLow;
@@ -178,7 +210,7 @@ public sealed class SwingContainer : ComponentContainer<Point, SwingLine>
 
 		var lookbackLow = GetLookbackLow(barIndex);
 		var lookbackHigh = GetLookbackHigh(barIndex);
-		  
+
 		var isUpTrend = currentHigh > lookbackHigh;
 		var isDownTrend = currentLow < lookbackLow;
 		var isOutsideBar = isUpTrend && isDownTrend;
@@ -288,26 +320,34 @@ public sealed class SwingContainer : ComponentContainer<Point, SwingLine>
 		}
 
 		var lastSwing = LastComponent;
+		var lastTrend = lastSwing.Trend;
 
 		if (Count is 1)
 		{
-			return lastSwing.Trend.Map(SwingLabel.HigherHigh, SwingLabel.LowerLow);
+			return lastTrend.Map(SwingLabel.HigherHigh, SwingLabel.LowerLow);
 		}
 
+		var lastEndPoint = lastSwing.EndPoint;
+		var lastPrice = lastEndPoint.Price;
+		var lastBarIndex = lastEndPoint.BarIndex;
+		var lastDoubleTopBottomDeviation = DoubleTopBottomDeviation[lastBarIndex];
+		
 		var secondLastSwing = GetComponentAt(^2);
-
-		var lastTrend = lastSwing.Trend;
-		var lastPrice = lastSwing.EndPoint.Price;
 		var secondLastPrice = secondLastSwing.StartPoint.Price;
+		
+		var priceDelta = lastPrice - secondLastPrice;
 
-		return lastPrice.CompareTo(secondLastPrice) switch
+		if (Math.Abs(priceDelta) <= lastDoubleTopBottomDeviation)
+		{
+			return lastTrend.Map(SwingLabel.DoubleTop, SwingLabel.DoubleBottom);
+		}
+
+		return priceDelta.CompareTo(lastDoubleTopBottomDeviation) switch
 		{
 			> 0 when lastTrend is StrictTrend.Up => SwingLabel.HigherHigh,
 			< 0 when lastTrend is StrictTrend.Up => SwingLabel.LowerHigh,
-			0 when lastTrend is StrictTrend.Up => SwingLabel.DoubleTop,
 			> 0 when lastTrend is StrictTrend.Down => SwingLabel.HigherLow,
 			< 0 when lastTrend is StrictTrend.Down => SwingLabel.LowerLow,
-			0 when lastTrend is StrictTrend.Down => SwingLabel.DoubleBottom,
 			_ => throw new UnreachableException(),
 		};
 	}

@@ -12,11 +12,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.45-pre.20" />
+	  <Folder Include="Utilities\" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Utilities\" />
+	  <PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.45-pre.20" />
 	</ItemGroup>
 
 </Project>

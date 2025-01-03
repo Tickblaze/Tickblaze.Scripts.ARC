@@ -14,7 +14,7 @@ public sealed class SwingLabel
 
 	public static readonly SwingLabel None = new(string.Empty, string.Empty);
 
-	public static readonly SwingLabel LowerLow = new ("LowerLow", "LL");
+	public static readonly SwingLabel LowerLow = new ("Lower Low", "LL");
 	
 	public static readonly SwingLabel DoubleTop = new("Double Top", "DT");
 	

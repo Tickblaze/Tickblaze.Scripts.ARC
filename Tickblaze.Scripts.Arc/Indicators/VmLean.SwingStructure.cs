@@ -1,7 +1,15 @@
-﻿namespace Tickblaze.Scripts.Arc;
+﻿using Tickblaze.Scripts.Arc.Domain;
+using Tickblaze.Scripts.Indicators;
+
+namespace Tickblaze.Scripts.Arc;
 
 public partial class VmLean
 {
+	private SwingContainer _swingContainer = default!;
+	private AverageTrueRange _swingDeviationAtr = new();
+
+	private ISeries<double> SwingDeviationAtr => _swingDeviationAtr.Result;
+
 	[Parameter("Enable Swing Calculations", GroupName = "Swing Structure Parameters", Description = "Whether swings are enabled")]
 	public bool IsSwingEnabled { get; set; }
 
@@ -11,11 +19,11 @@ public partial class VmLean
 
 	[NumericRange(MaxValue = double.MaxValue)]
 	[Parameter("Swing Deviation Multiplier", GroupName = "Swing Structure Parameters", Description = "Multiplier used to calculate minimum deviation as an ATR multiple")]
-	public double MinDevMultiplier { get; set; }
+	public double SwingDeviationAtrMultiplier { get; set; }
 
 	[NumericRange(MaxValue = double.MaxValue)]
 	[Parameter("Swing Sensitivity Double Tops/Bottoms", GroupName = "Swing Structure Parameters", Description = "Fraction of ATR ignored when detecting double tops or bottoms")]
-	public double MultiplierDTB { get; set; }
+	public double DoubleTopBottomAtrMultiplier { get; set; }
 
 	[Parameter("Show Swing Dots", GroupName = "Swing Structure Parameters", Description = "Whether swing dots are shown")]
 	public bool ShowSwingDots { get; set; }
@@ -55,4 +63,57 @@ public partial class VmLean
 
 	[Parameter("Swing Line Style", GroupName = "Swing Structure Parameters", Description = "Style of lines connecting swing highs lows")]
 	public LineStyle SwingLineStyle { get; set; } = LineStyle.Solid;
+
+	public void HideSwingParameters(Parameters parameters)
+	{
+		if (!ShowSwingDots)
+		{
+			parameters.Remove(nameof(SwingDotSize));
+		}
+
+		if (!ShowSwingLabels)
+		{
+			ReadOnlySpan<string> propertyNames =
+			[
+				nameof(SwingLabelFont),
+				nameof(SwingUpLabelColor),
+				nameof(SwingDownLabelColor),
+			];
+
+			parameters.RemoveRange(propertyNames);
+		}
+
+		if (!ShowSwingLines)
+		{
+			ReadOnlySpan<string> propertyNames =
+			[
+				nameof(SwingLineStyle),
+				nameof(SwingUpLineColor),
+				nameof(SwingDownLineColor),
+				nameof(SwingLineThickness),
+				nameof(SwingDoubleTopBottomLineColor),
+			];
+
+			parameters.RemoveRange(propertyNames);
+		}
+	}
+
+	public void InitializeSwings()
+	{
+		_swingDeviationAtr = new(256, MovingAverageType.Simple);
+
+		_swingContainer = new SwingContainer
+		{
+			BarSeries = Bars,
+			SwingStrength = SwingStrength,
+			CalculationMode = SwingCalculationMode.CurrentBar,
+			SwingDeviation = SwingDeviationAtr.Map(atr => SwingDeviationAtrMultiplier * atr),
+			DoubleTopBottomDeviation = SwingDeviationAtr.Map(atr => DoubleTopBottomAtrMultiplier * atr),
+		};
+	}
+
+	public void CalculateSwings(int barIndex)
+	{
+		_swingContainer.CalculateSwings(barIndex);
+	}
 }

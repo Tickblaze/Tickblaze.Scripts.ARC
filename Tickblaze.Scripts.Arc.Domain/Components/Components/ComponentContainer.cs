@@ -3,9 +3,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Tickblaze.Scripts.Arc.Domain;
 
-public class ComponentContainer<TComponentKey, TComponent> : IEnumerable<TComponent>
+public class ComponentContainer<TComponentKey, TComponent> : IEnumerable<TComponent>, IDisposable
 	where TComponentKey : notnull, IEquatable<TComponentKey>
-	where TComponent : IBoundable, IComponent<TComponentKey>
+	where TComponent : IComponent<TComponentKey>
 {
 	protected readonly OrderedDictionary<TComponentKey, TComponent> _components = [];
 
@@ -37,6 +37,7 @@ public class ComponentContainer<TComponentKey, TComponent> : IEnumerable<TCompon
 	public virtual IEnumerable<TComponent> GetVisibleComponents(Rectangle visibleBoundary)
     {
         var componentIndex = _components.Values
+			.AsSeries()
 			.Map(component => component.Boundary.EndBarIndex)
 			.BinarySearch(visibleBoundary.StartBarIndex);
 
@@ -96,6 +97,7 @@ public class ComponentContainer<TComponentKey, TComponent> : IEnumerable<TCompon
 		Remove(component);
 
 		var insertionIndex = _components.Values
+			.AsSeries()
 			.Map(component => component.Boundary.EndBarIndex)
 			.BinarySearch(component.Boundary.EndBarIndex);
 
@@ -146,5 +148,12 @@ public class ComponentContainer<TComponentKey, TComponent> : IEnumerable<TCompon
     IEnumerator IEnumerable.GetEnumerator()
     {
 		return GetEnumerator();
+    }
+
+    public void Dispose()
+    {
+		GC.SuppressFinalize(this);
+
+		Clear();
     }
 }

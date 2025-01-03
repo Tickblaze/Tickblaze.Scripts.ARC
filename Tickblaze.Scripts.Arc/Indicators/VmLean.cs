@@ -2,6 +2,7 @@
 
 namespace Tickblaze.Scripts.Arc;
 
+// Todo: separate paremeters and their visuals.
 public partial class VmLean : Indicator
 {
 	public VmLean()
@@ -10,11 +11,25 @@ public partial class VmLean : Indicator
 		Name = "TB Core VM Lean";
 	}
 
-	[Parameter("Optimization Mode", Description = "Optimization Mode improves run-time performance by reducing the number of historical chart markers")]
-	public OptimizationMode OptimizationModeValue { get; set; } = OptimizationMode.Maximum;
-
 	[Parameter("Settings Header", Description = "Quick access settings header")]
 	public string SettingsHeader { get; set; } = "VM Lean";
 
+	[Plot("Zero Line")]
 	public PlotSeries ZeroLine { get; set; } = new(Color.Black);
+
+    protected override Parameters GetParameters(Parameters parameters)
+    {
+		HideSwingParameters(parameters);
+
+		HidePriceExcursionParameters(parameters);
+
+		return parameters;
+    }
+
+    protected override void Calculate(int index)
+    {
+		CalculateHistogram(index);
+
+		CalculateMacdBb(index);
+    }
 }

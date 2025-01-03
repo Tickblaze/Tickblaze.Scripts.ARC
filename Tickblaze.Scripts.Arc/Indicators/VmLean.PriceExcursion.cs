@@ -1,7 +1,16 @@
-﻿namespace Tickblaze.Scripts.Arc;
+﻿using System.Diagnostics;
+using Tickblaze.Scripts.Indicators;
+
+namespace Tickblaze.Scripts.Arc;
 
 public partial class VmLean
 {
+	private AverageTrueRange _priceExcursionAtr = new();
+	private SimpleMovingAverage _priceExcursion = new();
+
+	[Parameter("Level Plot Style", GroupName = "Price Excursion Parameters", Description = "Plot style of level lines")]
+	public LevelPlotStyle LevelPlotStyleValue { get; set; } = LevelPlotStyle.StraightLines;
+
 	[Parameter("Level Line Style", GroupName = "Price Excursion Parameters", Description = "Style of level lines")]
 	public LineStyle LevelLineStyle { get; set; } = LineStyle.Solid;
 
@@ -26,4 +35,93 @@ public partial class VmLean
 	
 	[Parameter("Level 3 Color", GroupName = "Price Excursion Parameters")]
 	public Color Level3Color { get; set; } = Color.Red;
+
+	public void HidePriceExcursionParameters(Parameters parameters)
+	{
+		if (!ShowLevel1)
+		{
+			parameters.Remove(nameof(Level1Color));
+		}
+
+		if (!ShowLevel2)
+		{
+			parameters.Remove(nameof(Level2Color));
+		}
+
+		if (!ShowLevel3)
+		{
+			parameters.Remove(nameof(Level3Color));
+		}
+	}
+
+	public void InitializePriceExcursions()
+	{
+		_priceExcursionAtr = new(256, MovingAverageType.Simple);
+
+		_priceExcursion = new(_priceExcursion.Result, 65);
+	}
+
+	public void RenderPriceExcursions(IDrawingContext drawingContext)
+	{
+		if (!ShowLevel1 && !ShowLevel2 && !ShowLevel3)
+		{
+			return;
+		}
+
+		var barIndexDelta = LevelPlotStyleValue switch
+		{
+			LevelPlotStyle.DynamicLines => 1,
+			LevelPlotStyle.StraightLines => Chart.LastVisibleBarIndex - Chart.FirstVisibleBarIndex,
+			_ => throw new UnreachableException(),
+		};
+
+		for (var barIndex = Chart.FirstVisibleBarIndex; barIndex < Chart.LastVisibleBarIndex;)
+		{
+			var nextBarIndex = barIndex + barIndexDelta;
+
+			if (ShowLevel1)
+			{
+				DrawPriceExcursionLevel(drawingContext, barIndex, nextBarIndex, 1, Level1Color);
+			}
+
+			if (ShowLevel2)
+			{
+				DrawPriceExcursionLevel(drawingContext, barIndex, nextBarIndex, 2, Level2Color);
+			}
+
+			if (ShowLevel3)
+			{
+				DrawPriceExcursionLevel(drawingContext, barIndex, nextBarIndex, 3, Level3Color);
+			}
+
+			barIndex = nextBarIndex;
+		}
+	}
+
+	private void DrawPriceExcursionLevel(IDrawingContext drawingContext, int startBarIndex, int endBarIndex, int levelMultiplier, Color levelColor)
+    {
+		ReadOnlySpan<int> levelSignums = [-1, 1];
+
+		foreach (var levelSignum in levelSignums)
+		{
+			var startX = Chart.GetXCoordinateByBarIndex(startBarIndex);
+			var startPrice = levelSignum * levelMultiplier * _priceExcursion[startBarIndex];
+			var startY = ChartScale.GetYCoordinateByValue(startPrice);
+
+			var endX = Chart.GetRightX();
+			var endPrice = levelSignum * levelMultiplier * _priceExcursion[endBarIndex];
+			var endPriceY = ChartScale.GetYCoordinateByValue(endPrice);
+
+			drawingContext.DrawLine(startX, startY, endX, endPriceY, levelColor, LevelLineThickness);
+		}
+    }
+
+	public enum LevelPlotStyle
+	{
+		[DisplayName("Dynamic Lines")]
+		DynamicLines,
+		
+		[DisplayName("Straight Lines")]
+		StraightLines,
+	}
 }
