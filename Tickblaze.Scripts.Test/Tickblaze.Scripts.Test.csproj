@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0-windows10.0.17763.0</TargetFramework>
+		<WindowsSdkPackageVersion>10.0.17763.21</WindowsSdkPackageVersion>
+		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+	</PropertyGroup>
+
+	<Target Name="FilterCopyLocalItems" AfterTargets="ResolvePackageDependenciesForBuild">
+		<ItemGroup>
+			<ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)' == 'Tickblaze.Core'" />
+			<ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)' == 'Tickblaze.Scripts.Api'" />
+		</ItemGroup>
+	</Target>
+	
+	<!--<PropertyGroup>
+		<PublishSingleFile>true</PublishSingleFile>
+		<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+		<PublishTrimmed>false</PublishTrimmed>
+	</PropertyGroup>-->
+	
+	<ItemGroup>
+		<PackageReference Include="ReactiveUI" Version="20.1.63" />
+		<PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.45-pre.21" />
+	</ItemGroup>
+
+</Project>

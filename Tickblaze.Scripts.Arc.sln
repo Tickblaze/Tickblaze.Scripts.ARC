@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tickblaze.Scripts.Arc.Core", "Tickblaze.Scripts.Arc.Core\Tickblaze.Scripts.Arc.Core.csproj", "{7DEF517A-E9AE-41ED-BFE0-D50CE66F8469}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tickblaze.Scripts.Test", "Tickblaze.Scripts.Test\Tickblaze.Scripts.Test.csproj", "{98FCEE86-67EA-44F8-910C-E5B058F18EC9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{7DEF517A-E9AE-41ED-BFE0-D50CE66F8469}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7DEF517A-E9AE-41ED-BFE0-D50CE66F8469}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7DEF517A-E9AE-41ED-BFE0-D50CE66F8469}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98FCEE86-67EA-44F8-910C-E5B058F18EC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98FCEE86-67EA-44F8-910C-E5B058F18EC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98FCEE86-67EA-44F8-910C-E5B058F18EC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98FCEE86-67EA-44F8-910C-E5B058F18EC9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
