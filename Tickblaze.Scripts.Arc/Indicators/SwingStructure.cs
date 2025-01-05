@@ -1,4 +1,5 @@
-﻿using Tickblaze.Scripts.Arc.Domain;
+﻿using System.Diagnostics.CodeAnalysis;
+using Tickblaze.Scripts.Arc.Core;
 
 namespace Tickblaze.Scripts.Arc;
 
@@ -12,7 +13,8 @@ public partial class SwingStructure : Indicator
 		Name = "TB Core Swing Structure";
 	}
 
-	private SwingContainer _swingContainer = default!;
+	[AllowNull]
+	private Swings _swings;
 
 	[Parameter("Calculation Mode", Description = "Whether to calculate the structure by current or closed bar highs and lows")]
 	public SwingCalculationMode CalculationMode { get; set; }
@@ -40,8 +42,8 @@ public partial class SwingStructure : Indicator
 	[Parameter("Label Font", Description = "Font for structure labels")]
 	public Font LabelFont { get; set; } = new("Arial", 12);
 
-	[Parameter("Menu Header", Description = "Quick access menu header")]
-	public string MenuHeader { get; set; } = "TBC Swing";
+	[Parameter("Settings Header", Description = "Quick access settings header")]
+	public string SettingsHeader { get; set; } = "TBC Swing";
 
 	protected override Parameters GetParameters(Parameters parameters)
     {
@@ -69,51 +71,29 @@ public partial class SwingStructure : Indicator
 
 	protected override void Initialize()
     {
-		_swingContainer?.Dispose();
-
-		_swingContainer = new SwingContainer
+		_swings = new Swings
 		{
-			BarSeries = Bars,
+			ShowDots = false,
+			IsSwingEnabled = true,
+			LabelFont = LabelFont,
+			UpLineColor = UpLineColor,
+			ShowLines = ShowSwingLines,
+			LineStyle = LineStyle.Solid,
+			ShowLabels = ShowSwingLabels,
 			SwingStrength = SwingStrength,
+			DownLineColor = DownLineColor,
+			LineThickness = LineThickness,
 			CalculationMode = CalculationMode,
 		};
     }
 
     protected override void Calculate(int index)
     {
-		_swingContainer.CalculateSwings(index);
+		_swings.Calculate();
     }
 
-    public override void OnRender(IDrawingContext context)
+    public override void OnRender(IDrawingContext drawingContext)
     {
-		if (!ShowSwingLines)
-		{
-			return;
-		}
-
-		var visibleRectangle = this.GetVisibleRectangle();
-		var visibleSwings = _swingContainer.GetVisibleComponents(visibleRectangle);
-
-		foreach (var visibleSwing in visibleSwings)
-		{
-			var endPoint = this.ToApiPoint(visibleSwing.EndPoint);
-			var startPoint = this.ToApiPoint(visibleSwing.StartPoint);
-			var color = visibleSwing.Trend.Map(UpLineColor, DownLineColor);
-
-			context.DrawLine(startPoint, endPoint, color, LineThickness);
-
-			if (ShowSwingLabels)
-			{
-				var label = visibleSwing.Label.ShortName;
-				var labelSize = context.MeasureText(label, LabelFont);
-				var labelVerticalOffset = visibleSwing.Trend.Map(-TextVerticalOffset - labelSize.Height, TextVerticalOffset);
-				var labelHorizontalOffset = -labelSize.Width / 2.0;
-
-				endPoint.Y += labelVerticalOffset;
-				endPoint.X += labelHorizontalOffset;
-
-				context.DrawText(endPoint, label, color, LabelFont);
-			}
-		}
-    }
+		_swings.OnRender(drawingContext);
+	}
 }

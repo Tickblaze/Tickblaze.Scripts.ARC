@@ -1,13 +1,19 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc;
 
 public partial class VmLean
 {
-	private Macd _macd = new();
-	private PlotSeries _macdDots = new();
-	private BollingerBands _bollingerBands = new();
+	[AllowNull]
+	private Macd _macd;
+
+	[AllowNull]
+	private PlotSeries _macdDots;
+
+	[AllowNull]
+	private BollingerBands _bollingerBands;
 
 	[NumericRange(MinValue = 1)]
 	[Parameter("BB Period", GroupName = "MACDBB Parameters", Description = "Band period for Bollinger Bands")]
@@ -63,6 +69,7 @@ public partial class VmLean
 	public void InitializeMacdBb()
 	{
 		_macdDots = new(Color.Transparent);
+
 		_macd = new Macd
 		{
 			Source = Bars.Close,

@@ -1,12 +1,16 @@
-﻿using Tickblaze.Scripts.Arc.Domain;
+﻿using System.Diagnostics.CodeAnalysis;
+using Tickblaze.Scripts.Arc.Domain;
 using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc;
 
 public partial class VmLean
 {
-	private SwingContainer _swingContainer = default!;
-	private AverageTrueRange _swingDeviationAtr = new();
+	[AllowNull]
+	private Swings _swings;
+
+	[AllowNull]
+	private AverageTrueRange _swingDeviationAtr;
 
 	private ISeries<double> SwingDeviationAtr => _swingDeviationAtr.Result;
 
@@ -45,6 +49,9 @@ public partial class VmLean
 	[Parameter("Falling Swing Label Color", GroupName = "Swing Structure Parameters")]
 	public Color SwingDownLabelColor { get; set; } = Color.Black;
 
+	[Parameter("Double Top/Bottom Swing Label Color", GroupName = "Swing Structure Parameters")]
+	public Color SwingDtbLabelColor { get; set; } = Color.Black;
+
 	[Parameter("Show Swing Lines", GroupName = "Swing Structure Parameters", Description = "Whether swing lines are shown")]
 	public bool ShowSwingLines { get; set; }
 
@@ -53,9 +60,6 @@ public partial class VmLean
 
 	[Parameter("Falling Swing Line Color", GroupName = "Swing Structure Parameters")]
 	public Color SwingDownLineColor { get; set; } = Color.Black;
-
-	[Parameter("Double Top/Bottom Swing Line Color", GroupName = "Swing Structure Parameters")]
-	public Color SwingDoubleTopBottomLineColor { get; set; } = Color.Black;
 
 	[NumericRange(MinValue = 1)]
 	[Parameter("Swing Line Thickness", GroupName = "Swing Structure Parameters", Description = "Thickness of lines connecting swing highs lows")]
@@ -78,6 +82,7 @@ public partial class VmLean
 				nameof(SwingLabelFont),
 				nameof(SwingUpLabelColor),
 				nameof(SwingDownLabelColor),
+				nameof(SwingDtbLabelColor),
 			];
 
 			parameters.RemoveRange(propertyNames);
@@ -91,7 +96,6 @@ public partial class VmLean
 				nameof(SwingUpLineColor),
 				nameof(SwingDownLineColor),
 				nameof(SwingLineThickness),
-				nameof(SwingDoubleTopBottomLineColor),
 			];
 
 			parameters.RemoveRange(propertyNames);
@@ -102,18 +106,35 @@ public partial class VmLean
 	{
 		_swingDeviationAtr = new(256, MovingAverageType.Simple);
 
-		_swingContainer = new SwingContainer
+		_swings = new Swings
 		{
-			BarSeries = Bars,
+			DotSize = SwingDotSize,
+			ShowDots = ShowSwingDots,
+			LabelFont = SwingLabelFont,
+			LineStyle = SwingLineStyle,
+			ShowLines = ShowSwingLines,
+			ShowLabels = ShowSwingLabels,
 			SwingStrength = SwingStrength,
+			UpLineColor = SwingUpLineColor,
+			IsSwingEnabled = IsSwingEnabled,
+			UpLabelColor = SwingUpLabelColor,
+			DownLineColor = SwingDownLineColor,
+			LineThickness = SwingLineThickness,
+			DtbLabelColor = SwingDtbLabelColor,
+			DownLabelColor = SwingDownLabelColor,
 			CalculationMode = SwingCalculationMode.CurrentBar,
 			SwingDeviation = SwingDeviationAtr.Map(atr => SwingDeviationAtrMultiplier * atr),
-			DoubleTopBottomDeviation = SwingDeviationAtr.Map(atr => DoubleTopBottomAtrMultiplier * atr),
+			SwingDtbDeviation = SwingDeviationAtr.Map(atr => DoubleTopBottomAtrMultiplier * atr),
 		};
 	}
 
 	public void CalculateSwings(int barIndex)
 	{
-		_swingContainer.CalculateSwings(barIndex);
+		_swings.Calculate();
+	}
+
+	public void RenderSwings(IDrawingContext drawingContext)
+	{
+		_swings.OnRender(drawingContext);
 	}
 }

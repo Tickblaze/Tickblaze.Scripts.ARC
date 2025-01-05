@@ -1,12 +1,16 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc;
 
 public partial class VmLean
 {
-	private AverageTrueRange _priceExcursionAtr = new();
-	private SimpleMovingAverage _priceExcursion = new();
+	[AllowNull]
+	private AverageTrueRange _priceExcursionAtr;
+
+	[AllowNull]
+	private SimpleMovingAverage _priceExcursion;
 
 	[Parameter("Level Plot Style", GroupName = "Price Excursion Parameters", Description = "Plot style of level lines")]
 	public LevelPlotStyle LevelPlotStyleValue { get; set; } = LevelPlotStyle.StraightLines;
@@ -98,7 +102,8 @@ public partial class VmLean
 		}
 	}
 
-	private void DrawPriceExcursionLevel(IDrawingContext drawingContext, int startBarIndex, int endBarIndex, int levelMultiplier, Color levelColor)
+	private void DrawPriceExcursionLevel(IDrawingContext drawingContext
+		, int startBarIndex, int endBarIndex, int levelMultiplier, Color levelColor)
     {
 		ReadOnlySpan<int> levelSignums = [-1, 1];
 

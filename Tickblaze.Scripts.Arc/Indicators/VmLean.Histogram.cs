@@ -1,12 +1,21 @@
-﻿namespace Tickblaze.Scripts.Arc;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Tickblaze.Scripts.Arc;
 
 // Todo: support histogram bar size.
 public partial class VmLean
 {
-	private Macd _histomgraMacd1 = new();
-	private Macd _histomgraMacd2 = new();
-	private Macd _histomgraMacd3 = new();
-	private Macd _histomgraMacd4 = new();
+	[AllowNull]
+	private Macd _histomgraMacd1;
+
+	[AllowNull]
+	private Macd _histomgraMacd2;
+
+	[AllowNull]
+	private Macd _histomgraMacd3;
+
+	[AllowNull]
+	private Macd _histomgraMacd4;
 
 	[Parameter("Histogram Up Color", GroupName = "Histogram Parameters")]
 	public Color HistogramUpColor { get; set; } = DrawingColor.LimeGreen;

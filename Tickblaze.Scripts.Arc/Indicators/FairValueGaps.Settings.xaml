@@ -4,12 +4,14 @@
     mc:Ignorable="d"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    x:Class="Tickblaze.Scripts.Arc.FairValueGapsMenu"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:local="clr-namespace:Tickblaze.Scripts.Arc"
+    x:Class="Tickblaze.Scripts.Arc.FairValueGapsSettings"
+	xmlns:arc="clr-namespace:Tickblaze.Scripts.Arc"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-    xmlns:local="clr-namespace:Tickblaze.Scripts.Arc">
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	d:DataContext="{d:DesignInstance d:Type={x:Type arc:FairValueGaps+SettingsViewModel}}">
     <MenuItem
         FontSize="13"
         FontWeight="Bold"
@@ -17,7 +19,7 @@
         Background="White"
         BorderBrush="Maroon"
         VerticalAlignment="Stretch"
-        Header="{Binding ButtonText}">
+        Header="{Binding SettingsHeader}">
         <MenuItem
             Header="{Binding ShowFreshFvgs}"
             Foreground="Black"

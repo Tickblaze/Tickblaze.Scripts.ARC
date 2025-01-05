@@ -251,3 +251,6 @@ end_of_line = crlf
 
 # IDE0130: Namespace does not match folder structure
 dotnet_diagnostic.IDE0130.severity = none
+
+# RXUISG0016: Property To Reactive Field, change to [Reactive] private type _fieldName;
+dotnet_diagnostic.RXUISG0016.severity = none

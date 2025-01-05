@@ -5,6 +5,7 @@ namespace Tickblaze.Scripts.Arc;
 // Todo: RenkoBXT part.
 // Todo: price markers support.
 // Todo: parameter descriptions.
+// Todo: fix realtime check.
 public partial class BarCloseMarker : Indicator
 {
 	public BarCloseMarker()

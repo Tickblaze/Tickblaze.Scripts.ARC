@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using Tickblaze.Scripts.Arc.Domain;
 using Tickblaze.Scripts.Indicators;
-using Point = Tickblaze.Scripts.Api.Models.Point;
 
 namespace Tickblaze.Scripts.Arc;
 
@@ -9,54 +8,63 @@ public partial class FairValueGaps : Indicator
 {
 	public FairValueGaps()
 	{
-		//_menu = new(this);
+		_settingViewModel = new(this);
 
 		IsOverlay = true;
 		ShortName = "TBC FVG";
 		Name = "TB Core Fair Value Gaps";
 	}
 
-	//private readonly FairValueGapsMenu _menu;
+	private Gaps _freshGaps;
+	private Gaps _testedGaps;
+	private Gaps _brokenGaps;
+	private ISeries<double> _minGapHeights;
 	private AverageTrueRange _averageTrueRange;
-	private readonly OrderedDictionary<int, Gap> _freshGaps = [];
-	private readonly OrderedDictionary<int, Gap> _testedGaps = [];
-	private readonly OrderedDictionary<int, Gap> _brokenGaps = [];
+	private readonly SettingsViewModel _settingViewModel;
 	
-	[Parameter("Measurement", GroupName = "Parameters")]
+	[Parameter("Measurement")]
 	public GapMeasurement GapMeasurementValue { get; set; } = GapMeasurement.Atr;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("FVG Ticks", GroupName = "Parameters")]
+	[Parameter("FVG Ticks")]
 	public int GapTickCount { get; set; } = 8;
 
 	[NumericRange(MinValue = 0.01d, MaxValue = double.MaxValue, Step = 0.5d)]
-	[Parameter("FVG ATR Multiple", GroupName = "Parameters")]
+	[Parameter("FVG ATR Multiple")]
 	public double AtrMultiple { get; set; } = 0.5d;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("ATR Period", GroupName = "Parameters")]
+	[Parameter("ATR Period")]
 	public int AtrPeriod { get; set; } = 14;
 
-	[Parameter("Show Fresh FVGs", GroupName = "Visuals")]
-	public bool ShowFreshGaps { get; set; } = true;
+	[Parameter("Show Fresh FVGs", GroupName = "Visual Parameters")]
+	public bool ShowFreshGaps { get; set; }
 
-	[Parameter("Fresh FGV Color", GroupName = "Visuals")]
+	[Parameter("Fresh FGV Color", GroupName = "Visual Parameters")]
 	public Color FreshGapColor { get; set; } = Color.New(Color.Orange, 0.5f);
 
-	[Parameter("Show Tested FGVs", GroupName = "Visuals")]
-	public bool ShowTestedGaps { get; set; } = true;
+	[Parameter("Show Tested FGVs", GroupName = "Visual Parameters")]
+	public bool ShowTestedGaps { get; set; }
 
-	[Parameter("Tested FGV Color", GroupName = "Visuals")]
+	[Parameter("Tested FGV Color", GroupName = "Visual Parameters")]
 	public Color TestedGapColor { get; set; } = Color.New(Color.Silver, 0.5f);
 
-	[Parameter("Show Broken FGVs", GroupName = "Visuals")]
-	public bool ShowBrokenGaps { get; set; } = true;
+	[Parameter("Show Broken FGVs", GroupName = "Visual Parameters")]
+	public bool ShowBrokenGaps { get; set; }
 
-	[Parameter("Broken FGV Color", GroupName = "Visuals")]
+	[Parameter("Broken FGV Color", GroupName = "Visual Parameters")]
 	public Color BrokenGapColor { get; set; } = Color.New(Color.DimGray, 0.5f);
 
-	[Parameter("Button Text", GroupName = "Visuals")]
-	public string ButtonText { get; set; } = "TrapFinder";
+	[Parameter("Settings Header", GroupName = "Visual Parameters")]
+	public string SettingsHeader { get; set; } = "TBC FVG";
+
+	public override object? CreateChartToolbarMenuItem()
+	{
+		return new FairValueGapsSettings()
+		{
+			DataContext = _settingViewModel
+		};
+	}
 
 	protected override Parameters GetParameters(Parameters parameters)
 	{
@@ -67,8 +75,7 @@ public partial class FairValueGaps : Indicator
 		
 		if (GapMeasurementValue is GapMeasurement.Tick)
 		{
-			parameters.Remove(nameof(AtrPeriod));
-			parameters.Remove(nameof(AtrMultiple));
+			parameters.RemoveRange([nameof(AtrPeriod), nameof(AtrMultiple)]);
 		}
 
 		if (!ShowFreshGaps)
@@ -89,26 +96,59 @@ public partial class FairValueGaps : Indicator
 		return parameters;
 	}
 
-	//public override object? CreateChartToolbarMenuItem()
-	//{
-	//    return _menu;
-	//}
-	
 	protected override void Initialize()
 	{
-		_averageTrueRange = new AverageTrueRange(AtrPeriod, MovingAverageType.Simple);
+		InitializeMinGapHeights();
+
+		_settingViewModel.Initialize();
+
+		_freshGaps = new()
+		{
+			FillColor = FreshGapColor,
+			MinHeights = _minGapHeights,
+		};
+
+		_testedGaps = new()
+		{
+			FillColor = FreshGapColor,
+			MinHeights = _minGapHeights,
+		};
+
+		_freshGaps = new()
+		{
+			FillColor = FreshGapColor,
+			MinHeights = _minGapHeights,
+		};
 	}
 
-	protected override void Calculate(int index)
+	private void InitializeMinGapHeights()
 	{
-		if (index <= 1)
+		if (GapMeasurementValue is GapMeasurement.Tick)
+		{
+			_minGapHeights = Bars.Map(bar => GapTickCount * Symbol.TickSize);
+		}
+		else if (GapMeasurementValue is GapMeasurement.Atr)
+		{
+			var atr = new AverageTrueRange(AtrPeriod, MovingAverageType.Simple);
+
+			_minGapHeights = atr.Result.Map(atr => AtrMultiple * atr);
+		}
+		else
+		{
+			throw new UnreachableException();
+		}
+	}
+
+	protected override void Calculate(int barIndex)
+	{
+		if (barIndex <= 1)
 		{
 			return;
 		}
 
-		CalculateFreshGaps(index);
-		CalculateTestedGaps(index);
-		CalculateBrokenGaps(index);
+		CalculateFreshGaps(barIndex);
+		CalculateTestedGaps(barIndex);
+		CalculateBrokenGaps(barIndex);
 	}
 
 	private void CalculateFreshGaps(int index)
@@ -144,7 +184,7 @@ public partial class FairValueGaps : Indicator
 		{
 			if (gap.EndPrice - gap.StartPrice > minGapHeight)
 			{
-				_freshGaps.Add(gap.StartBarIndex, gap);
+				_freshGaps.AddOrUpdate(gap);
 			}
 		}
 	}
@@ -155,7 +195,7 @@ public partial class FairValueGaps : Indicator
 		
 		for (var gapIndex = _freshGaps.Count - 1; gapIndex >= 0; gapIndex--)
 		{
-			var gap = _freshGaps.GetValueAt(gapIndex);
+			var gap = _freshGaps.GetGapAt(gapIndex);
 
 			if (index - gap.StartBarIndex <= 1)
 			{
@@ -169,7 +209,7 @@ public partial class FairValueGaps : Indicator
 
 				_freshGaps.RemoveAt(gapIndex);
 
-				_testedGaps.Add(gap.StartBarIndex, gap);
+				_testedGaps.AddOrUpdate(gap);
 			}
 		}
 	}
@@ -180,7 +220,7 @@ public partial class FairValueGaps : Indicator
 
 		for (var gapIndex = _testedGaps.Count - 1; gapIndex >= 0; gapIndex--)
 		{
-			var gap = _testedGaps.GetValueAt(gapIndex);
+			var gap = _testedGaps.GetGapAt(gapIndex);
 
 			gapIndex--;
 
@@ -193,57 +233,26 @@ public partial class FairValueGaps : Indicator
 
 				_testedGaps.RemoveAt(gapIndex);
 
-				_brokenGaps.Add(gap.StartBarIndex, gap);
+				_brokenGaps.AddOrUpdate(gap);
 			}
 		}
 	}
 
-	public override void OnRender(IDrawingContext context)
+	public override void OnRender(IDrawingContext drawingContext)
 	{
 		if (ShowFreshGaps)
 		{
-			RenderGaps(context, FreshGapColor, _freshGaps.Values);
+			_freshGaps.OnRender(drawingContext);
 		}
 
 		if (ShowTestedGaps)
 		{
-			RenderGaps(context, TestedGapColor, _testedGaps.Values);
+			_testedGaps.OnRender(drawingContext);
 		}
 
 		if (ShowBrokenGaps)
 		{
-			RenderGaps(context, BrokenGapColor, _brokenGaps.Values);
+			_brokenGaps.OnRender(drawingContext);
 		}
-	}
-
-	private void RenderGaps(IDrawingContext drawingContext, Color fillColor, IEnumerable<Gap> gaps)
-	{
-		foreach (var gap in gaps)
-		{
-			var fromIndex = gap.StartBarIndex;
-			var toIndex = gap.EndBarIndex ?? Math.Max(gap.StartBarIndex, Chart.LastVisibleBarIndex);
-
-			if (toIndex - fromIndex >= 1
-				&& AreIntervalsIntersect(gap.StartPrice, gap.EndPrice, ChartScale.MinPrice, ChartScale.MaxPrice)
-				&& AreIntervalsIntersect(fromIndex, toIndex, Chart.FirstVisibleBarIndex, Chart.LastVisibleBarIndex))
-			{
-				var fromX = Chart.GetXCoordinateByBarIndex(fromIndex);
-				var fromY = ChartScale.GetYCoordinateByValue(gap.EndPrice);
-
-				var toX = Chart.GetXCoordinateByBarIndex(toIndex);
-				var toY = ChartScale.GetYCoordinateByValue(gap.StartPrice);
-				
-				var topLeftPoint = new Point(fromX, fromY);
-				var bottomRightPoint = new Point(toX, toY);
-
-				drawingContext.DrawRectangle(topLeftPoint, bottomRightPoint, fillColor);
-			}
-		}
-	}
-
-	private static bool AreIntervalsIntersect(double firstIntervalStart,
-		double firstIntervalEnd, double secondIntervalStart, double secondIntervalEnd)
-	{
-		return firstIntervalStart <= secondIntervalEnd && secondIntervalStart <= firstIntervalEnd;
 	}
 }
