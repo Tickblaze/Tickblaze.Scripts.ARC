@@ -12,20 +12,24 @@
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 	</PropertyGroup>
 
-	<Target Name="FilterCopyLocalItems" AfterTargets="ResolvePackageDependenciesForBuild">
+	<!--<Target Name="FilterCopyLocalItems" AfterTargets="ResolvePackageDependenciesForBuild">
 		<ItemGroup>
 			<ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)' == 'Tickblaze.Core'" />
 			<ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)' == 'Tickblaze.Scripts.Api'" />
 		</ItemGroup>
-	</Target>
-	
+	</Target>-->
+
 	<!--<PropertyGroup>
+		<OutputType>Exe</OutputType>
 		<PublishSingleFile>true</PublishSingleFile>
-		<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
-		<PublishTrimmed>false</PublishTrimmed>
+		<SelfContained>true</SelfContained>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 	</PropertyGroup>-->
-	
+
 	<ItemGroup>
+		<!--<PackageReference Include="Costura.Fody" Version="6.0.0">
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>-->
 		<PackageReference Include="ReactiveUI" Version="20.1.63" />
 		<PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.45-pre.21" />
 	</ItemGroup>
