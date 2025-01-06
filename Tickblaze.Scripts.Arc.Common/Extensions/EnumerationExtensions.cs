@@ -4,16 +4,14 @@ namespace Tickblaze.Scripts.Arc.Common;
 
 public static class EnumerationExtensions
 {
-	public static bool EnumEquals<TEnum>(this TEnum firstEnum, TEnum secondEnum)
-		where TEnum : Enum
+	public static StrictTrend ToStrictTrend(this Trend trend)
 	{
-		return EqualityComparer<TEnum>.Default.Equals(firstEnum, secondEnum);
-	}
-
-	public static int EnumCompareTo<TEnum>(this TEnum firstEnum, TEnum secondEnum)
-		where TEnum : Enum
-	{
-		return Comparer<TEnum>.Default.Compare(firstEnum, secondEnum);
+		return trend switch
+		{
+			Trend.Up => StrictTrend.Up,
+			Trend.Down => StrictTrend.Down,
+			_ => throw new ArgumentException(string.Empty, nameof(trend)),
+		};
 	}
 
 	public static StrictTrend GetOppositeTrend(this StrictTrend strictTrend)

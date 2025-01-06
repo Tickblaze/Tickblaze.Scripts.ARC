@@ -12,11 +12,13 @@ public class Flooding : Indicator
 
 	public bool IsMtf { get; init; }
 
-	public required ISeries<Trend> SourceTrends { get; init; }
+	public required ISeries<Trend>[] SourceTrends { get; init; }
 
 	public required Color UpTrendColor { get; init; }
 
 	public required Color DownTrendColor { get; init; }
+
+	private FloodingInterval LastInterval => _intervals.LastDrawingPart;
 
     protected override void Initialize()
     {
@@ -25,36 +27,66 @@ public class Flooding : Indicator
 
     protected override void Calculate(int barIndex)
     {
-        Clear(barIndex);
+        Reset(barIndex);
 
-        var trends = SourceTrends
-            .Distinct()
-            .ToArray();
+        var currentTrends = SourceTrends
+			.Select(series => series.GetLastOrDefault(Trend.None))
+			.Distinct()
+			.ToArray();
 
-        var trend = Trend.None;
-        var previousTrend = barIndex is 0
-            ? Trend.None : _trends[barIndex - 1];
+        var previousTrend = _trends.GetAtOrDefault(barIndex - 1, Trend.None);
 
-        if (trends is [var singleTrend])
+        if (currentTrends is not [var currentTrend] || currentTrend is Trend.None)
         {
-            trend = singleTrend;
+			return;
         }
 
-
-
-        if (trend.EnumEquals(previousTrend))
+        if (previousTrend is Trend.None
+			|| !currentTrend.EnumEquals(previousTrend))
         {
+			var currentStrictTrend = currentTrend.ToStrictTrend();
+			var color = currentStrictTrend.Map(UpTrendColor, DownTrendColor);
 
+			var currentInterval = new FloodingInterval
+			{
+				Color = color,
+				EndBarIndex = barIndex,
+				StartBarIndex = barIndex,
+				Trend = currentStrictTrend,
+			};
+
+			_intervals.AddOrUpdate(currentInterval);
         }
+		else if (currentTrend.EnumEquals(previousTrend))
+		{
+			LastInterval.EndBarIndex = barIndex;
+		}
     }
 
-    private void Clear(int barIndex)
+    private void Reset(int barIndex)
     {
         _intervals.Remove(barIndex);
-    }
+
+		if (!_intervals.IsEmpty && barIndex.Equals(LastInterval.EndBarIndex))
+		{
+			LastInterval.EndBarIndex--;
+		}
+	}
 
     public override void OnRender(IDrawingContext drawingContext)
     {
+		var visibleBoundary = this.GetVisibleBoundary();
+		var visibleIntervals = _intervals.GetVisibleDrawingParts(visibleBoundary);
 
+		foreach (var visibleInterval in visibleIntervals)
+		{
+			var startY = ChartScale.GetBottomY();
+			var startX = Chart.GetXCoordinateByBarIndex(visibleInterval.StartBarIndex);
+
+			var endY = ChartScale.GetTopY();
+			var endX = Chart.GetXCoordinateByBarIndex(visibleInterval.EndBarIndex);
+
+			drawingContext.DrawRectangle(startX, startY, endX, endY, visibleInterval.Color);
+		}
     }
 }

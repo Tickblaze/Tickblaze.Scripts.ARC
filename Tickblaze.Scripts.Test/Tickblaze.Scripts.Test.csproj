@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>net9.0-windows10.0.17763.0</TargetFramework>
-		<WindowsSdkPackageVersion>10.0.17763.21</WindowsSdkPackageVersion>
+		<WindowsSdkPackageVersion>10.0.17763.57</WindowsSdkPackageVersion>
 		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
@@ -12,12 +12,12 @@
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 	</PropertyGroup>
 
-	<!--<Target Name="FilterCopyLocalItems" AfterTargets="ResolvePackageDependenciesForBuild">
+	<Target Name="FilterCopyLocalItems" AfterTargets="ResolvePackageDependenciesForBuild">
 		<ItemGroup>
 			<ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)' == 'Tickblaze.Core'" />
 			<ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)' == 'Tickblaze.Scripts.Api'" />
 		</ItemGroup>
-	</Target>-->
+	</Target>
 
 	<!--<PropertyGroup>
 		<OutputType>Exe</OutputType>

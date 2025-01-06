@@ -4,6 +4,18 @@ public static class ComparisonExtensions
 {
 	public static readonly double Epsilon = 1e-10;
 
+	public static bool EnumEquals<TEnum>(this TEnum firstEnum, TEnum secondEnum)
+		where TEnum : Enum
+	{
+		return EqualityComparer<TEnum>.Default.Equals(firstEnum, secondEnum);
+	}
+
+	public static int EnumCompareTo<TEnum>(this TEnum firstEnum, TEnum secondEnum)
+		where TEnum : Enum
+	{
+		return Comparer<TEnum>.Default.Compare(firstEnum, secondEnum);
+	}
+
 	public static int EpsilonCompare(this double firstDouble, double secondDouble, double epsilon = 1e-10)
 	{
 		if (Math.Abs(firstDouble - secondDouble) < epsilon)

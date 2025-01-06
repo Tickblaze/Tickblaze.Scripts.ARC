@@ -80,7 +80,7 @@ public partial class LeadersAndLaggers : Indicator
 	public string? Symbol7 { get; set; }
 
 	[Plot("Plot7")]
-	public PlotSeries Plot7 { get; set; } = new(Color.FromDrawingColor(DrawingColor.Magenta), LineStyle.Solid, 3);
+	public PlotSeries Plot7 { get; set; } = new(DrawingColor.Magenta, LineStyle.Solid, 3);
 
 	[Parameter("Inst8", GroupName = "Instruments")]
 	public string? Symbol8 { get; set; }
@@ -135,6 +135,45 @@ public partial class LeadersAndLaggers : Indicator
 
 	[Plot("Plot16")]
 	public PlotSeries Plot16 { get; set; } = new(Color.Transparent, LineStyle.Solid, 3);
+
+	private bool TryGetBarSeriesRequest(string? symbol,
+		[NotNullWhen(true)] out BarSeriesRequest? barSeriesRequest)
+	{
+		if (symbol is null || _symbolRegex.Match(symbol) is var match && !match.Success)
+		{
+			barSeriesRequest = default;
+
+			return false;
+		}
+
+		const int symbolCodeIndex = 1;
+		const int contractMonthIndex = 2;
+		const int contractYearIndex = 3;
+
+		var matchGroups = match.Groups;
+		var symbolCode = matchGroups[symbolCodeIndex].Value;
+		var contractYearString = matchGroups[contractYearIndex].Value;
+		var contractMonthString = matchGroups[contractMonthIndex].Value;
+
+		barSeriesRequest = new BarSeriesRequest
+		{
+			Period = Bars.Period,
+			SymbolCode = symbolCode,
+		};
+
+		if (int.TryParse(contractMonthString, out var contractMonth)
+			&& int.TryParse(contractYearString, out var contractYear))
+		{
+			barSeriesRequest.Contract = new ContractSettings
+			{
+				Year = contractYear,
+				Month = contractMonth,
+				Type = ContractType.SingleContract,
+			};
+		}
+
+		return true;
+	}
 
 	protected override Parameters GetParameters(Parameters parameters)
 	{
@@ -210,7 +249,7 @@ public partial class LeadersAndLaggers : Indicator
 
 	protected override void Calculate(int index)
 	{
-		UpdateStartingValues(index);
+		CalculateStartingValues(index);
 
 		var leadingInstrumentValue = double.MinValue;
 		var laggingInstrumentValue = double.MaxValue;
@@ -226,9 +265,10 @@ public partial class LeadersAndLaggers : Indicator
 				continue;
 			}
 
-			var currentValue = (barSeries.Close[index] - startingValue) / startingValue;
+			var currentClose = barSeries.Close.GetLastOrDefault(double.NaN);
+			var currentValue = (currentClose - startingValue) / startingValue;
 
-			plotSeries[index] = currentValue;
+			plotSeries[index] = double.IsNaN(currentValue) ? default : currentValue;
 
 			if (currentValue >= leadingInstrumentValue)
 			{
@@ -242,101 +282,71 @@ public partial class LeadersAndLaggers : Indicator
 		}
 	}
 
-	public override void OnRender(IDrawingContext context)
+	private void CalculateStartingValues(int barIndex)
+    {
+		var isResetNeeded = ResetTypeValue is ResetType.ChartStart && barIndex is 1
+			|| ResetTypeValue is ResetType.Session && this.IsNewSession(barIndex)
+			|| ResetTypeValue is ResetType.Custom && this.IsSteppedThrough(barIndex, StartTime);
+		
+		if (isResetNeeded)
+		{
+			for (int barSeriesIndex = 0; barSeriesIndex < _barSeriesCollection.Length; barSeriesIndex++)
+			{
+				_startingValues[barSeriesIndex] = double.NaN;
+			}
+		}
+
+		var currentTimeUtc = Bars.Time.Last();
+		var session = Symbol.ExchangeCalendar.GetSession(currentTimeUtc)!;
+		var sessionStartTimeUtc = session.StartUtcDateTime;
+
+        for (int barSeriesIndex = 0; barSeriesIndex < _barSeriesCollection.Length; barSeriesIndex++)
+        {
+			var startingValue = _startingValues[barSeriesIndex];
+            var barSeries = _barSeriesCollection[barSeriesIndex];
+
+			if (barSeries is not null
+				&& double.IsNaN(startingValue)
+				&& barSeries.Time.GetLastOrDefault(DateTime.MinValue) is var barTimeUtc
+				&& barTimeUtc >= sessionStartTimeUtc)
+            {
+				_startingValues[barSeriesIndex] = barSeries.Open.GetLastOrDefault(double.NaN);
+            }
+        }
+    }
+
+    public override void OnRender(IDrawingContext context)
 	{
 		if (!ShowBox)
 		{
 			return;
 		}
 
-		const float verticalMargin = 5.0f;
-		const float horizontalMargin = 5.0f;
-
 		var leadingSymbol = _symbols[_leadingInstrumentIndex]!;
 		var laggingSymbol = _symbols[_laggingInstrumentIndex]!;
-		
+
 		var leadingSymbolTextSize = context.MeasureText(leadingSymbol, TextFont);
 		var laggingSymbolTextSize = context.MeasureText(laggingSymbol, TextFont);
 
-		var boxWidth = 2 * verticalMargin + Math.Max(laggingSymbolTextSize.Width, leadingSymbolTextSize.Width);
-		var boxHeight = 3 * horizontalMargin + leadingSymbolTextSize.Height + laggingSymbolTextSize.Height;
+		var boxWidth = 2 * TextVerticalOffset + Math.Max(laggingSymbolTextSize.Width, leadingSymbolTextSize.Width);
+		var boxHeight = 3 * TextHorizontalOffset + leadingSymbolTextSize.Height + laggingSymbolTextSize.Height;
 
 		var topLeftPoint = this.GetTopLeft();
 		var leadingSymbolTextPoint = new ApiPoint
 		{
-			X = topLeftPoint.X + verticalMargin,
-			Y = topLeftPoint.Y + horizontalMargin,
+			X = topLeftPoint.X + TextVerticalOffset,
+			Y = topLeftPoint.Y + TextHorizontalOffset,
 		};
 		var laggingSymbolTextPoint = new ApiPoint
 		{
 			X = leadingSymbolTextPoint.X,
-			Y = leadingSymbolTextPoint.Y + leadingSymbolTextSize.Height + horizontalMargin
+			Y = leadingSymbolTextPoint.Y + leadingSymbolTextSize.Height + TextHorizontalOffset
 		};
 
 		context.DrawRectangle(topLeftPoint, boxWidth, boxHeight, BoxColor, OutlineColor);
-		
+
 		context.DrawText(leadingSymbolTextPoint, leadingSymbol, TextColor, TextFont);
 		context.DrawText(laggingSymbolTextPoint, laggingSymbol, TextColor, TextFont);
-	}
-
-	private void UpdateStartingValues(int index)
-	{
-		if (index is not 0
-			&& (ResetTypeValue is not ResetType.Session || !this.IsNewSession(index))
-			&& (ResetTypeValue is not ResetType.Custom || !this.IsSteppedThrough(index, StartTime)))
-		{
-			return;
-		}
-
-		for (int barSeriesIndex = 0; barSeriesIndex < _barSeriesCollection.Length; barSeriesIndex++)
-		{
-			var barSeries = _barSeriesCollection[barSeriesIndex];
-
-			if (barSeries is null)
-			{
-				continue;
-			}
-
-			_startingValues[barSeriesIndex] = barSeries.Open[index];
-		}
-	}
-
-	private static bool TryGetBarSeriesRequest(string? symbol,
-		[NotNullWhen(true)] out BarSeriesRequest? barSeriesRequest)
-	{
-		if (symbol is null || _symbolRegex.Match(symbol) is var match && !match.Success)
-		{
-			barSeriesRequest = default;
-			
-			return false;
-		}
-
-		const int symbolCodeIndex = 1;
-		const int contractMonthIndex = 2;
-		const int contractYearIndex = 3;
-
-		var matchGroups = match.Groups;
-		var symbolCode = matchGroups[symbolCodeIndex].Value;
-		var contractYearString = matchGroups[contractYearIndex].Value;
-		var contractMonthString = matchGroups[contractMonthIndex].Value;
-
-		var contractSettings = int.TryParse(contractMonthString, out var contractMonth)
-			&& int.TryParse(contractYearString, out var contractYear)
-			? new ContractSettings
-			{
-				Year = contractYear,
-				Month = contractMonth,
-				Type = ContractType.SingleContract,
-			}
-			: default;
-
-		barSeriesRequest = new BarSeriesRequest
-		{
-			SymbolCode = symbolCode,
-			Contract = contractSettings,
-		};
-
-		return true;
 	}
 
 	[GeneratedRegex(@"(.+)(?: (\d{2})-(\d{2}))?")]
