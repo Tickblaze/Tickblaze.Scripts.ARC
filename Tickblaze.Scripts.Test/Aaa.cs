@@ -1,4 +1,4 @@
-﻿namespace Tickblaze.Scripts.Test;
+﻿namespace Test;
 
 public partial class Aaa : Indicator
 {

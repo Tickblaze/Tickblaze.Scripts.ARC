@@ -8,23 +8,24 @@
 		<UseWPF>true</UseWPF>
 	</PropertyGroup>
 
-	<!--<PropertyGroup>
+	<PropertyGroup>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 	</PropertyGroup>
-	
+
 	<Target Name="FilterCopyLocalItems" AfterTargets="ResolvePackageDependenciesForBuild">
 		<ItemGroup>
 			<ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)' == 'Tickblaze.Core'" />
 			<ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)' == 'Tickblaze.Scripts.Api'" />
 		</ItemGroup>
-	</Target>-->
-	
+	</Target>
+
 	<ItemGroup>
-	  <None Remove="C:\Users\User\.nuget\packages\tickblaze.scripts.api\2.0.0.45-pre.21\contentFiles\any\any\.editorconfig" />
+		<None Remove="C:\Users\User\.nuget\packages\tickblaze.scripts.api\2.0.0.45-pre.21\contentFiles\any\any\.editorconfig" />
 	</ItemGroup>
-	
+
 	<ItemGroup>
-	  <PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.45-pre.22" />
+		<PackageReference Include="ReactiveUI" Version="20.1.63" />
+		<PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.45-pre.22" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -32,7 +33,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Tickblaze.Scripts.Arc.Common\Tickblaze.Scripts.Arc.Common.csproj" />
+		<ProjectReference Include="..\Tickblaze.Scripts.Arc.Common\Tickblaze.Scripts.Arc.Common.csproj" />
 	</ItemGroup>
 
 </Project>

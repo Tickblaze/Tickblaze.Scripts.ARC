@@ -115,18 +115,21 @@ public partial class FairValueGaps : Indicator
 
 		_freshGaps = new()
 		{
+			RenderParent = this,
 			FillColor = FreshGapColor,
 			MinHeights = _minGapHeights,
 		};
 
 		_testedGaps = new()
 		{
+			RenderParent = this,
 			FillColor = FreshGapColor,
 			MinHeights = _minGapHeights,
 		};
 
-		_freshGaps = new()
+		_brokenGaps = new()
 		{
+			RenderParent = this,
 			FillColor = FreshGapColor,
 			MinHeights = _minGapHeights,
 		};
@@ -162,34 +165,29 @@ public partial class FairValueGaps : Indicator
 		CalculateBrokenGaps(barIndex);
 	}
 
-	private void CalculateFreshGaps(int index)
+	private void CalculateFreshGaps(int barIndex)
 	{
-		var minGapHeight = GapMeasurementValue switch
-		{
-			GapMeasurement.Atr => AtrMultiple * _averageTrueRange![index],
-			GapMeasurement.Tick => GapTickCount * Symbol.TickSize,
-			_ => throw new UnreachableException()
-		};
+		var minGapHeight = _minGapHeights[barIndex];
 
 		Gap[] gaps =
 		[
 			new()
 			{
 				IsSupport = true,
-				StartBarIndex = index - 1,
-				EndPrice = Bars.Low[index],
-				StartPrice = Bars.High[index - 2],
+				StartBarIndex = barIndex - 1,
+				EndPrice = Bars.Low[barIndex],
+				StartPrice = Bars.High[barIndex - 2],
 			},
 			new()
 			{
 				IsSupport = false,
-				StartBarIndex = index - 1,
-				EndPrice = Bars.Low[index - 2],
-				StartPrice = Bars.High[index],
+				StartBarIndex = barIndex - 1,
+				EndPrice = Bars.Low[barIndex - 2],
+				StartPrice = Bars.High[barIndex],
 			},
 		];
 
-		_freshGaps.Remove(index - 1);
+		_freshGaps.Remove(barIndex - 1);
 
 		foreach (var gap in gaps)
 		{

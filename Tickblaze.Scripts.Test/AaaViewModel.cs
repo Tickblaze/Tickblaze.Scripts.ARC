@@ -1,6 +1,6 @@
 ﻿using ReactiveUI;
 
-namespace Tickblaze.Scripts.Test;
+namespace Test;
 
 public class AaaViewModel : ReactiveObject
 {

@@ -3,7 +3,6 @@ using Tickblaze.Scripts.Arc.Common;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
-// Todo: parameter descriptions.
 public partial class BigRoundNumbers : Indicator
 {
 	public BigRoundNumbers()
@@ -16,44 +15,44 @@ public partial class BigRoundNumbers : Indicator
 	private double _intervalInPoints;
 
 	[NumericRange(MaxValue = double.MaxValue)]
-	[Parameter("Base Price")]
+	[Parameter("Base Price", Description = "Price from which all lines eminate at interval values")]
 	public double BasePrice { get; set; }
 
-	[Parameter("Level Color")]
-	public Color LevelColor { get; set; } = DrawingColor.Navy.ToApiColor();
-
-	[NumericRange(MinValue = 1, MaxValue = 10)]
-	[Parameter("Level Thickness")]
-	public int LevelThickness { get; set; } = 2;
-
-	[Parameter("Interval Price")]
+	[Parameter("Interval Type", Description = "Type of line distance measurement")]
 	public IntervalType IntervalTypeValue { get; set; } = IntervalType.Points;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Interval in Pts")]
+	[Parameter("Interval in Points", Description = "Distance between lines in points")]
 	public int IntervalInPoints { get; set; } = 10;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Interval in Ticks")]
+	[Parameter("Interval in Ticks", Description = "Distance between lines in ticks")]
 	public int IntervalInTicks { get; set; } = 10;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Interval in Pips")]
+	[Parameter("Interval in Pips", Description = "Distance between lines in pips = 10 * ticks")]
 	public int IntervalInPips { get; set; } = 1;
 
-	[Parameter("Highlight Color", GroupName = "Level Visuals")]
-	public Color HighlightColor { get; set; } = DrawingColor.Gold.ToApiColor(0.0f);
+	[Parameter("Level Color", GroupName = "Level Visual Parameters", Description = "Color of the level line")]
+	public Color LevelColor { get; set; } = DrawingColor.Navy;
 
-	[Parameter("Highlight Thickness Type", GroupName = "Level Visuals")]
+	[NumericRange(MinValue = 1, MaxValue = 10)]
+	[Parameter("Level Thickness", GroupName = "Level Visual Parameters", Description = "Thickness of the level line")]
+	public int LevelThickness { get; set; } = 2;
+
+	[Parameter("Highlight Color", GroupName = "Level Visual Parameters", Description = "Color of the highlighted region")]
+	public Color HighlightColor { get; set; } = DrawingColor.Gold.With(0.0f);
+
+	[Parameter("Highlight Thickness Type", GroupName = "Level Visual Parameters", Description = "Type of highlighted region height measurement")]
 	public HighlightRegionHeightType HighlightThicknessTypeValue { get; set; } = HighlightRegionHeightType.Ticks;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Highlight Thickness Ticks", GroupName = "Level Visuals")]
-	public int HighlightRegionHeightInTicks { get; set; } = 1;
+	[Parameter("Highlight Thickness Ticks", GroupName = "Level Visual Parameters", Description = "Height of the highlighted region in ticks")]
+	public int HighlightGapHeightInTicks { get; set; } = 1;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Highlight Thickness Pixels", GroupName = "Level Visuals")]
-	public int HighlightRegionHeightInPixels { get; set; } = 5;
+	[Parameter("Highlight Thickness Pixels", GroupName = "Level Visual Parameters", Description = "Height of the highlighted region in pixels")]
+	public int HighlightGapHeightInPixels { get; set; } = 5;
 
 	protected override Parameters GetParameters(Parameters parameters)
 	{
@@ -76,14 +75,15 @@ public partial class BigRoundNumbers : Indicator
 
 		parameters.RemoveRange(propertyNames);
 
-		propertyName = HighlightThicknessTypeValue switch
+		if (HighlightThicknessTypeValue is HighlightRegionHeightType.Pixels)
 		{
-			HighlightRegionHeightType.Points => nameof(HighlightRegionHeightInTicks),
-			HighlightRegionHeightType.Ticks => nameof(HighlightRegionHeightInPixels),
-			_ => throw new UnreachableException(),
-		};
+			parameters.Remove(nameof(HighlightGapHeightInTicks));
+		}
 
-		parameters.Remove(propertyName);
+		if (HighlightThicknessTypeValue is HighlightRegionHeightType.Ticks)
+		{
+			parameters.Remove(nameof(HighlightGapHeightInPixels));
+		}
 
 		return parameters;
 	}
@@ -131,8 +131,8 @@ public partial class BigRoundNumbers : Indicator
 
 		return HighlightThicknessTypeValue switch
 		{
-			HighlightRegionHeightType.Points => HighlightRegionHeightInPixels,
-			HighlightRegionHeightType.Ticks => HighlightRegionHeightInTicks * tickHeight,
+			HighlightRegionHeightType.Pixels => HighlightGapHeightInPixels,
+			HighlightRegionHeightType.Ticks => HighlightGapHeightInTicks * tickHeight,
 			_ => throw new UnreachableException(),
 		};
 	}
@@ -153,5 +153,26 @@ public partial class BigRoundNumbers : Indicator
 
 			return BasePrice - Math.Ceiling(intervalMultiplier) * _intervalInPoints;
 		}
+	}
+
+	public enum IntervalType
+	{
+		[DisplayName("Points")]
+		Points,
+
+		[DisplayName("Ticks")]
+		Ticks,
+
+		[DisplayName("Pips")]
+		Pips
+	};
+
+	public enum HighlightRegionHeightType
+	{
+		[DisplayName("Ticks")]
+		Ticks,
+
+		[DisplayName("Pixels")]
+		Pixels,
 	}
 }

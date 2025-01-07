@@ -19,41 +19,38 @@ public partial class BarCloseMarker : Indicator
 	private double _lastClose;
 	private double _potentialLow;
 	private double _potentialHigh;
-	private const double _epsilon = 1e-10;
 
 	private Bar? _lastRealtimeBar;
 
 	private Color _markerLowSolidColor;
 	private Color _markerHighSolidColor;
 
-	private DateTime _realtimeThresholdUtc;
-
-	[Parameter("MarkerType")]
+	[Parameter("MarkerType", GroupName = "Marker Parameters")]
 	public MarkerType MarkerTypeValue { get; set; } = MarkerType.ExtendedLines;
 
-	[Parameter("Text Font")]
+	[Parameter("Text Font", GroupName = "Marker Parameters")]
 	public Font TextFont { get; set; } = new("Arial", 12);
 
-	[Parameter("Bar Close High Color")]
-	public Color MarkerHighColor { get; set; } = DrawingColor.Lime.ToApiColor(0.5f);
-
-	[Parameter("Current Price Color")]
-	public Color CurrentPriceColor { get; set; } = Color.Black.With(opacity: 0.5f);
-
-	[Parameter("Bar Close Low Color")]
-	public Color MarkerLowColor { get; set; } = Color.Red.With(opacity: 0.5f);
-
 	[NumericRange(MinValue = 1)]
-	[Parameter("Marker Width")]
+	[Parameter("Marker Width", GroupName = "Marker Parameters")]
 	public int MarkerThickness { get; set; } = 2;
 
-	[Parameter("Display Shadow")]
+	[Parameter("Bar Close High Color", GroupName = "Marker Parameters")]
+	public Color MarkerHighColor { get; set; } = DrawingColor.Lime.With(0.5f);
+
+	[Parameter("Current Price Color", GroupName = "Marker Parameters")]
+	public Color CurrentPriceColor { get; set; } = Color.Black.With(opacity: 0.5f);
+
+	[Parameter("Bar Close Low Color", GroupName = "Marker Parameters")]
+	public Color MarkerLowColor { get; set; } = Color.Red.With(opacity: 0.5f);
+
+	[Parameter("Display Shadow", GroupName = "Shadow Parameters")]
 	public bool ShowShadows { get; set; } = true;
 
-	[Parameter("Top Shadow Color")]
-	public Color TopShadowColor { get; set; } = DrawingColor.Lime.ToApiColor(0.1f);
+	[Parameter("Top Shadow Color", GroupName = "Shadow Parameters")]
+	public Color TopShadowColor { get; set; } = DrawingColor.Lime.With(0.1f);
 
-	[Parameter("Bottom Shadow Color")]
+	[Parameter("Bottom Shadow Color", GroupName = "Shadow Parameters")]
 	public Color BottomShadowColor { get; set; } = Color.Red.With(opacity: 0.1f);
 
     protected override Parameters GetParameters(Parameters parameters)
@@ -95,7 +92,6 @@ public partial class BarCloseMarker : Indicator
 		_lastOpen = default;
 		_lastClose = default;
 		_lastRealtimeBar = default;
-		_realtimeThresholdUtc = DateTime.UtcNow;
 		_markerLowSolidColor = MarkerLowColor.With(opacity: 1.0f);
 		_markerHighSolidColor = MarkerHighColor.With(opacity: 1.0f);
 	}
@@ -128,7 +124,7 @@ public partial class BarCloseMarker : Indicator
 
 		var currentDelta = Math.Abs(lastBar.Close - lastBar.Open);
 
-		if (currentDelta + _epsilon >= rangeDelta)
+		if (currentDelta.EpsilonGreaterThanOrEquals(rangeDelta))
 		{
 			return;
 		}
@@ -203,5 +199,17 @@ public partial class BarCloseMarker : Indicator
 			context.DrawHorizontalLine(barStartX, potentialLowY, barEndX, MarkerLowColor, MarkerThickness);
 			context.DrawHorizontalLine(barStartX, potentialHighY, barEndX, MarkerHighColor, MarkerThickness);
 		}
+	}
+
+	public enum MarkerType
+	{
+		[DisplayName("None")]
+		None,
+
+		[DisplayName("Price")]
+		Price,
+
+		[DisplayName("Extended Lines")]
+		ExtendedLines,
 	}
 }

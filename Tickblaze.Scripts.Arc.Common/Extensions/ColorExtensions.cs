@@ -2,7 +2,7 @@
 
 public static class ColorExtensions
 {
-    public static Color ToApiColor(this DrawingColor drawingColor, float? opacity = default)
+    public static Color With(this DrawingColor drawingColor, float? opacity = default)
     {
         var color = Color.FromDrawingColor(drawingColor);
 

@@ -26,7 +26,7 @@ public partial class VmLean
 	public double BbMultiplier { get; set; } = 1.0;
 
 	[Parameter("BB Channel Color", GroupName = "MACDBB Parameters")]
-	public Color BbChannelColor { get; set; } = DrawingColor.DodgerBlue.ToApiColor(opacity: 0.2f);
+	public Color BbChannelColor { get; set; } = DrawingColor.DodgerBlue.With(opacity: 0.2f);
 
 	[Plot("BB Average")]
 	public PlotSeries BbAverage { get; set; } = new(Color.Transparent, LineStyle.Dot, 2);

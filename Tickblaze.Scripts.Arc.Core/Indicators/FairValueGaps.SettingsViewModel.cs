@@ -1,11 +1,11 @@
-﻿//using ReactiveUI;
+﻿using ReactiveUI;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
 public partial class FairValueGaps
 {
-	public partial class SettingsViewModel //: ReactiveObject
+	public partial class SettingsViewModel : ReactiveObject
 	{
 		public SettingsViewModel(FairValueGaps fairValueGaps)
 		{
@@ -21,7 +21,7 @@ public partial class FairValueGaps
 			{
 				_fairValueGaps.ShowFreshGaps = value;
 
-				//this.RaiseAndSetIfChanged(ref field, value);
+				this.RaiseAndSetIfChanged(ref field, value);
 			}
 		}
 
@@ -32,7 +32,7 @@ public partial class FairValueGaps
 			{
 				_fairValueGaps.ShowTestedGaps = field;
 
-				//this.RaiseAndSetIfChanged(ref field, value);
+				this.RaiseAndSetIfChanged(ref field, value);
 			}
 		}
 
@@ -43,7 +43,7 @@ public partial class FairValueGaps
 			{
 				_fairValueGaps.ShowBrokenGaps = value;
 
-				//this.RaiseAndSetIfChanged(ref field, value);
+				this.RaiseAndSetIfChanged(ref field, value);
 			}
 		}
 
@@ -55,7 +55,7 @@ public partial class FairValueGaps
 			{
 				_fairValueGaps.SettingsHeader = value;
 
-				//this.RaiseAndSetIfChanged(ref field, value);
+				this.RaiseAndSetIfChanged(ref field, value);
 			}
 		}
 

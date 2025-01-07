@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using Tickblaze.Scripts.Api.Interfaces;
 
 namespace Tickblaze.Scripts.Arc.Common;
 
@@ -11,6 +12,8 @@ public class Gaps : Indicator
     public IReadOnlyList<Gap> GapList => _gaps;
 
     public required Color FillColor { get; init; }
+
+	public IChartObject? RenderParent { get; init; }
 
     public required ISeries<double> MinHeights { get; init; }
 
@@ -72,9 +75,16 @@ public class Gaps : Indicator
 
     public override void OnRender(IDrawingContext drawingContext)
     {
-        var visibleBoundary = this.GetVisibleBoundary();
+		if (RenderParent is not { Chart: not null, ChartScale: not null })
+		{
+			throw new InvalidOperationException(nameof(OnRender));
+		}
 
-        var chartRightX = Chart.GetRightX();
+		var chart = RenderParent.Chart;
+		var chartScale = RenderParent.ChartScale;
+		var visibleBoundary = RenderParent.GetVisibleBoundary();
+
+        var chartRightX = chart.GetRightX();
         var visibleGaps = GetVisibleGaps(visibleBoundary);
 
         foreach (var visibleGap in visibleGaps)
@@ -84,12 +94,12 @@ public class Gaps : Indicator
                 continue;
             }
 
-            var gapStartX = Chart.GetXCoordinateByBarIndex(visibleGap.StartBarIndex);
-            var gapStartY = ChartScale.GetYCoordinateByValue(visibleGap.StartPrice);
+            var gapStartX = chart.GetXCoordinateByBarIndex(visibleGap.StartBarIndex);
+            var gapStartY = chartScale.GetYCoordinateByValue(visibleGap.StartPrice);
 
             var gapEndX = visibleGap.EndBarIndex is null
-                ? chartRightX : Chart.GetXCoordinateByBarIndex(visibleGap.EndBarIndex.Value);
-            var gapEndY = ChartScale.GetYCoordinateByValue(visibleGap.EndPrice);
+                ? chartRightX : chart.GetXCoordinateByBarIndex(visibleGap.EndBarIndex.Value);
+            var gapEndY = chartScale.GetYCoordinateByValue(visibleGap.EndPrice);
 
             drawingContext.DrawRectangle(gapStartX, gapStartY, gapEndX, gapEndY, FillColor);
         }
