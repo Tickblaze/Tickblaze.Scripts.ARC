@@ -3,6 +3,7 @@
 	<PropertyGroup>
 		<LangVersion>preview</LangVersion>
 		<TargetFramework>net9.0-windows</TargetFramework>
+		<UseWPF>true</UseWPF>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
@@ -12,7 +13,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.45-pre.22" />
+	  <PackageReference Include="MahApps.Metro" Version="2.4.10" />
+	  <PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.45-pre.37" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Resources\SettingsResources.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </None>
 	</ItemGroup>
 
 </Project>

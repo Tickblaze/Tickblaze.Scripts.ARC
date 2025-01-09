@@ -1,5 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Controls;
 using Tickblaze.Scripts.Arc.Common;
 using Tickblaze.Scripts.Indicators;
 
@@ -9,7 +12,7 @@ public partial class FairValueGaps : Indicator
 {
 	public FairValueGaps()
 	{
-		_settingViewModel = new(this);
+		_menuViewModel = new(this);
 
 		IsOverlay = true;
 		ShortName = "TBC FVG";
@@ -26,13 +29,10 @@ public partial class FairValueGaps : Indicator
 	private Gaps _brokenGaps;
 
 	[AllowNull]
-	private ISeries<double> _minGapHeights;
-
-	[AllowNull]
 	private AverageTrueRange _averageTrueRange;
 
-	private readonly SettingsViewModel _settingViewModel;
-	
+	private readonly MenuViewModel _menuViewModel;
+
 	[Parameter("Measurement")]
 	public GapMeasurement GapMeasurementValue { get; set; } = GapMeasurement.Atr;
 
@@ -52,29 +52,35 @@ public partial class FairValueGaps : Indicator
 	public bool ShowFreshGaps { get; set; }
 
 	[Parameter("Fresh FGV Color", GroupName = "Visual Parameters")]
-	public Color FreshGapColor { get; set; } = Color.New(Color.Orange, 0.5f);
+	public Color FreshGapColor { get; set; } = Color.Orange.With(opacity: 0.5f);
 
 	[Parameter("Show Tested FGVs", GroupName = "Visual Parameters")]
 	public bool ShowTestedGaps { get; set; }
 
 	[Parameter("Tested FGV Color", GroupName = "Visual Parameters")]
-	public Color TestedGapColor { get; set; } = Color.New(Color.Silver, 0.5f);
+	public Color TestedGapColor { get; set; } = Color.Silver.With(opacity: 0.5f);
 
 	[Parameter("Show Broken FGVs", GroupName = "Visual Parameters")]
 	public bool ShowBrokenGaps { get; set; }
 
 	[Parameter("Broken FGV Color", GroupName = "Visual Parameters")]
-	public Color BrokenGapColor { get; set; } = Color.New(Color.DimGray, 0.5f);
+	public Color BrokenGapColor { get; set; } = Color.DimGray.With(opacity: 0.5f);
 
-	[Parameter("Settings Header", GroupName = "Visual Parameters")]
-	public string SettingsHeader { get; set; } = "TBC FVG";
+	[Parameter("Menu Header", GroupName = "Visual Parameters")]
+	public string MenuHeader { get; set; } = "TBC FVG";
 
 	public override object? CreateChartToolbarMenuItem()
-	{
-		return new FairValueGapsSettings()
+    {
+		var uri = new Uri("/Tickblaze.Scripts.Arc.Core;component/Indicators/FairValueGapsMenu.xaml", UriKind.Relative);
+
+		var menu = Application.LoadComponent(uri);
+
+		if (menu is FrameworkElement frameworkElement)
 		{
-			DataContext = _settingViewModel
-		};
+			frameworkElement.DataContext = _menuViewModel;
+		}
+
+		return menu;
 	}
 
 	protected override Parameters GetParameters(Parameters parameters)
@@ -107,50 +113,48 @@ public partial class FairValueGaps : Indicator
 		return parameters;
 	}
 
-	protected override void Initialize()
-	{
-		InitializeMinGapHeights();
-
-		_settingViewModel.Initialize();
-
-		_freshGaps = new()
-		{
-			RenderParent = this,
-			FillColor = FreshGapColor,
-			MinHeights = _minGapHeights,
-		};
-
-		_testedGaps = new()
-		{
-			RenderParent = this,
-			FillColor = FreshGapColor,
-			MinHeights = _minGapHeights,
-		};
-
-		_brokenGaps = new()
-		{
-			RenderParent = this,
-			FillColor = FreshGapColor,
-			MinHeights = _minGapHeights,
-		};
-	}
-
-	private void InitializeMinGapHeights()
+	private ISeries<double> GetMinGapHeights()
 	{
 		if (GapMeasurementValue is GapMeasurement.Tick)
 		{
-			_minGapHeights = Bars.Map(bar => GapTickCount * Symbol.TickSize);
+			return Bars.Map(bar => GapTickCount * Symbol.TickSize);
 		}
 		else if (GapMeasurementValue is GapMeasurement.Atr)
 		{
 			var atr = new AverageTrueRange(AtrPeriod, MovingAverageType.Simple);
 
-			_minGapHeights = atr.Result.Map(atr => AtrMultiple * atr);
+			return atr.Result.Map(atr => AtrMultiple * atr);
 		}
-		else
+
+		throw new UnreachableException();
+	}
+
+	protected override void Initialize()
+	{
+		var minGapHeights = GetMinGapHeights();
+
+		_menuViewModel.Initialize();
+
+		_freshGaps = new()
 		{
-			throw new UnreachableException();
-		}
+			RenderParent = this,
+			FillColor = FreshGapColor,
+			MinHeights = minGapHeights,
+		};
+
+		_testedGaps = new()
+		{
+			RenderParent = this,
+			FillColor = TestedGapColor,
+			MinHeights = minGapHeights,
+		};
+
+		_brokenGaps = new()
+		{
+			RenderParent = this,
+			FillColor = BrokenGapColor,
+			MinHeights = minGapHeights,
+		};
 	}
 
 	protected override void Calculate(int barIndex)
@@ -167,7 +171,7 @@ public partial class FairValueGaps : Indicator
 
 	private void CalculateFreshGaps(int barIndex)
 	{
-		var minGapHeight = _minGapHeights[barIndex];
+		var minGapHeight = _freshGaps.MinHeights[barIndex];
 
 		Gap[] gaps =
 		[
@@ -263,5 +267,14 @@ public partial class FairValueGaps : Indicator
 		{
 			_brokenGaps.OnRender(drawingContext);
 		}
+	}
+
+	public enum GapMeasurement
+	{
+		[DisplayName("ATR")]
+		Atr,
+
+		[DisplayName("Ticks")]
+		Tick,
 	}
 }

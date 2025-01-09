@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Tickblaze.Scripts.Api.Interfaces;
+using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc.Common;
 
@@ -48,12 +49,25 @@ public class Gaps : Indicator
         return _gaps.IndexOf(gap.Key);
     }
 
-    public void AddOrUpdate(Gap gap)
+	public void AddGaps(int barIndex, params IEnumerable<Gap> gaps)
     {
-        _gaps.AddOrUpdate(gap);
-    }
+		var minGapHeight = MinHeights[barIndex];
 
-    public bool Remove(Gap gap)
+		foreach (var gap in gaps)
+		{
+			if (gap.EndPrice - gap.StartPrice > minGapHeight)
+			{
+				AddOrUpdate(gap);
+			}
+		}
+	}
+
+	public void AddOrUpdate(Gap gap)
+	{
+		_gaps.AddOrUpdate(gap);
+	}
+
+	public bool Remove(Gap gap)
     {
         return _gaps.Remove(gap);
     }

@@ -1,0 +1,12 @@
+﻿<ResourceDictionary
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:common="clr-namespace:Tickblaze.Scripts.Arc.Common"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<ResourceDictionary.MergedDictionaries>
+		<x:Static Member="common:ResourceDictionaries.BaseResources" />
+	</ResourceDictionary.MergedDictionaries>
+	
+	<Style TargetType="TextBlock" BasedOn="{StaticResource MahApps.Styles.TextBlock}">
+		<Setter Property="Padding" Value="{DynamicResource DefaultThickness}" />
+	</Style>
+</ResourceDictionary>

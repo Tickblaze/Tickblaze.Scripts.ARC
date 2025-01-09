@@ -1,0 +1,40 @@
+﻿<Menu
+	mc:Ignorable="d"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:local="clr-namespace:Tickblaze.Scripts.Arc.Core.Indicators"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:common="clr-namespace:Tickblaze.Scripts.Arc.Common;assembly=Tickblaze.Scripts.Arc.Common">
+	<Menu.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<x:Static Member="common:ResourceDictionaries.BaseResources" />
+				<x:Static Member="common:ResourceDictionaries.DefaultResources" />
+			</ResourceDictionary.MergedDictionaries>
+			
+		</ResourceDictionary>
+	</Menu.Resources>
+	
+	<MenuItem
+		FontSize="13"
+		FontWeight="Bold"
+		BorderThickness="2"
+		Background="White"
+		Foreground="Maroon"
+		BorderBrush="Maroon"
+		Header="{Binding MenuHeader}">
+		<common:CheckBoxMenuItem
+			FontWeight="Normal"
+			HeaderText="Show Fresh FVGs"
+			IsOn="{Binding ShowFreshGaps, Mode=TwoWay}" />
+		<common:CheckBoxMenuItem
+			FontWeight="Normal"
+			HeaderText="Show Tested FVGs"
+			IsOn="{Binding ShowTestedGaps, Mode=TwoWay}" />
+		<common:CheckBoxMenuItem
+			FontWeight="Normal"
+			HeaderText="Show Broken FVGs"
+			IsOn="{Binding ShowBrokenGaps, Mode=TwoWay}" />
+	</MenuItem>
+</Menu>

@@ -5,9 +5,9 @@ namespace Tickblaze.Scripts.Arc.Core;
 
 public partial class FairValueGaps
 {
-	public partial class SettingsViewModel : ReactiveObject
+	public partial class MenuViewModel : ReactiveObject
 	{
-		public SettingsViewModel(FairValueGaps fairValueGaps)
+		public MenuViewModel(FairValueGaps fairValueGaps)
 		{
 			_fairValueGaps = fairValueGaps;
 		}
@@ -22,6 +22,8 @@ public partial class FairValueGaps
 				_fairValueGaps.ShowFreshGaps = value;
 
 				this.RaiseAndSetIfChanged(ref field, value);
+
+				//this.RaisePropertyChanged(nameof(ShowFreshGapsMenuHeader));
 			}
 		}
 
@@ -48,12 +50,12 @@ public partial class FairValueGaps
 		}
 
 		[DisallowNull]
-		public string? SettingsHeader
+		public string? MenuHeader
 		{
 			get;
 			private set
 			{
-				_fairValueGaps.SettingsHeader = value;
+				_fairValueGaps.MenuHeader = value;
 
 				this.RaiseAndSetIfChanged(ref field, value);
 			}
@@ -64,7 +66,7 @@ public partial class FairValueGaps
 			ShowFreshGaps = _fairValueGaps.ShowFreshGaps;
 			ShowTestedGaps = _fairValueGaps.ShowTestedGaps;
 			ShowBrokenGaps = _fairValueGaps.ShowBrokenGaps;
-			SettingsHeader = _fairValueGaps.SettingsHeader;
+			MenuHeader = _fairValueGaps.MenuHeader;
 		}
 	}
 }

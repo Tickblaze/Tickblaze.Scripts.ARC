@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Tickblaze.Scripts.Arc.Common;
 
-namespace Tickblaze.Scripts.Arc.Common;
+namespace Tickblaze.Scripts.Arc.Core;
 
 // Todo: quick access settings.
 public partial class SwingStructure : Indicator

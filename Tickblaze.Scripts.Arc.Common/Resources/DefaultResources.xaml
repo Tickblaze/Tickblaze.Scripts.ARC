@@ -1,0 +1,11 @@
+﻿<ResourceDictionary
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<ResourceDictionary.MergedDictionaries>
+		<ResourceDictionary Source="MahApps/MahApps.Button.Resources.xaml" />
+		<ResourceDictionary Source="MahApps/MahApps.MenuItem.Resources.xaml" />
+		<ResourceDictionary Source="MahApps/MahApps.TextBlock.Resources.xaml" />
+		
+		<ResourceDictionary Source="MenuResources.xaml" />
+	</ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>
