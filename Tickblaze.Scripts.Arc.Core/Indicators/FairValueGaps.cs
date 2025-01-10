@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using Tickblaze.Scripts.Arc.Common;
@@ -15,8 +14,8 @@ public partial class FairValueGaps : Indicator
 		_menuViewModel = new(this);
 
 		IsOverlay = true;
-		ShortName = "TBC FVG";
-		Name = "TB Core Fair Value Gaps";
+		ShortName = "FVG";
+		Name = "Fair Value Gaps";
 	}
 
 	[AllowNull]
@@ -27,9 +26,6 @@ public partial class FairValueGaps : Indicator
 
 	[AllowNull]
 	private Gaps _brokenGaps;
-
-	[AllowNull]
-	private AverageTrueRange _averageTrueRange;
 
 	private readonly MenuViewModel _menuViewModel;
 
@@ -49,38 +45,38 @@ public partial class FairValueGaps : Indicator
 	public int AtrPeriod { get; set; } = 14;
 
 	[Parameter("Show Fresh FVGs", GroupName = "Visual Parameters")]
-	public bool ShowFreshGaps { get; set; }
+	public bool ShowFreshGaps { get; set; } = true;
 
 	[Parameter("Fresh FGV Color", GroupName = "Visual Parameters")]
 	public Color FreshGapColor { get; set; } = Color.Orange.With(opacity: 0.5f);
 
 	[Parameter("Show Tested FGVs", GroupName = "Visual Parameters")]
-	public bool ShowTestedGaps { get; set; }
+	public bool ShowTestedGaps { get; set; } = true;
 
 	[Parameter("Tested FGV Color", GroupName = "Visual Parameters")]
 	public Color TestedGapColor { get; set; } = Color.Silver.With(opacity: 0.5f);
 
 	[Parameter("Show Broken FGVs", GroupName = "Visual Parameters")]
-	public bool ShowBrokenGaps { get; set; }
+	public bool ShowBrokenGaps { get; set; } = true;
 
 	[Parameter("Broken FGV Color", GroupName = "Visual Parameters")]
 	public Color BrokenGapColor { get; set; } = Color.DimGray.With(opacity: 0.5f);
 
 	[Parameter("Menu Header", GroupName = "Visual Parameters")]
-	public string MenuHeader { get; set; } = "TBC FVG";
+	public string MenuHeader { get; set; } = "Fair Value Gaps";
 
 	public override object? CreateChartToolbarMenuItem()
     {
-		var uri = new Uri("/Tickblaze.Scripts.Arc.Core;component/Indicators/FairValueGapsMenu.xaml", UriKind.Relative);
+		var uri = new Uri("/Tickblaze.Scripts.Arc.Core;component/Indicators/FairValueGaps.Menu.xaml", UriKind.Relative);
 
-		var menu = Application.LoadComponent(uri);
+		var menuObject = Application.LoadComponent(uri);
 
-		if (menu is FrameworkElement frameworkElement)
+		if (menuObject is Menu menu)
 		{
-			frameworkElement.DataContext = _menuViewModel;
+			menu.DataContext = _menuViewModel;
 		}
 
-		return menu;
+		return menuObject;
 	}
 
 	protected override Parameters GetParameters(Parameters parameters)
@@ -137,21 +133,21 @@ public partial class FairValueGaps : Indicator
 
 		_freshGaps = new()
 		{
-			RenderParent = this,
+			RenderTarget = this,
 			FillColor = FreshGapColor,
 			MinHeights = minGapHeights,
 		};
 
 		_testedGaps = new()
 		{
-			RenderParent = this,
+			RenderTarget = this,
 			FillColor = TestedGapColor,
 			MinHeights = minGapHeights,
 		};
 
 		_brokenGaps = new()
 		{
-			RenderParent = this,
+			RenderTarget = this,
 			FillColor = BrokenGapColor,
 			MinHeights = minGapHeights,
 		};
@@ -171,7 +167,7 @@ public partial class FairValueGaps : Indicator
 
 	private void CalculateFreshGaps(int barIndex)
 	{
-		var minGapHeight = _freshGaps.MinHeights[barIndex];
+		var minGapHeight = _freshGaps.MinHeights[barIndex - 1];
 
 		Gap[] gaps =
 		[
@@ -202,15 +198,15 @@ public partial class FairValueGaps : Indicator
 		}
 	}
 
-	private void CalculateTestedGaps(int index)
+	private void CalculateTestedGaps(int barIndex)
 	{
-		var lastBar = Bars[index]!;
+		var lastBar = Bars[barIndex]!;
 		
 		for (var gapIndex = _freshGaps.Count - 1; gapIndex >= 0; gapIndex--)
 		{
 			var gap = _freshGaps.GetGapAt(gapIndex);
 
-			if (index - gap.StartBarIndex <= 1)
+			if (barIndex - gap.StartBarIndex <= 1)
 			{
 				continue;
 			}
@@ -218,7 +214,7 @@ public partial class FairValueGaps : Indicator
 			if (lastBar.Low < gap.EndPrice && gap.IsSupport
 				|| lastBar.High > gap.StartPrice && gap.IsResistance)
 			{
-				gap.EndBarIndex = index;
+				gap.EndBarIndex = barIndex;
 
 				_freshGaps.RemoveAt(gapIndex);
 
@@ -227,9 +223,9 @@ public partial class FairValueGaps : Indicator
 		}
 	}
 
-	private void CalculateBrokenGaps(int index)
+	private void CalculateBrokenGaps(int barIndex)
 	{
-		var lastBar = Bars[index]!;
+		var lastBar = Bars[barIndex]!;
 
 		for (var gapIndex = _testedGaps.Count - 1; gapIndex >= 0; gapIndex--)
 		{
@@ -242,7 +238,7 @@ public partial class FairValueGaps : Indicator
 			{
 				gapIndex++;
 				
-				gap.EndBarIndex = index;
+				gap.EndBarIndex = barIndex;
 
 				_testedGaps.RemoveAt(gapIndex);
 

@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Windows;
+using System.Windows.Controls;
 using Tickblaze.Scripts.Arc.Common;
 
 namespace Tickblaze.Scripts.Arc.Core;
@@ -8,13 +10,17 @@ public partial class SwingStructure : Indicator
 {
 	public SwingStructure()
 	{
+		_menuViewModel = new(this);
+
 		IsOverlay = true;
-		ShortName = "TBC SS";
-		Name = "TB Core Swing Structure";
+		ShortName = "SS";
+		Name = "Swing Structure";
 	}
 
 	[AllowNull]
 	private Swings _swings;
+
+	private readonly MenuViewModel _menuViewModel;
 
 	[Parameter("Calculation Mode", Description = "Whether to calculate the structure by current or closed bar highs and lows")]
 	public SwingCalculationMode CalculationMode { get; set; }
@@ -43,7 +49,7 @@ public partial class SwingStructure : Indicator
 	public Font LabelFont { get; set; } = new("Arial", 12);
 
 	[Parameter("Settings Header", Description = "Quick access settings header")]
-	public string SettingsHeader { get; set; } = "TBC Swing";
+	public string MenuHeader { get; set; } = "Swing";
 
 	protected override Parameters GetParameters(Parameters parameters)
     {
@@ -69,7 +75,21 @@ public partial class SwingStructure : Indicator
 		return parameters;
     }
 
-	protected override void Initialize()
+    public override object? CreateChartToolbarMenuItem()
+    {
+		var uri = new Uri("/Tickblaze.Scripts.Arc.Core;component/Indicators/GapFinder.Menu.xaml", UriKind.Relative);
+
+		var menuObject = Application.LoadComponent(uri);
+
+		if (menuObject is Menu menu)
+		{
+			menu.DataContext = _menuViewModel;
+		}
+
+		return menuObject;
+	}
+
+    protected override void Initialize()
     {
 		_swings = new Swings
 		{

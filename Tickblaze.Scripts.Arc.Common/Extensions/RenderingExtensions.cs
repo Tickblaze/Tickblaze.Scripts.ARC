@@ -1,6 +1,4 @@
-﻿using Tickblaze.Scripts.Arc.Common;
-
-namespace Tickblaze.Scripts.Arc.Common;
+﻿namespace Tickblaze.Scripts.Arc.Common;
 
 public static class RenderingExtensions
 {

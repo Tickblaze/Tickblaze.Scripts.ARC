@@ -7,20 +7,11 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
-
+	
 	<ItemGroup>
-	  <Folder Include="Utilities\" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <PackageReference Include="MahApps.Metro" Version="2.4.10" />
-	  <PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.45-pre.37" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Update="Resources\SettingsResources.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </None>
+		<PackageReference Include="ReactiveUI" Version="20.1.63" />
+		<PackageReference Include="MahApps.Metro" Version="2.4.10" />
+		<PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.45-pre.31" />
 	</ItemGroup>
 
 </Project>

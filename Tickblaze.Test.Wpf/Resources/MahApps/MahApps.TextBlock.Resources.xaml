@@ -1,8 +1,0 @@
-﻿<ResourceDictionary
-	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-
-	<Style TargetType="TextBlock" BasedOn="{StaticResource MahApps.Styles.TextBlock}">
-		<Setter Property="Padding" Value="{DynamicResource DefaultThickness}" />
-	</Style>
-</ResourceDictionary>

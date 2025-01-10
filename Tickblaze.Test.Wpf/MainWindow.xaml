@@ -8,15 +8,41 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro">
+    xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+	xmlns:common="clr-namespace:Tickblaze.Scripts.Arc.Common;assembly=Tickblaze.Scripts.Arc.Common">
+	<Window.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<x:Static Member="common:ResourceDictionaries.DefaultResources" />
+			</ResourceDictionary.MergedDictionaries>
+
+			<Style x:Key="DefaultTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+				<Setter Property="Foreground" Value="Maroon" />
+			</Style>
+		</ResourceDictionary>
+	</Window.Resources>
 	<DockPanel>
 		<Menu>
-			<MenuItem Header="ASDSD" Grid.IsSharedSizeScope="True">
-				<MenuItem Header="ASDSD">
-					<arc:CheckBoxMenuItem HeaderText="ASDSD" />
-				</MenuItem>
-				<arc:CheckBoxMenuItem HeaderText="ASDSDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" />
-				<arc:CheckBoxMenuItem HeaderText="ASDSDAAAAAAAAA" />
+			<MenuItem
+				BorderThickness="2"
+				Background="White"
+				BorderBrush="Maroon"
+				Grid.IsSharedSizeScope="True">
+				<MenuItem.Header>
+					<TextBlock
+						Text="ASDS"
+						FontWeight="Bold"
+						Foreground="Maroon"
+						FontSize="13" />
+				</MenuItem.Header>
+				<MenuItem.Resources>
+					<Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+						<Setter Property="Foreground" Value="White" />
+					</Style>
+				</MenuItem.Resources>
+				<MenuItem Header="ASDSD" />
+				<common:CheckBoxMenuItem HeaderText="ASDSDAAA" />
+				<common:CheckBoxMenuItem HeaderText="ASDSDAAA" />
 			</MenuItem>
 			<MenuItem Header="ASDSD" />
 		</Menu>

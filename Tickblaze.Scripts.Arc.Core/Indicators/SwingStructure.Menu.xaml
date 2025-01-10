@@ -1,0 +1,34 @@
+﻿<Menu
+	mc:Ignorable="d"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:common="clr-namespace:Tickblaze.Scripts.Arc.Common;assembly=Tickblaze.Scripts.Arc.Common">
+	<Menu.Resources>
+		<x:Static Member="common:ResourceDictionaries.DefaultResources" />
+	</Menu.Resources>
+	
+	<MenuItem
+		BorderThickness="2"
+		BorderBrush="Pink"
+		Background="Maroon"
+		Grid.IsSharedSizeScope="True">
+		<MenuItem.Header>
+			<TextBlock
+				FontSize="13"
+				FontWeight="Bold"
+				Foreground="Pink"
+				Text="{Binding MenuHeader}" />
+		</MenuItem.Header>
+		<common:CheckBoxMenuItem
+			Header="Show Swing Lines"
+			IsOn="{Binding ShowSwingLines, Mode=TwoWay}" />
+		<common:CheckBoxMenuItem
+			Header="Show Swing Labes"
+			IsOn="{Binding ShowSwingLabels, Mode=TwoWay}" />
+		<common:CheckBoxMenuItem
+			Header="Show Broken FVGs"
+			IsOn="{Binding SwingStrength, Mode=TwoWay}" />
+	</MenuItem>
+</Menu>

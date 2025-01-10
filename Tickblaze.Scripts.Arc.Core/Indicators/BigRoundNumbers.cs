@@ -8,8 +8,8 @@ public partial class BigRoundNumbers : Indicator
 	public BigRoundNumbers()
 	{
 		IsOverlay = true;
-		ShortName = "TBC BRN";
-		Name = "TB Core Big Round Numbers";
+		ShortName = "BRN";
+		Name = "Big Round Numbers";
 	}
 
 	private double _intervalInPoints;

@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Tickblaze.Scripts.Arc.Core;
+﻿namespace Tickblaze.Scripts.Arc.Core;
 
 // Todo: separate paremeters and their visuals.
 public partial class VmLean : Indicator
@@ -26,10 +24,21 @@ public partial class VmLean : Indicator
 		return parameters;
     }
 
-    protected override void Calculate(int index)
+    protected override void Initialize()
     {
-		CalculateHistogram(index);
+		InitializeSwings();
 
-		CalculateMacdBb(index);
+		InitializeMacdBb();
+
+		InitializeHistogram();
+
+		InitializeFlooding();
+	}
+
+    protected override void Calculate(int barIndex)
+    {
+		CalculateHistogram(barIndex);
+
+		CalculateMacdBb(barIndex);
     }
 }

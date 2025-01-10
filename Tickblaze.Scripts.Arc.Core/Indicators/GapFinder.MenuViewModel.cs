@@ -1,18 +1,13 @@
-﻿//using ReactiveUI;
-using System;
-using System.Collections.Generic;
+﻿using ReactiveUI;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
 public partial class GapFinder
 {
-	public partial class SettingsViewModel //: ReactiveObject
+	public sealed class MenuViewModel : ReactiveObject
 	{
-		public SettingsViewModel(GapFinder gapFinder)
+		public MenuViewModel(GapFinder gapFinder)
 		{
 			_gapFinder = gapFinder;
 		}
@@ -26,7 +21,7 @@ public partial class GapFinder
 			{
 				_gapFinder.ShowFreshGaps = value;
 
-				//this.RaiseAndSetIfChanged(ref field, value);
+				this.RaiseAndSetIfChanged(ref field, value);
 			}
 		}
 
@@ -37,7 +32,7 @@ public partial class GapFinder
 			{
 				_gapFinder.ShowTestedGaps = field;
 
-				//this.RaiseAndSetIfChanged(ref field, value);
+				this.RaiseAndSetIfChanged(ref field, value);
 			}
 		}
 
@@ -48,28 +43,29 @@ public partial class GapFinder
 			{
 				_gapFinder.ShowBrokenGaps = value;
 
-				//this.RaiseAndSetIfChanged(ref field, value);
+				this.RaiseAndSetIfChanged(ref field, value);
 			}
 		}
 
 		[DisallowNull]
-		public string? SettingsHeader
+		public string? MenuHeader
 		{
 			get;
 			private set
 			{
 				_gapFinder.SettingsHeader = value;
 
-				//this.RaiseAndSetIfChanged(ref field, value);
+				this.RaiseAndSetIfChanged(ref field, value);
 			}
 		}
 
 		public void Initialize()
 		{
+			MenuHeader = _gapFinder.SettingsHeader;
+
 			ShowFreshGaps = _gapFinder.ShowFreshGaps;
 			ShowTestedGaps = _gapFinder.ShowTestedGaps;
 			ShowBrokenGaps = _gapFinder.ShowBrokenGaps;
-			SettingsHeader = _gapFinder.SettingsHeader;
 		}
 	}
 }

@@ -8,8 +8,8 @@ public partial class LeadersAndLaggers : Indicator
 {
 	public LeadersAndLaggers()
 	{
-		ShortName = "TBC LL";
-		Name = "TB Core Leaders and Laggers";
+		ShortName = "LL";
+		Name = "Leaders and Laggers";
 	}
 
 	private static readonly Regex _symbolRegex = GetSymbolRegex();

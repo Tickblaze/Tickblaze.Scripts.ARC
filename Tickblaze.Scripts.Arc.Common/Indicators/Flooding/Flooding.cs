@@ -2,15 +2,13 @@
 
 namespace Tickblaze.Scripts.Arc.Common;
 
-public class Flooding : Indicator
+public class Flooding : ChildIndicator
 {
 	[AllowNull]
 	private Series<Trend> _trends;
 
 	[AllowNull]
 	private DrawingPartDictionary<int, FloodingInterval> _intervals;
-
-	public bool IsMtf { get; init; }
 
 	public required ISeries<Trend>[] SourceTrends { get; init; }
 
@@ -21,11 +19,13 @@ public class Flooding : Indicator
 	private FloodingInterval LastInterval => _intervals.LastDrawingPart;
 
     protected override void Initialize()
-    {
-		_intervals = [];
-    }
+	{
+		_trends = [];
 
-    protected override void Calculate(int barIndex)
+		_intervals = [];
+	}
+
+	protected override void Calculate(int barIndex)
     {
         Reset(barIndex);
 
@@ -75,7 +75,14 @@ public class Flooding : Indicator
 
     public override void OnRender(IDrawingContext drawingContext)
     {
-		var visibleBoundary = this.GetVisibleBoundary();
+		if (Chart is null
+			|| ChartScale is null
+			|| RenderTarget is null)
+		{
+			throw new InvalidOperationException(nameof(OnRender));
+		}
+
+		var visibleBoundary = RenderTarget.GetVisibleBoundary();
 		var visibleIntervals = _intervals.GetVisibleDrawingParts(visibleBoundary);
 
 		foreach (var visibleInterval in visibleIntervals)

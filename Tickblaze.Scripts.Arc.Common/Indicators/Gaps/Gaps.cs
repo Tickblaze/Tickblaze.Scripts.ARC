@@ -1,20 +1,16 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using Tickblaze.Scripts.Api.Interfaces;
-using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc.Common;
 
 [Browsable(false)]
-public class Gaps : Indicator
+public class Gaps : ChildIndicator
 {
     private readonly DrawingPartDictionary<int, Gap> _gaps = [];
 
     public IReadOnlyList<Gap> GapList => _gaps;
 
     public required Color FillColor { get; init; }
-
-	public IChartObject? RenderParent { get; init; }
 
     public required ISeries<double> MinHeights { get; init; }
 
@@ -89,16 +85,16 @@ public class Gaps : Indicator
 
     public override void OnRender(IDrawingContext drawingContext)
     {
-		if (RenderParent is not { Chart: not null, ChartScale: not null })
+		if (Chart is null
+			|| ChartScale is null
+			|| RenderTarget is null)
 		{
 			throw new InvalidOperationException(nameof(OnRender));
 		}
 
-		var chart = RenderParent.Chart;
-		var chartScale = RenderParent.ChartScale;
-		var visibleBoundary = RenderParent.GetVisibleBoundary();
+		var visibleBoundary = RenderTarget.GetVisibleBoundary();
 
-        var chartRightX = chart.GetRightX();
+        var chartRightX = Chart.GetRightX();
         var visibleGaps = GetVisibleGaps(visibleBoundary);
 
         foreach (var visibleGap in visibleGaps)
@@ -108,12 +104,12 @@ public class Gaps : Indicator
                 continue;
             }
 
-            var gapStartX = chart.GetXCoordinateByBarIndex(visibleGap.StartBarIndex);
-            var gapStartY = chartScale.GetYCoordinateByValue(visibleGap.StartPrice);
+            var gapStartX = Chart.GetXCoordinateByBarIndex(visibleGap.StartBarIndex);
+            var gapStartY = ChartScale.GetYCoordinateByValue(visibleGap.StartPrice);
 
             var gapEndX = visibleGap.EndBarIndex is null
-                ? chartRightX : chart.GetXCoordinateByBarIndex(visibleGap.EndBarIndex.Value);
-            var gapEndY = chartScale.GetYCoordinateByValue(visibleGap.EndPrice);
+                ? chartRightX : Chart.GetXCoordinateByBarIndex(visibleGap.EndBarIndex.Value);
+            var gapEndY = ChartScale.GetYCoordinateByValue(visibleGap.EndPrice);
 
             drawingContext.DrawRectangle(gapStartX, gapStartY, gapEndX, gapEndY, FillColor);
         }

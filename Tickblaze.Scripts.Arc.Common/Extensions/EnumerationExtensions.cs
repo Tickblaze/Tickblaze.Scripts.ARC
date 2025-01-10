@@ -4,6 +4,21 @@ namespace Tickblaze.Scripts.Arc.Common;
 
 public static class EnumerationExtensions
 {
+	public static Trend ToTrend(this int @int)
+	{
+		return @int.CompareTo(0) switch
+		{
+			> 0 => Trend.Up,
+			0 => Trend.None,
+			< 0 => Trend.Down,
+		};
+	}
+
+	public static Trend ToTrend(this double @double)
+	{
+		return @double.EpsilonCompare(0).ToTrend();
+	}
+
 	public static StrictTrend ToStrictTrend(this Trend trend)
 	{
 		return trend switch
