@@ -5,15 +5,15 @@ using Tickblaze.Scripts.Arc.Common;
 namespace Tickblaze.Scripts.Arc.Core;
 
 public partial class VmLean
-{
-	[AllowNull]
-	private Flooding _bothFlooding;
-	
+{	
 	[AllowNull]
 	private Flooding _histogramFlooding;
 
 	[AllowNull]
 	private Flooding _swingStructureFlooding;
+	
+	[AllowNull]
+	private FloodingWithOverlaps _bothFlooding;
 
 	[Parameter("Flooding Type", GroupName = "Background Flooding Parameters", Description = "Type of chart panel background flooding")]
 	public FloodingType FloodingTypeValue { get; set; } = FloodingType.None;
@@ -45,7 +45,7 @@ public partial class VmLean
 			RenderTarget = this,
 			UpTrendColor = FloodingBullishColor,
 			DownTrendColor = FloodingBearishColor,
-			SourceTrends = [histogramTrends],
+			TrendSeriesCollection = [histogramTrends],
 		};
 
 		_swingStructureFlooding = new Flooding
@@ -53,14 +53,24 @@ public partial class VmLean
 			RenderTarget = this,
 			UpTrendColor = FloodingBullishColor,
 			DownTrendColor = FloodingBearishColor,
-			SourceTrends = [_swings.BiasTrends],
+			TrendSeriesCollection = [_swings.BiasTrends],
+		};
+
+		_bothFlooding = new FloodingWithOverlaps
+		{
+			RenderTarget = this,
+			UpTrendColor = FloodingBullishColor,
+			DownTrendColor = FloodingBearishColor,
+			OverlapUpTrendColor = FloodingDeepBullishColor,
+			OverlapDownTrendColor = FloodingDeepBearishColor,
+			TrendSeriesCollection = [_swings.BiasTrends, histogramTrends],
 		};
 	}
 
 	public void CalculateFlooding(int barIndex)
 	{
+		_bothFlooding.Calculate();
 		_histogramFlooding.Calculate();
-
 		_swingStructureFlooding.Calculate();
 	}
 

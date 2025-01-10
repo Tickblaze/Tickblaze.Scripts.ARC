@@ -2,7 +2,7 @@
 
 namespace Tickblaze.Scripts.Arc.Common;
 
-public class Flooding : ChildIndicator
+public class Flooding : CommonIndicator
 {
 	[AllowNull]
 	private Series<Trend> _trends;
@@ -10,13 +10,13 @@ public class Flooding : ChildIndicator
 	[AllowNull]
 	private DrawingPartDictionary<int, FloodingInterval> _intervals;
 
-	public required ISeries<Trend>[] SourceTrends { get; init; }
+	public virtual required ISeries<Trend>[] TrendSeriesCollection { get; init; }
 
 	public required Color UpTrendColor { get; init; }
 
 	public required Color DownTrendColor { get; init; }
 
-	private FloodingInterval LastInterval => _intervals.LastDrawingPart;
+	protected FloodingInterval LastInterval => _intervals.LastDrawingPart;
 
     protected override void Initialize()
 	{
@@ -25,47 +25,69 @@ public class Flooding : ChildIndicator
 		_intervals = [];
 	}
 
-	protected override void Calculate(int barIndex)
-    {
-        Reset(barIndex);
-
-        var currentTrends = SourceTrends
+	protected virtual bool TryGetCurrentValues(out Trend currentTrend, out Color currentColor)
+	{
+		var currentTrends = TrendSeriesCollection
 			.Select(series => series.GetLastOrDefault(Trend.None))
 			.Distinct()
 			.ToArray();
 
-        var previousTrend = _trends.GetAtOrDefault(barIndex - 1, Trend.None);
+		if (currentTrends is not [var firstTrend] || firstTrend is Trend.None)
+		{
+			currentTrend = default;
+			currentColor = default;
 
-        if (currentTrends is not [var currentTrend] || currentTrend is Trend.None)
-        {
+			return false;
+		}
+
+		currentTrend = firstTrend;
+
+		currentColor = firstTrend.ToStrictTrend()
+			.Map(UpTrendColor, DownTrendColor);
+
+		return true;
+	}
+
+	protected override void Calculate(int barIndex)
+    {
+		Reset(barIndex);
+
+		var previousTrend = _trends.GetAtOrDefault(barIndex - 1, Trend.None);
+
+		if (!TryGetCurrentValues(out var currentTrend, out var currentColor))
+		{
 			return;
-        }
+		}
 
-        if (previousTrend is Trend.None
-			|| !currentTrend.EnumEquals(previousTrend))
-        {
-			var currentStrictTrend = currentTrend.ToStrictTrend();
-			var color = currentStrictTrend.Map(UpTrendColor, DownTrendColor);
+		_trends[barIndex] = currentTrend;
+
+		if (previousTrend is Trend.None
+			|| !currentTrend.EnumEquals(previousTrend)
+			|| currentColor.Equals(LastInterval.Color))
+		{
+			var strictTrend = currentTrend.ToStrictTrend();
 
 			var currentInterval = new FloodingInterval
 			{
-				Color = color,
+				Trend = strictTrend,
+				Color = currentColor,
 				EndBarIndex = barIndex,
 				StartBarIndex = barIndex,
-				Trend = currentStrictTrend,
 			};
 
 			_intervals.AddOrUpdate(currentInterval);
-        }
+		}
 		else if (currentTrend.EnumEquals(previousTrend))
 		{
 			LastInterval.EndBarIndex = barIndex;
 		}
-    }
+	}
 
-    private void Reset(int barIndex)
+    protected void Reset(int barIndex)
     {
         _intervals.Remove(barIndex);
+
+		_trends[barIndex] = Trend.None;
 
 		if (!_intervals.IsEmpty && barIndex.Equals(LastInterval.EndBarIndex))
 		{
@@ -73,7 +95,7 @@ public class Flooding : ChildIndicator
 		}
 	}
 
-    public override void OnRender(IDrawingContext drawingContext)
+	public override void OnRender(IDrawingContext drawingContext)
     {
 		if (Chart is null
 			|| ChartScale is null

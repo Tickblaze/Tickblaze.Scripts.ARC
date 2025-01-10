@@ -11,9 +11,6 @@ public partial class VmLean
 	private Macd _macd;
 
 	[AllowNull]
-	private PlotSeries _macdDots;
-
-	[AllowNull]
 	private BollingerBands _bollingerBands;
 
 	[NumericRange(MinValue = 1)]
@@ -64,13 +61,14 @@ public partial class VmLean
 	[Parameter("MACD Falling Dots Inside/Below Channel Color")]
 	public Color MacdFallingBelowChannelDotColor { get; set; } = Color.Red;
 
+	[Plot("MACD Dots")]
+	public PlotSeries MacdDots { get; set; } = new(Color.Transparent);
+
 	[Plot("MACD Connector")]
 	public PlotSeries MacdConnector { get; set; } = new(Color.White, LineStyle.Solid, 2);
 	
 	public void InitializeMacdBb()
 	{
-		_macdDots = new(Color.Transparent);
-
 		_macd = new Macd
 		{
 			Source = Bars.Close,
@@ -81,28 +79,23 @@ public partial class VmLean
 
 		_bollingerBands = new BollingerBands(Bars.Close, BbPeriod, BbMultiplier, MovingAverageType.Simple);
 
-		ShadeBetween(_bollingerBands.Lower, _bollingerBands.Upper, default, BbChannelColor);
+		ShadeBetween(BbLowerBand, BbUpperBand, default, BbChannelColor);
 	}
 
 	private void CalculateMacdBb(int barIndex)
 	{
-		if (barIndex is 0)
-		{
-			return;
-		}
+		var currentValue = MacdConnector[barIndex] = MacdDots[barIndex] = _macd.Signal[barIndex];
+		var previousValue = MacdDots.GetAtOrDefault(barIndex - 1, currentValue);
+		var upperBandValue = BbUpperBand[barIndex] = _bollingerBands.Upper[barIndex];
+		var lowerBandValue = BbLowerBand[barIndex] = _bollingerBands.Lower[barIndex];
 
-		var previousValue = _macdDots[barIndex - 1];
-		var currentValue = _macdDots[barIndex] = _macd.Signal[barIndex];
-		var upperBandValue = BbUpperBand[barIndex];
-		var lowerBandValue = BbLowerBand[barIndex];
-
-		_macdDots.Colors[barIndex] = currentValue.CompareTo(previousValue) switch
+		MacdDots.Colors[barIndex] = currentValue.CompareTo(previousValue) switch
 		{
 			> 0 when currentValue > upperBandValue => MacdRisingAboveChannelDotColor,
 			> 0 => MacdRisingBelowChannelDotColor,
 			< 0 when currentValue < lowerBandValue => MacdFallingBelowChannelDotColor,
 			< 0 => MacdFallingAboveChannelDotColor,
-			_ => _macdDots.Colors[barIndex - 1]
+			_ => MacdDots.Colors.GetAtOrDefault(barIndex - 1, Color.Transparent),
 		};
 	}
 }

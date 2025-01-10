@@ -80,7 +80,7 @@ public partial class VmLean
 		}
 		else if (currentValue < 0)
 		{
-			Histogram.Colors[barIndex] = HistogramUpColor;
+			Histogram.Colors[barIndex] = HistogramDownColor;
 		}
 		else
 		{

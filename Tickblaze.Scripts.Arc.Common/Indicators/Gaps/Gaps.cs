@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Tickblaze.Scripts.Arc.Common;
 
 [Browsable(false)]
-public class Gaps : ChildIndicator
+public class Gaps : CommonIndicator
 {
     private readonly DrawingPartDictionary<int, Gap> _gaps = [];
 

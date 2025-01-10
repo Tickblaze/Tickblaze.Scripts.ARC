@@ -4,6 +4,17 @@ namespace Tickblaze.Scripts.Arc.Common;
 
 public static class EnumerationExtensions
 {
+	public static int ToSignum(this Trend trend)
+	{
+		return trend switch
+		{
+			Trend.Down => -1,
+			Trend.None => 0,
+			Trend.Up => 1,
+			_ => throw new UnreachableException(),
+		};
+	}
+
 	public static Trend ToTrend(this int @int)
 	{
 		return @int.CompareTo(0) switch

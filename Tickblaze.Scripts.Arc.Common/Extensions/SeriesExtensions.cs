@@ -16,18 +16,25 @@ public static class SeriesExtensions
         return item;
     }
 
+	public static TItem GetAtOrDefault<TItem>(this ISeries<TItem> items, int index, TItem defaultItem)
+	{
+		ArgumentNullException.ThrowIfNull(items);
+
+		if (0 <= index && index < items.Count)
+		{
+			return items.GetAt(index);
+		}
+
+		return defaultItem;
+	}
+
 	public static TItem GetAtOrDefault<TItem>(this ISeries<TItem> items, Index index, TItem defaultItem)
 	{
 		ArgumentNullException.ThrowIfNull(items);
 
 		var offset = index.GetOffset(items.Count);
 
-		if (0 <= offset && offset < items.Count)
-		{
-			return items.GetAt(offset);
-		}
-
-		return defaultItem;
+		return items.GetAtOrDefault(offset, defaultItem);
 	}
 
 	public static TItem GetLastOrDefault<TItem>(this ISeries<TItem> items, TItem defaultItem)
