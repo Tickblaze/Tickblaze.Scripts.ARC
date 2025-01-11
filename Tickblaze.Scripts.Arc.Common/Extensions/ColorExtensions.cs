@@ -1,4 +1,6 @@
-﻿namespace Tickblaze.Scripts.Arc.Common;
+﻿using System.Security.Cryptography.X509Certificates;
+
+namespace Tickblaze.Scripts.Arc.Common;
 
 public static class ColorExtensions
 {
@@ -29,4 +31,9 @@ public static class ColorExtensions
 
         return Color.FromArgb(a, r ?? color.R, g ?? color.G, b ?? color.B);
     }
+
+	public static float GetOpacity(this Color color)
+	{
+		return color.A / 255.0f;
+	}
 }

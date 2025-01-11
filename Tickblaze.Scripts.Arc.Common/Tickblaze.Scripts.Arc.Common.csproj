@@ -7,7 +7,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
-	
+
 	<ItemGroup>
 		<PackageReference Include="ReactiveUI" Version="20.1.63" />
 		<PackageReference Include="MahApps.Metro" Version="2.4.10" />

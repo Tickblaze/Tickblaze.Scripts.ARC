@@ -1,8 +1,10 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Tickblaze.Scripts.Arc.Common;
 
+[Browsable(false)]
 public class FloodingWithOverlaps : Flooding
 {
     public override required ISeries<Trend>[] TrendSeriesCollection

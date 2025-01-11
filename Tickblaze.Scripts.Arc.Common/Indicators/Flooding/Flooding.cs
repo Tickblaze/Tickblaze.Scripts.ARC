@@ -1,7 +1,9 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Tickblaze.Scripts.Arc.Common;
 
+[Browsable(false)]
 public class Flooding : CommonIndicator
 {
 	[AllowNull]

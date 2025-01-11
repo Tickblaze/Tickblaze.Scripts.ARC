@@ -26,13 +26,13 @@ public partial class VmLean
 	public Color BbChannelColor { get; set; } = DrawingColor.DodgerBlue.With(opacity: 0.2f);
 
 	[Plot("BB Average")]
-	public PlotSeries BbAverage { get; set; } = new(Color.Transparent, LineStyle.Dot, 2);
+	public PlotSeries BbAverage { get; set; } = new(Color.Transparent, LineStyle.Dot, 3);
 
 	[Plot("BB Upper Band")]
-	public PlotSeries BbUpperBand { get; set; } = new(Color.Black, LineStyle.Solid, 2);
+	public PlotSeries BbUpperBand { get; set; } = new(Color.Black, LineStyle.Solid, 3);
 
 	[Plot("BB Lower Band")]
-	public PlotSeries BbLowerBand { get; set; } = new(Color.Black, LineStyle.Solid, 2);
+	public PlotSeries BbLowerBand { get; set; } = new(Color.Black, LineStyle.Solid, 3);
 
 	[NumericRange(MinValue = 1)]
 	[Parameter("MACD Fast EMA Period", GroupName = "MACDBB Parameters", Description = "Period for fast EMA")]
@@ -61,12 +61,12 @@ public partial class VmLean
 	[Parameter("MACD Falling Dots Inside/Below Channel Color")]
 	public Color MacdFallingBelowChannelDotColor { get; set; } = Color.Red;
 
-	[Plot("MACD Dots")]
-	public PlotSeries MacdDots { get; set; } = new(Color.Transparent);
-
 	[Plot("MACD Connector")]
-	public PlotSeries MacdConnector { get; set; } = new(Color.White, LineStyle.Solid, 2);
+	public PlotSeries MacdConnector { get; set; } = new(Color.White, LineStyle.Solid, 6);
 	
+	[Plot("MACD Dots")]
+	public PlotSeries MacdDots { get; set; } = new(Color.Transparent, PlotStyle.Dot, 2);
+
 	public void InitializeMacdBb()
 	{
 		_macd = new Macd
@@ -77,9 +77,9 @@ public partial class VmLean
 			SignalPeriod = BbPeriod,
 		};
 
-		_bollingerBands = new BollingerBands(Bars.Close, BbPeriod, BbMultiplier, MovingAverageType.Simple);
+		_bollingerBands = new BollingerBands(_macd.Signal, BbPeriod, BbMultiplier, MovingAverageType.Simple);
 
-		ShadeBetween(BbLowerBand, BbUpperBand, default, BbChannelColor);
+		ShadeBetween(BbLowerBand, BbUpperBand, default, BbChannelColor, BbChannelColor.GetOpacity());
 	}
 
 	private void CalculateMacdBb(int barIndex)
