@@ -99,9 +99,7 @@ public class Flooding : CommonIndicator
 
 	public override void OnRender(IDrawingContext drawingContext)
     {
-		if (Chart is null
-			|| ChartScale is null
-			|| RenderTarget is null)
+		if (Chart is null || ChartScale is null || RenderTarget is null)
 		{
 			throw new InvalidOperationException(nameof(OnRender));
 		}

@@ -12,11 +12,11 @@ public partial class SwingStructure
 		{
 			_swingStructure = swingStructure;
 
-			//this.WhenAnyValue(viewModel => viewModel.SwingStrength)
-			//	.Throttle(TimeSpan.FromSeconds(0.75), RxApp.TaskpoolScheduler)
-			//	.DistinctUntilChanged()
-			//	.ObserveOn(RxApp.MainThreadScheduler)
-			//	.Subscribe(_ => _swingStructure.Initialize());
+			this.WhenAnyValue(viewModel => viewModel.SwingStrength)
+				.Throttle(TimeSpan.FromSeconds(0.75), RxApp.TaskpoolScheduler)
+				.DistinctUntilChanged()
+				.ObserveOn(RxApp.MainThreadScheduler)
+				.Subscribe(_ => _swingStructure.Initialize());
 		}
 
 		private readonly SwingStructure _swingStructure;

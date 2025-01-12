@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace Tickblaze.Scripts.Arc.Common;
 
 [Browsable(false)]
-public class Swings : Indicator
+public class Swings : CommonIndicator
 {
     private int _currentIndex = 1;
     private StrictTrend _currentTrend;
@@ -453,23 +453,28 @@ public class Swings : Indicator
 
     public override void OnRender(IDrawingContext drawingContext)
     {
-        if (!IsSwingEnabled || !ShowLines && !ShowDots && !ShowLabels)
+		if (Chart is null || ChartScale is null || RenderTarget is null)
+		{
+			throw new InvalidOperationException(nameof(OnRender));
+		}
+
+		if (!IsSwingEnabled || !ShowLines && !ShowDots && !ShowLabels)
         {
             return;
         }
 
         var previousDotColor = Color.Transparent;
-        var visibleBoundary = this.GetVisibleBoundary();
+        var visibleBoundary = RenderTarget.GetVisibleBoundary();
         var visibleSwings = GetVisibleDrawingParts(visibleBoundary);
 
         foreach (var visibleSwing in visibleSwings)
         {
             var trend = visibleSwing.Trend;
             var swingLabel = visibleSwing.Label;
-            var isDtb = swingLabel.IsDoubleTop || swingLabel.IsDoubleBottom;
-            var endPoint = this.ToApiPoint(visibleSwing.EndPoint);
-            var startPoint = this.ToApiPoint(visibleSwing.StartPoint);
             var lineColor = trend.Map(UpLineColor, DownLineColor);
+            var isDtb = swingLabel.IsDoubleTop || swingLabel.IsDoubleBottom;
+            var endPoint = RenderTarget.ToApiPoint(visibleSwing.EndPoint);
+            var startPoint = RenderTarget.ToApiPoint(visibleSwing.StartPoint);
 
             if (ShowLines)
             {

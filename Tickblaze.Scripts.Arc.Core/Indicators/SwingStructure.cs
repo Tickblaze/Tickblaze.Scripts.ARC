@@ -94,6 +94,7 @@ public partial class SwingStructure : Indicator
 		_swings = new Swings
 		{
 			ShowDots = false,
+			RenderTarget = this,
 			IsSwingEnabled = true,
 			LabelFont = LabelFont,
 			UpLineColor = UpLineColor,

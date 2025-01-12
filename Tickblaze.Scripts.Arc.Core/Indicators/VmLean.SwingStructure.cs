@@ -108,6 +108,7 @@ public partial class VmLean
 
 		_swings = new Swings
 		{
+			RenderTarget = this,
 			DotSize = SwingDotSize,
 			ShowDots = ShowSwingDots,
 			LabelFont = SwingLabelFont,
