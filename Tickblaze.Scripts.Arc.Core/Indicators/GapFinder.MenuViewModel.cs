@@ -10,6 +10,12 @@ public partial class GapFinder
 		public MenuViewModel(GapFinder gapFinder)
 		{
 			_gapFinder = gapFinder;
+
+			MenuHeader = _gapFinder.SettingsHeader;
+
+			ShowFreshGaps = _gapFinder.ShowFreshGaps;
+			ShowTestedGaps = _gapFinder.ShowTestedGaps;
+			ShowBrokenGaps = _gapFinder.ShowBrokenGaps;
 		}
 
 		private readonly GapFinder _gapFinder;
@@ -30,7 +36,7 @@ public partial class GapFinder
 			get;
 			set
 			{
-				_gapFinder.ShowTestedGaps = field;
+				_gapFinder.ShowTestedGaps = value;
 
 				this.RaiseAndSetIfChanged(ref field, value);
 			}
@@ -57,15 +63,6 @@ public partial class GapFinder
 
 				this.RaiseAndSetIfChanged(ref field, value);
 			}
-		}
-
-		public void Initialize()
-		{
-			MenuHeader = _gapFinder.SettingsHeader;
-
-			ShowFreshGaps = _gapFinder.ShowFreshGaps;
-			ShowTestedGaps = _gapFinder.ShowTestedGaps;
-			ShowBrokenGaps = _gapFinder.ShowBrokenGaps;
 		}
 	}
 }

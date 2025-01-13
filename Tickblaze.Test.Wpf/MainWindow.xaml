@@ -41,8 +41,8 @@
 					</Style>
 				</MenuItem.Resources>
 				<MenuItem Header="ASDSD" />
-				<common:CheckBoxMenuItem HeaderText="ASDSDAAA" />
-				<common:CheckBoxMenuItem HeaderText="ASDSDAAA" />
+				<common:ToggleButtonMenuItem HeaderText="ASDSDAAA" />
+				<common:ToggleButtonMenuItem HeaderText="ASDSDAAA" />
 			</MenuItem>
 			<MenuItem Header="ASDSD" />
 		</Menu>

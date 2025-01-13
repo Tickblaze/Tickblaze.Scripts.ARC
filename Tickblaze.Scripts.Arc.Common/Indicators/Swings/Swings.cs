@@ -19,17 +19,19 @@ public class Swings : CommonIndicator
 
     public int DotSize { get; init; }
 
-    public bool ShowLabels { get; init; }
+    public bool ShowLabels { get; set; }
 
     public required Font LabelFont { get; init; }
 
     public Color UpLabelColor { get; init; }
 
-    public Color DtbLabelColor { get; init; }
-
     public Color DownLabelColor { get; init; }
 
-    public bool ShowLines { get; init; }
+	public bool IsDtbLabelColorEnabled { get; init; }
+    
+	public Color DtbLabelColor { get; init; }
+
+    public bool ShowLines { get; set; }
 
     public Color UpLineColor { get; init; }
 
@@ -496,7 +498,7 @@ public class Swings : CommonIndicator
                 var labelHorizontalOffset = -labelSize.Width / 2.0;
                 var labelColor = trend switch
                 {
-                    _ when isDtb => DtbLabelColor,
+                    _ when isDtb && IsDtbLabelColorEnabled => DtbLabelColor,
                     StrictTrend.Up => UpLabelColor,
                     StrictTrend.Down => DownLabelColor,
                     _ => throw new UnreachableException(),

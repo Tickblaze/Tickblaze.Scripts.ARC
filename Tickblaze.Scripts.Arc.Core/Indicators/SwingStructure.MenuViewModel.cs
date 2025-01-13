@@ -1,6 +1,8 @@
 ﻿using ReactiveUI;
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Linq;
+using Tickblaze.Scripts.Arc.Common;
+using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
@@ -10,7 +12,15 @@ public partial class SwingStructure
 	{
 		public MenuViewModel(SwingStructure swingStructure)
 		{
+			_swings = swingStructure._swings;
+
 			_swingStructure = swingStructure;
+
+			MenuHeader = _swingStructure.MenuHeader;
+
+			SwingStrength = _swingStructure.SwingStrength;
+			ShowSwingLines = _swingStructure.ShowSwingLines;
+			ShowSwingLabels = _swingStructure.ShowSwingLabels;
 
 			//this.WhenAnyValue(viewModel => viewModel.SwingStrength)
 			//	.Throttle(TimeSpan.FromSeconds(0.75), RxApp.TaskpoolScheduler)
@@ -19,6 +29,7 @@ public partial class SwingStructure
 			//	.Subscribe(_ => _swingStructure.Initialize());
 		}
 
+		private readonly Swings _swings;
 		private readonly SwingStructure _swingStructure;
 
 		public bool ShowSwingLines
@@ -26,7 +37,7 @@ public partial class SwingStructure
 			get;
 			set
 			{
-				_swingStructure.ShowSwingLines = value;
+				_swings.ShowLines = _swingStructure.ShowSwingLines = value;
 
 				this.RaiseAndSetIfChanged(ref field, value);
 			}
@@ -37,7 +48,7 @@ public partial class SwingStructure
 			get;
 			set
 			{
-				_swingStructure.ShowSwingLabels = field;
+				_swings.ShowLabels = _swingStructure.ShowSwingLabels = value;
 
 				this.RaiseAndSetIfChanged(ref field, value);
 			}

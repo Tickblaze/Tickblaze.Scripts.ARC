@@ -10,6 +10,12 @@ public partial class FairValueGaps
 		public MenuViewModel(FairValueGaps fairValueGaps)
 		{
 			_fairValueGaps = fairValueGaps;
+
+			MenuHeader = _fairValueGaps.MenuHeader;
+
+			ShowFreshGaps = _fairValueGaps.ShowFreshGaps;
+			ShowTestedGaps = _fairValueGaps.ShowTestedGaps;
+			ShowBrokenGaps = _fairValueGaps.ShowBrokenGaps;
 		}
 
 		private readonly FairValueGaps _fairValueGaps;
@@ -30,7 +36,7 @@ public partial class FairValueGaps
 			get;
 			set
 			{
-				_fairValueGaps.ShowTestedGaps = field;
+				_fairValueGaps.ShowTestedGaps = value;
 
 				this.RaiseAndSetIfChanged(ref field, value);
 			}
@@ -57,15 +63,6 @@ public partial class FairValueGaps
 
 				this.RaiseAndSetIfChanged(ref field, value);
 			}
-		}
-
-		public void Initialize()
-		{
-			MenuHeader = _fairValueGaps.MenuHeader;
-
-			ShowFreshGaps = _fairValueGaps.ShowFreshGaps;
-			ShowTestedGaps = _fairValueGaps.ShowTestedGaps;
-			ShowBrokenGaps = _fairValueGaps.ShowBrokenGaps;
 		}
 	}
 }

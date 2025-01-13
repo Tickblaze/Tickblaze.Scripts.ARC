@@ -116,6 +116,7 @@ public partial class VmLean
 			ShowLines = ShowSwingLines,
 			ShowLabels = ShowSwingLabels,
 			SwingStrength = SwingStrength,
+			IsDtbLabelColorEnabled = true,
 			UpLineColor = SwingUpLineColor,
 			IsSwingEnabled = IsSwingEnabled,
 			UpLabelColor = SwingUpLabelColor,

@@ -21,14 +21,15 @@
 				Foreground="Pink"
 				Text="{Binding MenuHeader}" />
 		</MenuItem.Header>
-		<common:CheckBoxMenuItem
+		<common:ToggleButtonMenuItem
 			Header="Show Swing Lines"
 			IsOn="{Binding ShowSwingLines, Mode=TwoWay}" />
-		<common:CheckBoxMenuItem
+		<common:ToggleButtonMenuItem
 			Header="Show Swing Labes"
 			IsOn="{Binding ShowSwingLabels, Mode=TwoWay}" />
-		<common:CheckBoxMenuItem
-			Header="Show Broken FVGs"
-			IsOn="{Binding SwingStrength, Mode=TwoWay}" />
+		<common:NumericMenuItem
+			Header="Swing Strength"
+			NumericInputMode="Numbers"
+			Value="{Binding SwingStrength, Mode=TwoWay}" />
 	</MenuItem>
 </Menu>

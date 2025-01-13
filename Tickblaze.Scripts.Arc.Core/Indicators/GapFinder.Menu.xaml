@@ -21,13 +21,13 @@
 				Foreground="Maroon"
 				Text="{Binding MenuHeader}" />
 		</MenuItem.Header>
-		<common:CheckBoxMenuItem
+		<common:ToggleButtonMenuItem
 			Header="Show Fresh Gaps"
 			IsOn="{Binding ShowFreshGaps, Mode=TwoWay}" />
-		<common:CheckBoxMenuItem
+		<common:ToggleButtonMenuItem
 			Header="Show Tested Gaps"
 			IsOn="{Binding ShowTestedGaps, Mode=TwoWay}" />
-		<common:CheckBoxMenuItem
+		<common:ToggleButtonMenuItem
 			Header="Show Broken Gaps"
 			IsOn="{Binding ShowBrokenGaps, Mode=TwoWay}" />
 	</MenuItem>

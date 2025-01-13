@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Tickblaze.Scripts.Arc.Common;
+using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
@@ -10,8 +11,6 @@ public partial class SwingStructure : Indicator
 {
 	public SwingStructure()
 	{
-		_menuViewModel = new(this);
-
 		IsOverlay = true;
 		ShortName = "SS";
 		Name = "Swing Structure";
@@ -20,7 +19,8 @@ public partial class SwingStructure : Indicator
 	[AllowNull]
 	private Swings _swings;
 
-	private readonly MenuViewModel _menuViewModel;
+	[AllowNull]
+	private MenuViewModel _menuViewModel;
 
 	[Parameter("Calculation Mode", Description = "Whether to calculate the structure by current or closed bar highs and lows")]
 	public SwingCalculationMode CalculationMode { get; set; }
@@ -91,24 +91,27 @@ public partial class SwingStructure : Indicator
 
     protected override void Initialize()
     {
-		_menuViewModel.Initialize();
-
 		_swings = new Swings
 		{
 			ShowDots = false,
 			RenderTarget = this,
 			IsSwingEnabled = true,
 			LabelFont = LabelFont,
+			IsDtbLabelColorEnabled = false,
 			UpLineColor = UpLineColor,
+			UpLabelColor = UpLineColor,
 			ShowLines = ShowSwingLines,
 			LineStyle = LineStyle.Solid,
 			ShowLabels = ShowSwingLabels,
 			SwingStrength = SwingStrength,
 			DownLineColor = DownLineColor,
 			LineThickness = LineThickness,
+			DownLabelColor = DownLineColor,
 			CalculationMode = CalculationMode,
 		};
-    }
+
+		_menuViewModel = new(this);
+	}
 
     protected override void Calculate(int index)
     {

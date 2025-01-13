@@ -11,8 +11,6 @@ public partial class FairValueGaps : Indicator
 {
 	public FairValueGaps()
 	{
-		_menuViewModel = new(this);
-
 		IsOverlay = true;
 		ShortName = "FVG";
 		Name = "Fair Value Gaps";
@@ -27,7 +25,8 @@ public partial class FairValueGaps : Indicator
 	[AllowNull]
 	private Gaps _brokenGaps;
 
-	private readonly MenuViewModel _menuViewModel;
+	[AllowNull]
+	private MenuViewModel _menuViewModel;
 
 	[Parameter("Measurement")]
 	public GapMeasurement GapMeasurementValue { get; set; } = GapMeasurement.Atr;
@@ -44,25 +43,25 @@ public partial class FairValueGaps : Indicator
 	[Parameter("ATR Period")]
 	public int AtrPeriod { get; set; } = 14;
 
-	[Parameter("Show Fresh FVGs", GroupName = "Visual Parameters")]
+	[Parameter("Show Fresh FVGs", GroupName = "Visuals")]
 	public bool ShowFreshGaps { get; set; } = true;
 
-	[Parameter("Fresh FGV Color", GroupName = "Visual Parameters")]
+	[Parameter("Fresh FGV Color", GroupName = "Visuals")]
 	public Color FreshGapColor { get; set; } = Color.Orange.With(opacity: 0.5f);
 
-	[Parameter("Show Tested FGVs", GroupName = "Visual Parameters")]
+	[Parameter("Show Tested FGVs", GroupName = "Visuals")]
 	public bool ShowTestedGaps { get; set; } = true;
 
-	[Parameter("Tested FGV Color", GroupName = "Visual Parameters")]
+	[Parameter("Tested FGV Color", GroupName = "Visuals")]
 	public Color TestedGapColor { get; set; } = Color.Silver.With(opacity: 0.5f);
 
-	[Parameter("Show Broken FGVs", GroupName = "Visual Parameters")]
+	[Parameter("Show Broken FGVs", GroupName = "Visuals")]
 	public bool ShowBrokenGaps { get; set; } = true;
 
-	[Parameter("Broken FGV Color", GroupName = "Visual Parameters")]
+	[Parameter("Broken FGV Color", GroupName = "Visuals")]
 	public Color BrokenGapColor { get; set; } = Color.DimGray.With(opacity: 0.5f);
 
-	[Parameter("Menu Header", GroupName = "Visual Parameters")]
+	[Parameter("Menu Header", GroupName = "Visuals")]
 	public string MenuHeader { get; set; } = "Fair Value Gaps";
 
 	public override object? CreateChartToolbarMenuItem()
@@ -127,9 +126,9 @@ public partial class FairValueGaps : Indicator
 
 	protected override void Initialize()
 	{
-		var minGapHeights = GetMinGapHeights();
+		_menuViewModel = new(this);
 
-		_menuViewModel.Initialize();
+		var minGapHeights = GetMinGapHeights();
 
 		_freshGaps = new()
 		{

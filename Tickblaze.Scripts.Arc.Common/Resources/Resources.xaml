@@ -49,6 +49,14 @@
 		</Style.Triggers>
 	</Style>
 
+	<!-- MahApps NumericUpDown Resources. -->
+
+	<Style TargetType="mah:NumericUpDown" BasedOn="{StaticResource {x:Type mah:NumericUpDown}}">
+		<Setter Property="MinHeight" Value="20" />
+		<Setter Property="VerticalAlignment" Value="Stretch" />
+		<Setter Property="Padding" Value="{StaticResource DefaultThickness}" />
+	</Style>
+
 	<!-- MahApps TextBlock Resources. -->
 
 	<Style TargetType="TextBlock" BasedOn="{StaticResource MahApps.Styles.TextBlock}">
@@ -118,16 +126,6 @@
 				<Setter TargetName="Bg" Property="Stroke" Value="{DynamicResource MahApps.Brushes.TopMenuItem.SelectionStroke}" />
 			</Trigger>
 
-			<!--<Trigger Property="UIElement.IsKeyboardFocused" Value="True">
-				<Setter TargetName="Bg" Property="Fill" Value="{DynamicResource MahApps.Brushes.TopMenuItem.PressedFill}" />
-				<Setter TargetName="Bg" Property="Stroke" Value="{DynamicResource MahApps.Brushes.TopMenuItem.PressedStroke}" />
-			</Trigger>-->
-
-			<!--<Trigger Property="MenuItem.IsSubmenuOpen" Value="True">
-				<Setter TargetName="Bg" Property="Fill" Value="{DynamicResource MahApps.Brushes.TopMenuItem.PressedFill}" />
-				<Setter TargetName="Bg" Property="Stroke" Value="{DynamicResource MahApps.Brushes.TopMenuItem.PressedStroke}" />
-			</Trigger>-->
-
 			<Trigger Property="IsEnabled" Value="False">
 				<Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.MenuItem.Foreground.Disabled}" />
 			</Trigger>
@@ -153,12 +151,7 @@
 			<Trigger Property="MenuItem.IsHighlighted" Value="True">
 				<Setter TargetName="Bg" Property="Stroke" Value="{DynamicResource MahApps.Brushes.TopMenuItem.SelectionStroke}" />
 			</Trigger>
-		
-			<!--<Trigger Property="UIElement.IsKeyboardFocused" Value="True">
-				<Setter TargetName="Bg" Property="Fill" Value="{DynamicResource MahApps.Brushes.TopMenuItem.PressedFill}" />
-				<Setter TargetName="Bg" Property="Stroke" Value="{DynamicResource MahApps.Brushes.TopMenuItem.PressedStroke}" />
-			</Trigger>-->
-		
+
 			<Trigger Property="IsEnabled" Value="False">
 				<Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.MenuItem.Foreground.Disabled}" />
 			</Trigger>
@@ -265,7 +258,6 @@
 			<Grid Margin="{TemplateBinding Padding}">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="*" />
-					<ColumnDefinition Width="Auto" SharedSizeGroup="MenuItemIGTColumnGroup" />
 				</Grid.ColumnDefinitions>
 
 				<ContentPresenter
@@ -273,8 +265,6 @@
 					ContentSource="Header"
 					RecognizesAccessKey="True"
 					SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-
-				<TextBlock Grid.Column="1" Text="{TemplateBinding InputGestureText}" />
 			</Grid>
 		</Grid>
 		<ControlTemplate.Triggers>
@@ -296,7 +286,7 @@
 	<system:Double x:Key="MenuHeaderParameterMinWidth">75.0</system:Double>
 	<system:Double x:Key="MenuHeaderParameterMaxWidth">100.0</system:Double>
 
-	<DataTemplate x:Key="CheckBoxMenuItemHeaderTemplate" DataType="common:CheckBoxMenuItem">
+	<DataTemplate x:Key="ToggleButtonMenuItemHeaderTemplate" DataType="common:ToggleButtonMenuItem">
 		<Grid>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition
@@ -319,14 +309,15 @@
 				HorizontalAlignment="Left"
 				TextTrimming="CharacterEllipsis"
 				MaxWidth="{StaticResource MenuHeaderTextMaxWidth}"
-				Text="{Binding Header, Mode=OneWay, RelativeSource={RelativeSource AncestorType=common:CheckBoxMenuItem}}" />
+				Text="{Binding Header, Mode=OneWay, RelativeSource={RelativeSource AncestorType=common:ToggleButtonMenuItem}}" />
 
 			<ToggleButton
 				Grid.Row="0"
 				Grid.Column="1"
 				VerticalAlignment="Center"
-				Style="{DynamicResource ToggleButtonOnOffStyle}"
-				IsChecked="{Binding IsOn, Mode=TwoWay, RelativeSource={RelativeSource AncestorType=common:CheckBoxMenuItem}}" />
+				Style="{StaticResource ToggleButtonOnOffStyle}"
+				MaxWidth="{StaticResource MenuHeaderParameterMaxWidth}"
+				IsChecked="{Binding IsOn, Mode=TwoWay, RelativeSource={RelativeSource AncestorType=common:ToggleButtonMenuItem}}" />
 		</Grid>
 	</DataTemplate>
 
@@ -349,9 +340,51 @@
 		</Style.Triggers>
 	</Style>
 
-	<Style TargetType="common:CheckBoxMenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+	<Style TargetType="common:ToggleButtonMenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
 		<Setter Property="VerticalAlignment" Value="Stretch" />
 		<Setter Property="HorizontalAlignment" Value="Stretch" />
-		<Setter Property="HeaderTemplate" Value="{StaticResource CheckBoxMenuItemHeaderTemplate}" />
+		<Setter Property="HeaderTemplate" Value="{StaticResource ToggleButtonMenuItemHeaderTemplate}" />
+	</Style>
+
+	<DataTemplate x:Key="NumericMenuItemHeaderTemplate" DataType="common:NumericMenuItem">
+		<Grid>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition
+					Width="Auto"
+					SharedSizeGroup="Labels"
+					MinWidth="{StaticResource MenuHeaderTextMinWidth}"
+					MaxWidth="{StaticResource MenuHeaderTextMaxWidth}" />
+				<ColumnDefinition
+					Width="Auto"
+					SharedSizeGroup="Parameters"
+					MinWidth="{StaticResource MenuHeaderParameterMinWidth}"
+					MaxWidth="{StaticResource MenuHeaderParameterMaxWidth}" />
+			</Grid.ColumnDefinitions>
+
+			<TextBlock
+				Grid.Row="0"
+				Grid.Column="0"
+				TextWrapping="NoWrap"
+				VerticalAlignment="Center"
+				HorizontalAlignment="Left"
+				TextTrimming="CharacterEllipsis"
+				MaxWidth="{StaticResource MenuHeaderTextMaxWidth}"
+				Text="{Binding Header, Mode=OneWay, RelativeSource={RelativeSource AncestorType=common:NumericMenuItem}}" />
+
+			<mah:NumericUpDown
+				Grid.Row="0"
+				Grid.Column="1"
+				HideUpDownButtons="True"
+				VerticalAlignment="Center"
+				MaxWidth="{StaticResource MenuHeaderParameterMaxWidth}"
+				Value="{Binding Value, Mode=TwoWay, RelativeSource={RelativeSource AncestorType=common:NumericMenuItem}}"
+				NumericInputMode="{Binding NumericInputMode, Mode=OneWay, RelativeSource={RelativeSource AncestorType=common:NumericMenuItem}}" />
+		</Grid>
+	</DataTemplate>
+
+	<Style TargetType="common:NumericMenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+		<Setter Property="VerticalAlignment" Value="Stretch" />
+		<Setter Property="HorizontalAlignment" Value="Stretch" />
+		<Setter Property="HeaderTemplate" Value="{StaticResource NumericMenuItemHeaderTemplate}" />
 	</Style>
 </ResourceDictionary>

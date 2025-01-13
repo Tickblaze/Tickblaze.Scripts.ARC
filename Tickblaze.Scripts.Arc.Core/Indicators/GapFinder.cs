@@ -11,14 +11,13 @@ public partial class GapFinder : Indicator
 {
 	public GapFinder()
 	{
-		_menuViewModel = new(this);
-
 		IsOverlay = true;
 		ShortName = "GF";
 		Name = "Gap Finder";
 	}
 
-	private readonly MenuViewModel _menuViewModel;
+	[AllowNull]
+	private MenuViewModel _menuViewModel;
 
 	[AllowNull]
 	private Gaps _freshGaps;
@@ -154,7 +153,7 @@ public partial class GapFinder : Indicator
 
 	protected override void Initialize()
 	{
-		_menuViewModel.Initialize();
+		_menuViewModel = new(this);
 
 		var minGapHeights = GetMinGapHeights();
 
