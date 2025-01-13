@@ -90,18 +90,18 @@ public class DrawingPartDictionary<TDrawingPartKey, TDrawingPart> : IReadOnlyLis
     {
 		var drawingPartKey = drawingPart.Key;
 		var startBarIndex = drawingPart.Boundary.StartBarIndex;
-		var drwaingPartIndex = IndexOf(drawingPartKey);
+		var drawingPartIndex = IndexOf(drawingPartKey);
 
-		if (drwaingPartIndex is not -1)
+		if (drawingPartIndex is not -1)
 		{
-			var cachedDrawingPart = GetDrawingPartAt(drwaingPartIndex);
+			var cachedDrawingPart = GetDrawingPartAt(drawingPartIndex);
 
 			if (!startBarIndex.Equals(cachedDrawingPart.Boundary.StartBarIndex))
 			{
 				throw new ArgumentException(string.Empty, nameof(drawingPart));
 			}
 
-			_drawingParts.SetAt(drwaingPartIndex, drawingPart);
+			_drawingParts.SetAt(drawingPartIndex, drawingPart);
 
 			return;
 		}
@@ -116,8 +116,8 @@ public class DrawingPartDictionary<TDrawingPartKey, TDrawingPart> : IReadOnlyLis
             insertionIndex = ~insertionIndex;
         }
 
-		while (insertionIndex + 1 < Count
-			&& this[insertionIndex + 1] is var nextDrawingPart
+		while (insertionIndex < Count
+			&& this[insertionIndex] is var nextDrawingPart
 			&& nextDrawingPart.Boundary is var boundary
 			&& startBarIndex.Equals(boundary.StartBarIndex))
 		{

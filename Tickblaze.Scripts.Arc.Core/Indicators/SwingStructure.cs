@@ -77,7 +77,7 @@ public partial class SwingStructure : Indicator
 
     public override object? CreateChartToolbarMenuItem()
     {
-		var uri = new Uri("/Tickblaze.Scripts.Arc.Core;component/Indicators/GapFinder.Menu.xaml", UriKind.Relative);
+		var uri = new Uri("/Tickblaze.Scripts.Arc.Core;component/Indicators/SwingStructure.Menu.xaml", UriKind.Relative);
 
 		var menuObject = Application.LoadComponent(uri);
 
@@ -91,6 +91,8 @@ public partial class SwingStructure : Indicator
 
     protected override void Initialize()
     {
+		_menuViewModel.Initialize();
+
 		_swings = new Swings
 		{
 			ShowDots = false,
