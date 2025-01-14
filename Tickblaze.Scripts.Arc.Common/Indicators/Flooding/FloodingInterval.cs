@@ -7,8 +7,8 @@ public sealed class FloodingInterval : IDrawingPart<int>
 	public Rectangle Boundary => new()
 	{
 		EndBarIndex = EndBarIndex,
-		EndPrice = double.MinValue,
-		StartPrice = double.MaxValue,
+		EndPrice = double.MaxValue,
+		StartPrice = double.MinValue,
 		StartBarIndex = StartBarIndex,
 	};
 	

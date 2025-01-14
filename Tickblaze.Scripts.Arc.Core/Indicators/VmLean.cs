@@ -20,7 +20,7 @@ public partial class VmLean : Indicator
 	public string MenuHeader { get; set; } = "VM Lean";
 
 	[Plot("Zero Line")]
-	public PlotLevel ZeroLine { get; set; } = new PlotLevel(0.0, Color.Black, LineStyle.Solid, 2);
+	public PlotLevel ZeroLine { get; set; } = new(0.0, Color.Black, LineStyle.Solid, 2);
 
 	public override object? CreateChartToolbarMenuItem()
 	{
@@ -73,6 +73,10 @@ public partial class VmLean : Indicator
 	{
 		RenderFlooding(drawingContext);
 
+		RenderMacdBb(drawingContext);
+		
 		RenderPriceExcursions(drawingContext);
+
+		RenderSentimentBox(drawingContext);
 	}
 }

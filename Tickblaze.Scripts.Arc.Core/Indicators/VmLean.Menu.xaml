@@ -30,15 +30,15 @@
 			<common:OnOffMenuItem
 				Header="Show Swing Lines"
 				IsOn="{Binding ShowSwingLines, Mode=TwoWay}"
-				IsEnabled="{Binding IsSwingEnable, Mode=OneWay}" />
+				IsEnabled="{Binding IsSwingEnabled, Mode=OneWay}" />
 			<common:OnOffMenuItem
 				Header="Show Swing Labels"
 				IsOn="{Binding ShowSwingLabels, Mode=TwoWay}"
-				IsEnabled="{Binding IsSwingEnable, Mode=OneWay}" />
+				IsEnabled="{Binding IsSwingEnabled, Mode=OneWay}" />
 			<common:NumericMenuItem
 				NumericInputMode="Decimal"
-				Header="Swing Double Top/Bottom ATR Multiplier"
-				IsEnabled="{Binding IsSwingEnable, Mode=OneWay}"
+				Header="Swing DTB ATR Multiplier"
+				IsEnabled="{Binding IsSwingEnabled, Mode=OneWay}"
 				Value="{Binding SwingDtbAtrMultiplier, Mode=TwoWay}" />
 			<common:NumericMenuItem
 				Minimum="1"

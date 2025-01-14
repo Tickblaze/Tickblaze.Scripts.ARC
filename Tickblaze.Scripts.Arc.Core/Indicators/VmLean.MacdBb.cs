@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Tickblaze.Scripts.Arc.Common;
 using Tickblaze.Scripts.Indicators;
+using Point = Tickblaze.Scripts.Arc.Common.Point;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
@@ -9,6 +10,9 @@ public partial class VmLean
 {
 	[AllowNull]
 	private Macd _macd;
+
+	[AllowNull]
+	private PlotSeries _macdDots;
 
 	[AllowNull]
 	private BollingerBands _bollingerBands;
@@ -44,7 +48,7 @@ public partial class VmLean
 
 	[NumericRange(MinValue = 1)]
 	[Display(Name = "MACD Dot Size", GroupName = "MACDBB Parameters", Description = "Size of MACD dots", Order = 0)]
-	public int MacdDotSize { get; set; } = 2;
+	public int MacdDotSize { get; set; } = 6;
 
 	[Parameter("MACD Dots Rim Color")]
 	public Color MacdDotRimColor { get; set; } = Color.Black;
@@ -64,11 +68,10 @@ public partial class VmLean
 	[Plot("MACD Connector")]
 	public PlotSeries MacdConnector { get; set; } = new(Color.White, LineStyle.Solid, 6);
 	
-	[Plot("MACD Dots")]
-	public PlotSeries MacdDots { get; set; } = new(Color.Transparent, PlotStyle.Dot, 2);
-
 	public void InitializeMacdBb()
 	{
+		_macdDots = new();
+
 		_macd = new Macd
 		{
 			Source = Bars.Close,
@@ -84,18 +87,37 @@ public partial class VmLean
 
 	private void CalculateMacdBb(int barIndex)
 	{
-		var currentValue = MacdConnector[barIndex] = MacdDots[barIndex] = _macd.Signal[barIndex];
-		var previousValue = MacdDots.GetAtOrDefault(barIndex - 1, currentValue);
+		var currentValue = MacdConnector[barIndex] = _macdDots[barIndex] = _macd.Signal[barIndex];
+		var previousValue = _macdDots.GetAtOrDefault(barIndex - 1, currentValue);
 		var upperBandValue = BbUpperBand[barIndex] = _bollingerBands.Upper[barIndex];
 		var lowerBandValue = BbLowerBand[barIndex] = _bollingerBands.Lower[barIndex];
 
-		MacdDots.Colors[barIndex] = currentValue.CompareTo(previousValue) switch
+		_macdDots.Colors[barIndex] = currentValue.CompareTo(previousValue) switch
 		{
 			> 0 when currentValue > upperBandValue => MacdRisingAboveChannelDotColor,
 			> 0 => MacdRisingBelowChannelDotColor,
 			< 0 when currentValue < lowerBandValue => MacdFallingBelowChannelDotColor,
 			< 0 => MacdFallingAboveChannelDotColor,
-			_ => MacdDots.Colors.GetAtOrDefault(barIndex - 1, Color.Transparent),
+			_ => _macdDots.Colors.GetAtOrDefault(barIndex - 1, Color.Transparent),
 		};
+	}
+
+	public void RenderMacdBb(IDrawingContext drawingContext)
+	{
+		for (var barIndex = Chart.FirstVisibleBarIndex; barIndex <= Chart.LastVisibleBarIndex; barIndex++)
+		{
+			var point = new Point
+			{
+				BarIndex = barIndex,
+				Price = _macdDots[barIndex],
+			};
+
+			var apiPoint = this.ToApiPoint(point);
+
+			var dotRadius = MacdDotSize / 2.0;
+			var dotColor = _macdDots.Colors[barIndex];
+
+			drawingContext.DrawEllipse(apiPoint, dotRadius, dotRadius, dotColor, MacdDotRimColor);
+		}
 	}
 }

@@ -51,9 +51,9 @@ public class Swings : CommonIndicator
 
     public IReadOnlyList<SwingLine> SwingList => _swings;
 
-    private readonly Series<Trend> _biasTrends = [];
+    private readonly Series<Trend> _trendBiases = [];
 
-    public ISeries<Trend> BiasTrends => _biasTrends;
+    public ISeries<Trend> TrendBiases => _trendBiases;
 
     private ISeries<double> _swingDeviation = default!;
 
@@ -123,7 +123,7 @@ public class Swings : CommonIndicator
         return lookbackLow;
     }
 
-    private Trend GetBiasTrend(int barIndex, DrawingPartDictionary<DrawingPoint, SwingLine> lastSwings)
+    private Trend GetTrendBias(int barIndex, DrawingPartDictionary<DrawingPoint, SwingLine> lastSwings)
     {
         if (barIndex is 0
             || lastSwings is not [.., var thirdLastSwing, var secondLastSwing, var lastSwing])
@@ -144,30 +144,30 @@ public class Swings : CommonIndicator
             isForthLastHigherHigh = forthLastLabel.IsHigherHigh;
         }
 
-        var previousBiasTrend = _biasTrends[barIndex - 1];
-        var currentBiasTrend = previousBiasTrend;
+        var previousTrendBias = _trendBiases[barIndex - 1];
+        var currentTrendBias = previousTrendBias;
 
         if (lastLabel.IsHigherHigh
             && !secondLastSwing.Label.IsLowerLow
             && (thirdLastSwing.Label.IsHigherHigh || !isForthLastLowerLow))
         {
-            currentBiasTrend = Trend.Up;
+            currentTrendBias = Trend.Up;
         }
 
         if (lastLabel.IsLowerLow
             && !secondLastSwing.Label.IsHigherHigh
             && (thirdLastSwing.Label.IsLowerLow || !isForthLastHigherHigh))
         {
-            currentBiasTrend = Trend.Down;
+            currentTrendBias = Trend.Down;
         }
 
-        if (lastLabel.IsLowerLow && previousBiasTrend is Trend.Up
-            || lastLabel.IsHigherHigh && previousBiasTrend is Trend.Down)
+        if (lastLabel.IsLowerLow && previousTrendBias is Trend.Up
+            || lastLabel.IsHigherHigh && previousTrendBias is Trend.Down)
         {
-            currentBiasTrend = Trend.None;
+            currentTrendBias = Trend.None;
         }
 
-        return currentBiasTrend;
+        return currentTrendBias;
     }
 
     private IEnumerable<SwingLine> GetVisibleDrawingParts(Rectangle visibleRectangle)
@@ -333,7 +333,7 @@ public class Swings : CommonIndicator
 
         CalculateSwings(barIndex, isOutsideBar);
 
-        CalculateBiasTrends(barIndex);
+        CalculateTrendBiases(barIndex);
     }
 
     private void CalculateSwings(int barIndex, bool isOutsideBar)
@@ -368,7 +368,7 @@ public class Swings : CommonIndicator
         }
     }
 
-    private void CalculateBiasTrends(int barIndex)
+    private void CalculateTrendBiases(int barIndex)
     {
         const int biasRequiredSwingMaxCount = 4;
 
@@ -387,7 +387,7 @@ public class Swings : CommonIndicator
             lastSwings.AddOrUpdate(pendingSwing);
         }
 
-        _biasTrends[barIndex] = GetBiasTrend(barIndex, lastSwings);
+        _trendBiases[barIndex] = GetTrendBias(barIndex, lastSwings);
     }
 
     private void UpdateSwing(int barIndex)
@@ -501,7 +501,7 @@ public class Swings : CommonIndicator
             {
                 var label = visibleSwing.Label.ShortName;
                 var labelSize = drawingContext.MeasureText(label, LabelFont);
-                var labelVerticalOffset = visibleSwing.Trend.Map(-TextVerticalOffset - labelSize.Height, TextVerticalOffset);
+                var labelVerticalOffset = visibleSwing.Trend.Map(-VerticalMargin - labelSize.Height, VerticalMargin);
                 var labelHorizontalOffset = -labelSize.Width / 2.0;
                 var labelColor = trend switch
                 {

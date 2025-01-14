@@ -328,19 +328,19 @@ public partial class LeadersAndLaggers : Indicator
 		var leadingSymbolTextSize = context.MeasureText(leadingSymbol, TextFont);
 		var laggingSymbolTextSize = context.MeasureText(laggingSymbol, TextFont);
 
-		var boxWidth = 2 * TextVerticalOffset + Math.Max(laggingSymbolTextSize.Width, leadingSymbolTextSize.Width);
-		var boxHeight = 3 * TextHorizontalOffset + leadingSymbolTextSize.Height + laggingSymbolTextSize.Height;
+		var boxWidth = 2 * VerticalMargin + Math.Max(laggingSymbolTextSize.Width, leadingSymbolTextSize.Width);
+		var boxHeight = 3 * HorizontalMargin + leadingSymbolTextSize.Height + laggingSymbolTextSize.Height;
 
 		var topLeftPoint = this.GetTopLeft();
 		var leadingSymbolTextPoint = new ApiPoint
 		{
-			X = topLeftPoint.X + TextVerticalOffset,
-			Y = topLeftPoint.Y + TextHorizontalOffset,
+			X = topLeftPoint.X + VerticalMargin,
+			Y = topLeftPoint.Y + HorizontalMargin,
 		};
 		var laggingSymbolTextPoint = new ApiPoint
 		{
 			X = leadingSymbolTextPoint.X,
-			Y = leadingSymbolTextPoint.Y + leadingSymbolTextSize.Height + TextHorizontalOffset
+			Y = leadingSymbolTextPoint.Y + leadingSymbolTextSize.Height + HorizontalMargin
 		};
 
 		context.DrawRectangle(topLeftPoint, boxWidth, boxHeight, BoxColor, OutlineColor);

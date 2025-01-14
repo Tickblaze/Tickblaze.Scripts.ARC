@@ -18,6 +18,7 @@ public partial class VmLean
 	[Parameter("Flooding Type", GroupName = "Background Flooding Parameters", Description = "Type of chart panel background flooding")]
 	public FloodingType FloodingTypeValue { get; set; } = FloodingType.None;
 
+	[NumericRange(MinValue = 0, MaxValue = 100)]
 	[Parameter("Flooding Opacity", GroupName = "Background Flooding Parameters", Description = "Opacity of chart panel background flooding")]
 	public int FloodingOpacity { get; set; } = 30;
 
@@ -38,32 +39,34 @@ public partial class VmLean
 
 	public void InitializeFlooding()
 	{
-		var histogramTrends = Histogram.Map(histogram => histogram.ToTrend());
+		var floodingOpacity = FloodingOpacity / 100.0f;
+
+		var histogramTrends = Histogram.Map(histogramValue => histogramValue.ToTrend());
 
 		_histogramFlooding = new Flooding
 		{
 			RenderTarget = this,
-			UpTrendColor = FloodingBullishColor,
-			DownTrendColor = FloodingBearishColor,
+			UpTrendColor = FloodingBullishColor.With(opacity: floodingOpacity),
+			DownTrendColor = FloodingBearishColor.With(opacity: floodingOpacity),
 			TrendSeriesCollection = [histogramTrends],
 		};
 
 		_swingStructureFlooding = new Flooding
 		{
 			RenderTarget = this,
-			UpTrendColor = FloodingBullishColor,
-			DownTrendColor = FloodingBearishColor,
-			TrendSeriesCollection = [_swings.BiasTrends],
+			UpTrendColor = FloodingBullishColor.With(opacity: floodingOpacity),
+			DownTrendColor = FloodingBearishColor.With(opacity: floodingOpacity),
+			TrendSeriesCollection = [_swings.TrendBiases],
 		};
 
 		_bothFlooding = new FloodingWithOverlaps
 		{
 			RenderTarget = this,
-			UpTrendColor = FloodingBullishColor,
-			DownTrendColor = FloodingBearishColor,
-			OverlapUpTrendColor = FloodingDeepBullishColor,
-			OverlapDownTrendColor = FloodingDeepBearishColor,
-			TrendSeriesCollection = [_swings.BiasTrends, histogramTrends],
+			UpTrendColor = FloodingBullishColor.With(opacity: floodingOpacity),
+			DownTrendColor = FloodingBearishColor.With(opacity: floodingOpacity),
+			OverlapUpTrendColor = FloodingDeepBullishColor.With(opacity: floodingOpacity),
+			OverlapDownTrendColor = FloodingDeepBearishColor.With(opacity: floodingOpacity),
+			TrendSeriesCollection = [_swings.TrendBiases, histogramTrends],
 		};
 	}
 

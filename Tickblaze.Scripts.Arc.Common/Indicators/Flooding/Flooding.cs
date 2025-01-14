@@ -65,7 +65,7 @@ public class Flooding : CommonIndicator
 
 		if (previousTrend is Trend.None
 			|| !currentTrend.EnumEquals(previousTrend)
-			|| currentColor.Equals(LastInterval.Color))
+			|| !currentColor.Equals(LastInterval.Color))
 		{
 			var strictTrend = currentTrend.ToStrictTrend();
 
@@ -104,16 +104,17 @@ public class Flooding : CommonIndicator
 			throw new InvalidOperationException(nameof(OnRender));
 		}
 
+		var absoluteBarWidth = Chart.GetAbsoluteBarWidth();
 		var visibleBoundary = RenderTarget.GetVisibleBoundary();
 		var visibleIntervals = _intervals.GetVisibleDrawingParts(visibleBoundary);
 
 		foreach (var visibleInterval in visibleIntervals)
 		{
 			var startY = ChartScale.GetBottomY();
-			var startX = Chart.GetXCoordinateByBarIndex(visibleInterval.StartBarIndex);
+			var startX = Chart.GetXCoordinateByBarIndex(visibleInterval.StartBarIndex) - absoluteBarWidth / 2.0;
 
 			var endY = ChartScale.GetTopY();
-			var endX = Chart.GetXCoordinateByBarIndex(visibleInterval.EndBarIndex);
+			var endX = Chart.GetXCoordinateByBarIndex(visibleInterval.EndBarIndex) + absoluteBarWidth / 2.0;
 
 			drawingContext.DrawRectangle(startX, startY, endX, endY, visibleInterval.Color);
 		}

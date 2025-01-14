@@ -187,10 +187,10 @@ public partial class BarCloseMarker : Indicator
 			if (maxTextWidth <= absoluteBarWidth)
 			{
 				var potentialLowTextX = barCenterX - potentialLowTextSize.Width / 2.0;
-				var potentialLowTextY = potentialLowY + TextVerticalOffset;
+				var potentialLowTextY = potentialLowY + VerticalMargin;
 
 				var potentialHighTextX = barCenterX - potentialHighTextSize.Width / 2.0;
-				var potentialHighTextY = potentialHighY - TextVerticalOffset - potentialHighTextSize.Height;
+				var potentialHighTextY = potentialHighY - VerticalMargin - potentialHighTextSize.Height;
 
 				context.DrawText(potentialLowTextX, potentialLowTextY, potentialLowText, _markerLowSolidColor, TextFont);
 				context.DrawText(potentialHighTextX, potentialHighTextY, potentialHighText, _markerHighSolidColor, TextFont);
