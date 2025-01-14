@@ -222,8 +222,18 @@ public partial class HtfAverages : Indicator
 	{
 		return movingAverageType switch
 		{
-			MovingAverageType.Simple => new SimpleMovingAverage(barSeries, barSeries.Close, period),
-			MovingAverageType.Exponential => new ExponentialMovingAverage(barSeries, barSeries.Close, period),
+			MovingAverageType.Simple => new SimpleMovingAverage
+			{
+				Period = period,
+				Bars = barSeries,
+				Source = barSeries.Close,
+			},
+			MovingAverageType.Exponential => new ExponentialMovingAverage
+			{
+				Period = period,
+				Bars = barSeries,
+				Source = barSeries.Close,
+			},
 			_ => throw new UnreachableException(),
 		};
 	}

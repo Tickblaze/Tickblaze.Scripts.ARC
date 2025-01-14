@@ -2,7 +2,6 @@
 using System.Windows;
 using System.Windows.Controls;
 using Tickblaze.Scripts.Arc.Common;
-using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
@@ -40,7 +39,7 @@ public partial class SwingStructure : Indicator
 
 	[NumericRange(MinValue = 1, MaxValue = 10)]
 	[Parameter("Line Thickness", Description = "Thickness of structure lines")]
-	public int LineThickness { get; set; } = 2;
+	public int LineThickness { get; set; } = 3;
 
 	[Parameter("Show Labels", Description = "Whether structure labels such as 'HH' and 'LH' need to be shown")]
 	public bool ShowSwingLabels { get; set; }
@@ -52,7 +51,7 @@ public partial class SwingStructure : Indicator
 	public string MenuHeader { get; set; } = "Swing";
 
 	protected override Parameters GetParameters(Parameters parameters)
-    {
+	{
 		if (!ShowSwingLines)
 		{
 			ReadOnlySpan<string> propertyNames =
@@ -73,10 +72,10 @@ public partial class SwingStructure : Indicator
 		}
 
 		return parameters;
-    }
+	}
 
-    public override object? CreateChartToolbarMenuItem()
-    {
+	public override object? CreateChartToolbarMenuItem()
+	{
 		var uri = new Uri("/Tickblaze.Scripts.Arc.Core;component/Indicators/SwingStructure.Menu.xaml", UriKind.Relative);
 
 		var menuObject = Application.LoadComponent(uri);
@@ -89,10 +88,18 @@ public partial class SwingStructure : Indicator
 		return menuObject;
 	}
 
-    protected override void Initialize()
-    {
+	protected override void Initialize()
+	{
+		InitializeSwings(false);
+
+		_menuViewModel = new(this);
+	}
+
+	private Swings InitializeSwings(bool forceReinitialization)
+	{
 		_swings = new Swings
 		{
+			Bars = Bars,
 			ShowDots = false,
 			RenderTarget = this,
 			IsSwingEnabled = true,
@@ -110,16 +117,21 @@ public partial class SwingStructure : Indicator
 			CalculationMode = CalculationMode,
 		};
 
-		_menuViewModel = new(this);
+		if (forceReinitialization)
+		{
+			_swings.Reinitialize();
+		}
+
+		return _swings;
 	}
 
-    protected override void Calculate(int index)
-    {
+	protected override void Calculate(int index)
+	{
 		_swings.Calculate();
-    }
+	}
 
-    public override void OnRender(IDrawingContext drawingContext)
-    {
+	public override void OnRender(IDrawingContext drawingContext)
+	{
 		_swings.OnRender(drawingContext);
 	}
 }

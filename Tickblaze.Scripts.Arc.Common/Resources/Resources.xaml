@@ -122,10 +122,6 @@
 				<Setter TargetName="LayoutRoot" Property="UIElement.Effect" Value="{DynamicResource MahApps.DropShadowEffect.Menu}" />
 			</Trigger>
 
-			<Trigger Property="MenuItem.IsHighlighted" Value="True">
-				<Setter TargetName="Bg" Property="Stroke" Value="{DynamicResource MahApps.Brushes.TopMenuItem.SelectionStroke}" />
-			</Trigger>
-
 			<Trigger Property="IsEnabled" Value="False">
 				<Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.MenuItem.Foreground.Disabled}" />
 			</Trigger>
@@ -148,10 +144,6 @@
 				SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
 		</Grid>
 		<ControlTemplate.Triggers>
-			<Trigger Property="MenuItem.IsHighlighted" Value="True">
-				<Setter TargetName="Bg" Property="Stroke" Value="{DynamicResource MahApps.Brushes.TopMenuItem.SelectionStroke}" />
-			</Trigger>
-
 			<Trigger Property="IsEnabled" Value="False">
 				<Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.MenuItem.Foreground.Disabled}" />
 			</Trigger>
@@ -230,17 +222,12 @@
 			<Trigger Property="MenuItem.IsSuspendingPopupAnimation" Value="True">
 				<Setter TargetName="PART_Popup" Property="PopupAnimation" Value="None" />
 			</Trigger>
-		
+
 			<Trigger SourceName="PART_Popup" Property="Popup.HasDropShadow" Value="True">
 				<Setter TargetName="LayoutRoot" Property="UIElement.Effect" Value="{DynamicResource MahApps.DropShadowEffect.Menu}" />
 				<Setter TargetName="SubMenuRoot" Property="Margin" Value="0 0 6 6" />
 			</Trigger>
-		
-			<Trigger Property="MenuItem.IsHighlighted" Value="True">
-				<Setter TargetName="Bg" Property="Fill" Value="{DynamicResource MahApps.Brushes.MenuItem.SelectionFill}" />
-				<Setter TargetName="Bg" Property="Stroke" Value="{DynamicResource MahApps.Brushes.MenuItem.SelectionStroke}" />
-			</Trigger>
-		
+
 			<Trigger Property="IsEnabled" Value="False">
 				<Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.MenuItem.Foreground.Disabled}" />
 			</Trigger>
@@ -268,11 +255,6 @@
 			</Grid>
 		</Grid>
 		<ControlTemplate.Triggers>
-			<Trigger Property="MenuItem.IsHighlighted" Value="True">
-				<Setter TargetName="Bg" Property="Fill" Value="{DynamicResource MahApps.Brushes.MenuItem.SelectionFill}" />
-				<Setter TargetName="Bg" Property="Stroke" Value="{DynamicResource MahApps.Brushes.MenuItem.SelectionStroke}" />
-			</Trigger>
-
 			<Trigger Property="IsEnabled" Value="False">
 				<Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.MenuItem.Foreground.Disabled}" />
 			</Trigger>
@@ -309,15 +291,17 @@
 				HorizontalAlignment="Left"
 				TextTrimming="CharacterEllipsis"
 				MaxWidth="{StaticResource MenuHeaderTextMaxWidth}"
-				Text="{Binding Header, Mode=OneWay, RelativeSource={RelativeSource AncestorType=common:ToggleButtonMenuItem}}" />
+				Text="{Binding Header, Mode=OneWay, RelativeSource={RelativeSource AncestorType=common:OnOffMenuItem}}" />
 
 			<ToggleButton
+				DataContext="{Binding ., Mode=OneWay, RelativeSource={RelativeSource AncestorType=common:OnOffMenuItem}}"
 				Grid.Row="0"
 				Grid.Column="1"
 				VerticalAlignment="Center"
+				IsChecked="{Binding IsOn, Mode=TwoWay}"
 				Style="{StaticResource ToggleButtonOnOffStyle}"
-				MaxWidth="{StaticResource MenuHeaderParameterMaxWidth}"
-				IsChecked="{Binding IsOn, Mode=TwoWay, RelativeSource={RelativeSource AncestorType=common:ToggleButtonMenuItem}}" />
+				IsThreeState="{Binding IsThreeState, Mode=OneWay}"
+				MaxWidth="{StaticResource MenuHeaderParameterMaxWidth}" />
 		</Grid>
 	</DataTemplate>
 
@@ -340,7 +324,7 @@
 		</Style.Triggers>
 	</Style>
 
-	<Style TargetType="common:ToggleButtonMenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+	<Style TargetType="common:OnOffMenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
 		<Setter Property="VerticalAlignment" Value="Stretch" />
 		<Setter Property="HorizontalAlignment" Value="Stretch" />
 		<Setter Property="HeaderTemplate" Value="{StaticResource ToggleButtonMenuItemHeaderTemplate}" />
@@ -372,13 +356,18 @@
 				Text="{Binding Header, Mode=OneWay, RelativeSource={RelativeSource AncestorType=common:NumericMenuItem}}" />
 
 			<mah:NumericUpDown
+				DataContext="{Binding ., Mode=OneWay, RelativeSource={RelativeSource AncestorType=common:NumericMenuItem}}"
 				Grid.Row="0"
 				Grid.Column="1"
+				TextAlignment="Left"
 				HideUpDownButtons="True"
 				VerticalAlignment="Center"
+				Value="{Binding Value, Mode=TwoWay}"
+				Minimum="{Binding Minimum, Mode=OneWay}"
+				Maximum="{Binding Maximum, Mode=OneWay}"
+				Interval="{Binding Interval, Mode=OneWay}"
 				MaxWidth="{StaticResource MenuHeaderParameterMaxWidth}"
-				Value="{Binding Value, Mode=TwoWay, RelativeSource={RelativeSource AncestorType=common:NumericMenuItem}}"
-				NumericInputMode="{Binding NumericInputMode, Mode=OneWay, RelativeSource={RelativeSource AncestorType=common:NumericMenuItem}}" />
+				NumericInputMode="{Binding NumericInputMode, Mode=OneWay}" />
 		</Grid>
 	</DataTemplate>
 
@@ -386,5 +375,47 @@
 		<Setter Property="VerticalAlignment" Value="Stretch" />
 		<Setter Property="HorizontalAlignment" Value="Stretch" />
 		<Setter Property="HeaderTemplate" Value="{StaticResource NumericMenuItemHeaderTemplate}" />
+	</Style>
+	
+	<DataTemplate x:Key="EnumMenuItemHeaderTemplate" DataType="common:EnumMenuItem">
+		<Grid>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition
+					Width="Auto"
+					SharedSizeGroup="Labels"
+					MinWidth="{StaticResource MenuHeaderTextMinWidth}"
+					MaxWidth="{StaticResource MenuHeaderTextMaxWidth}" />
+				<ColumnDefinition
+					Width="Auto"
+					SharedSizeGroup="Parameters"
+					MinWidth="{StaticResource MenuHeaderParameterMinWidth}"
+					MaxWidth="{StaticResource MenuHeaderParameterMaxWidth}" />
+			</Grid.ColumnDefinitions>
+
+			<TextBlock
+				Grid.Row="0"
+				Grid.Column="0"
+				TextWrapping="NoWrap"
+				VerticalAlignment="Center"
+				HorizontalAlignment="Left"
+				TextTrimming="CharacterEllipsis"
+				MaxWidth="{StaticResource MenuHeaderTextMaxWidth}"
+				Text="{Binding Header, Mode=OneWay, RelativeSource={RelativeSource AncestorType=common:EnumMenuItem}}" />
+
+			<ComboBox
+				DataContext="{Binding ., Mode=OneWay, RelativeSource={RelativeSource AncestorType=common:EnumMenuItem}}"
+				Grid.Row="0"
+				Grid.Column="1"
+				VerticalAlignment="Center"
+				ItemsSource="{Binding Enums, Mode=OneTime}"
+				SelectedItem="{Binding SelectedEnum, Mode=TwoWay}"
+				MaxWidth="{StaticResource MenuHeaderParameterMaxWidth}" />
+		</Grid>
+	</DataTemplate>
+
+	<Style TargetType="common:EnumMenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+		<Setter Property="VerticalAlignment" Value="Stretch" />
+		<Setter Property="HorizontalAlignment" Value="Stretch" />
+		<Setter Property="HeaderTemplate" Value="{StaticResource EnumMenuItemHeaderTemplate}" />
 	</Style>
 </ResourceDictionary>

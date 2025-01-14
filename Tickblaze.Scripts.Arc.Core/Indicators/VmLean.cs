@@ -1,4 +1,7 @@
-﻿
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Windows;
+using System.Windows.Controls;
+
 namespace Tickblaze.Scripts.Arc.Core;
 
 // Todo: separate paremeters and their visuals.
@@ -6,40 +9,57 @@ public partial class VmLean : Indicator
 {
 	public VmLean()
 	{
-		ShortName = "TBC VML";
-		Name = "TB Core VM Lean";
+		Name = "VM Lean";
+		ShortName = "VML";
 	}
 
-	[Parameter("Settings Header", Description = "Quick access settings header")]
-	public string SettingsHeader { get; set; } = "VM Lean";
+	[AllowNull]
+	private MenuViewModel _menuViewModel;
+
+	[Parameter("Menu Header", Description = "Menu settings header")]
+	public string MenuHeader { get; set; } = "VM Lean";
 
 	[Plot("Zero Line")]
-	public PlotSeries ZeroLine { get; set; } = new(Color.Black, LineStyle.Solid, 2);
+	public PlotLevel ZeroLine { get; set; } = new PlotLevel(0.0, Color.Black, LineStyle.Solid, 2);
 
-    protected override Parameters GetParameters(Parameters parameters)
-    {
+	public override object? CreateChartToolbarMenuItem()
+	{
+		var uri = new Uri("/Tickblaze.Scripts.Arc.Core;component/Indicators/VmLean.Menu.xaml", UriKind.Relative);
+
+		var menuObject = Application.LoadComponent(uri);
+
+		if (menuObject is Menu menu)
+		{
+			menu.DataContext = _menuViewModel;
+		}
+
+		return menuObject;
+	}
+
+	protected override Parameters GetParameters(Parameters parameters)
+	{
 		HideSwingParameters(parameters);
 
 		HidePriceExcursionParameters(parameters);
 
 		return parameters;
-    }
+	}
 
-    protected override void Initialize()
-    {
-		InitializeSwings();
+	protected override void Initialize()
+	{
+		InitializeSwings(false);
 
 		InitializeMacdBb();
 
 		InitializeHistogram();
 
 		InitializeFlooding();
+
+		_menuViewModel = new(this);
 	}
 
-    protected override void Calculate(int barIndex)
-    {
-		ZeroLine[barIndex] = 0.0d;
-
+	protected override void Calculate(int barIndex)
+	{
 		CalculateHistogram(barIndex);
 
 		CalculateMacdBb(barIndex);
@@ -47,12 +67,12 @@ public partial class VmLean : Indicator
 		CalculateSwings(barIndex);
 
 		CalculateFlooding(barIndex);
-    }
+	}
 
-    public override void OnRender(IDrawingContext drawingContext)
-    {
+	public override void OnRender(IDrawingContext drawingContext)
+	{
 		RenderFlooding(drawingContext);
 
 		RenderPriceExcursions(drawingContext);
-    }
+	}
 }

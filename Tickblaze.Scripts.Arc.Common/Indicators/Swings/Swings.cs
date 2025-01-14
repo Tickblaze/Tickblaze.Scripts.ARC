@@ -11,7 +11,7 @@ public class Swings : CommonIndicator
     private StrictTrend? _previousTrend;
     private readonly DrawingPartDictionary<DrawingPoint, SwingLine> _pendingSwings = [];
 
-    public required bool IsSwingEnabled { get; init; }
+    public required bool IsSwingEnabled { get; set; }
 
     public required int SwingStrength { get; init; }
 
@@ -246,6 +246,13 @@ public class Swings : CommonIndicator
         _swingDeviation ??= Bars.Map(bar => 0.0d);
         _swingDtbDeviation ??= Bars.Map(bar => 0.0d);
     }
+
+	public void Reinitialize()
+	{
+		Initialize();
+
+		Calculate();
+	}
 
     private void TryUpsertPendingSwings(int barIndex)
     {

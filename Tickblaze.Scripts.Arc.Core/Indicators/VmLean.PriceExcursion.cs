@@ -8,10 +8,14 @@ namespace Tickblaze.Scripts.Arc.Core;
 public partial class VmLean
 {
 	[AllowNull]
-	private AverageTrueRange _priceExcursionAtr;
+	private SimpleMovingAverage _priceExcursion;
 
 	[AllowNull]
-	private SimpleMovingAverage _priceExcursion;
+	private AverageTrueRange _priceExcursionAtr;
+
+	private PlotSeries PriceExcursion => _priceExcursion.Result;
+
+	public bool EnableLevels { get; set; } = true;
 
 	[Parameter("Level Plot Style", GroupName = "Price Excursion Parameters", Description = "Plot style of level lines")]
 	public LevelPlotStyle LevelPlotStyleValue { get; set; } = LevelPlotStyle.StraightLines;
@@ -63,12 +67,14 @@ public partial class VmLean
 	{
 		_priceExcursionAtr = new(256, MovingAverageType.Simple);
 
+		PriceExcursion.LineStyle = LevelLineStyle;
+
 		_priceExcursion = new(_priceExcursion.Result, 65);
 	}
 
 	public void RenderPriceExcursions(IDrawingContext drawingContext)
 	{
-		if (!ShowLevel1 && !ShowLevel2 && !ShowLevel3)
+		if (!EnableLevels || !ShowLevel1 && !ShowLevel2 && !ShowLevel3)
 		{
 			return;
 		}
@@ -118,7 +124,7 @@ public partial class VmLean
 			var endPrice = levelSignum * levelMultiplier * _priceExcursion[endBarIndex];
 			var endPriceY = ChartScale.GetYCoordinateByValue(endPrice);
 
-			drawingContext.DrawLine(startX, startY, endX, endPriceY, levelColor, LevelLineThickness);
+			drawingContext.DrawLine(startX, startY, endX, endPriceY, levelColor, LevelLineThickness, LevelLineStyle);
 		}
     }
 

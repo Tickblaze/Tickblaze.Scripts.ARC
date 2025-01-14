@@ -22,13 +22,13 @@
 				Foreground="Maroon"
 				Text="{Binding MenuHeader}" />
 		</MenuItem.Header>
-		<common:ToggleButtonMenuItem
+		<common:OnOffMenuItem
 			Header="Show Fresh FVGs"
 			IsOn="{Binding ShowFreshGaps, Mode=TwoWay}" />
-		<common:ToggleButtonMenuItem
+		<common:OnOffMenuItem
 			Header="Show Tested FVGs"
 			IsOn="{Binding ShowTestedGaps, Mode=TwoWay}" />
-		<common:ToggleButtonMenuItem
+		<common:OnOffMenuItem
 			Header="Show Broken FVGs"
 			IsOn="{Binding ShowBrokenGaps, Mode=TwoWay}" />
 	</MenuItem>

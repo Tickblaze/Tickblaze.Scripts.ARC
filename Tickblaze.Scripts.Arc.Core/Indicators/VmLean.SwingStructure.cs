@@ -17,17 +17,17 @@ public partial class VmLean
 	[Parameter("Enable Swing Calculations", GroupName = "Swing Structure Parameters", Description = "Whether swings are enabled")]
 	public bool IsSwingEnabled { get; set; }
 
-	[NumericRange(MinValue = 1)]
+	[NumericRange(MinValue = 1, MaxValue = 200)]
 	[Parameter("Swing Strength", GroupName = "Swing Structure Parameters", Description = "Number of bars used to identify a swing high or low")]
 	public int SwingStrength { get; set; } = 3;
 
-	[NumericRange(MaxValue = double.MaxValue)]
+	[NumericRange(MaxValue = double.MaxValue, Step = 0.1)]
 	[Parameter("Swing Deviation Multiplier", GroupName = "Swing Structure Parameters", Description = "Multiplier used to calculate minimum deviation as an ATR multiple")]
 	public double SwingDeviationAtrMultiplier { get; set; }
 
-	[NumericRange(MaxValue = double.MaxValue)]
-	[Parameter("Swing Sensitivity Double Tops/Bottoms", GroupName = "Swing Structure Parameters", Description = "Fraction of ATR ignored when detecting double tops or bottoms")]
-	public double DoubleTopBottomAtrMultiplier { get; set; }
+	[NumericRange(MaxValue = double.MaxValue, Step = 0.1)]
+	[Parameter("Swing Double Top/Bottom ATR Multiplier", GroupName = "Swing Structure Parameters", Description = "Fraction of ATR ignored when detecting double tops or bottoms")]
+	public double SwingDtbAtrMultiplier { get; set; }
 
 	[Parameter("Show Swing Dots", GroupName = "Swing Structure Parameters", Description = "Whether swing dots are shown")]
 	public bool ShowSwingDots { get; set; }
@@ -102,12 +102,18 @@ public partial class VmLean
 		}
 	}
 
-	public void InitializeSwings()
+	public Swings InitializeSwings(bool forceReinitialization)
 	{
-		_swingDeviationAtr = new(256, MovingAverageType.Simple);
+		_swingDeviationAtr = new AverageTrueRange
+		{
+			Bars = Bars,
+			Period = 256,
+			SmoothingType = MovingAverageType.Simple,
+		};
 
 		_swings = new Swings
 		{
+			Bars = Bars,
 			RenderTarget = this,
 			DotSize = SwingDotSize,
 			ShowDots = ShowSwingDots,
@@ -125,9 +131,16 @@ public partial class VmLean
 			DtbLabelColor = SwingDtbLabelColor,
 			DownLabelColor = SwingDownLabelColor,
 			CalculationMode = SwingCalculationMode.CurrentBar,
+			SwingDtbDeviation = SwingDeviationAtr.Map(atr => SwingDtbAtrMultiplier * atr),
 			SwingDeviation = SwingDeviationAtr.Map(atr => SwingDeviationAtrMultiplier * atr),
-			SwingDtbDeviation = SwingDeviationAtr.Map(atr => DoubleTopBottomAtrMultiplier * atr),
 		};
+		
+		if (forceReinitialization)
+		{
+			_swings.Reinitialize();
+		}
+
+		return _swings;
 	}
 
 	public void CalculateSwings(int barIndex)
@@ -137,6 +150,6 @@ public partial class VmLean
 
 	public void RenderSwings(IDrawingContext drawingContext)
 	{
-		_swings.OnRender(drawingContext);
+		//_swings.OnRender(drawingContext);
 	}
 }

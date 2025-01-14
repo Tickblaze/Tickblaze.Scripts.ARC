@@ -70,7 +70,9 @@ public partial class VmLean
 	public void CalculateFlooding(int barIndex)
 	{
 		_bothFlooding.Calculate();
+		
 		_histogramFlooding.Calculate();
+		
 		_swingStructureFlooding.Calculate();
 	}
 
