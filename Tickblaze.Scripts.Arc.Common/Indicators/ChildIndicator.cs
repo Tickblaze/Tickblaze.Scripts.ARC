@@ -1,6 +1,6 @@
 ﻿namespace Tickblaze.Scripts.Arc.Common;
 
-public abstract class CommonIndicator : Indicator
+public abstract class ChildIndicator : Indicator
 {
 	public IChartObject? RenderTarget { get; init; }
 

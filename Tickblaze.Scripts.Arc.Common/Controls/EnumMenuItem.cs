@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -30,11 +31,11 @@ public class EnumMenuItem : MenuItem
 		}
 	}
 
-	public ObservableCollection<object> Enums { get; } = [];
+	public ObservableCollection<EnumItem> EnumItems { get; } = [];
 
 	private void RegenerateEnums()
 	{
-		Items.Clear();
+		EnumItems.Clear();
 
 		if (EnumType is null)
 		{
@@ -45,7 +46,17 @@ public class EnumMenuItem : MenuItem
 
 		foreach (var @enum in enums)
 		{
-			Enums.Add(@enum);
+			var enumString = @enum.ToStringOrEmpty();
+			var fieldInfo = EnumType.GetField(enumString);
+			var displayNameAttribute = fieldInfo?.GetCustomAttribute<DisplayNameAttribute>();
+			var displayName = displayNameAttribute?.DisplayName ?? enumString;
+			var enumItem = new EnumItem
+			{
+				Value = @enum,
+				DisplayName = displayName,
+			};
+
+			EnumItems.Add(enumItem);
 		}
 	}
 }

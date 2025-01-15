@@ -406,9 +406,11 @@
 				DataContext="{Binding ., Mode=OneWay, RelativeSource={RelativeSource AncestorType=common:EnumMenuItem}}"
 				Grid.Row="0"
 				Grid.Column="1"
+				SelectedValuePath="Value"
 				VerticalAlignment="Center"
-				ItemsSource="{Binding Enums, Mode=OneTime}"
-				SelectedItem="{Binding SelectedEnum, Mode=TwoWay}"
+				DisplayMemberPath="DisplayName"
+				ItemsSource="{Binding EnumItems, Mode=OneTime}"
+				SelectedValue="{Binding SelectedEnum, Mode=TwoWay}"
 				MaxWidth="{StaticResource MenuHeaderParameterMaxWidth}" />
 		</Grid>
 	</DataTemplate>

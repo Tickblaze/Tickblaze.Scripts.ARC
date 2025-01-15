@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using Tickblaze.Scripts.Arc.Common;
-using Point = Tickblaze.Scripts.Api.Models.Point;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
@@ -96,10 +95,10 @@ public partial class VmLean
 			SentimentLocation.Right => Chart.Width - sentimentBoxWidth,
 			_ => throw new UnreachableException()
 		};
-		var sentimentBoxTopLeft = new Point(sentimentBoxOffset, 0);
+		var sentimentBoxTopLeft = new ApiPoint(sentimentBoxOffset, 0);
 
 		var structureBiasTextOffset = (sentimentBoxWidth - structureBiasTextSize.Width) / 2.0;
-		var structureBiasTopLeft = new Point
+		var structureBiasTopLeft = new ApiPoint
 		{
 			X = sentimentBoxOffset + structureBiasTextOffset,
 			Y = (Chart.Height - trendBiasTextBoxHeight) / 2.0
@@ -107,14 +106,14 @@ public partial class VmLean
 
 		var trendBiasRectangleWidth = 2 * HorizontalMargin + trendBiasTextMaxWidth;
 		var trendBiasRectangleHeight = 2 * VerticalMargin + trendBiasTextMaxHeight;
-		var trendBiasRectangleTopLeft = new Point
+		var trendBiasRectangleTopLeft = new ApiPoint
 		{
 			X = sentimentBoxOffset + HorizontalMargin,
 			Y = structureBiasTopLeft.Y + structureBiasTextSize.Height + 2 * VerticalMargin,
 		};
 
 		var trendBiasTextOffset = (sentimentBoxWidth - trendBiasTextSize.Width) / 2.0;
-		var trendBiasTextOffsetTopLeft = new Point
+		var trendBiasTextOffsetTopLeft = new ApiPoint
 		{
 			X = sentimentBoxOffset + trendBiasTextOffset,
 			Y = trendBiasRectangleTopLeft.Y + VerticalMargin,

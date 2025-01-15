@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Tickblaze.Scripts.Arc.Common;
 
 [Browsable(false)]
-public class Gaps : CommonIndicator
+public class Gaps : ChildIndicator
 {
     private readonly DrawingPartDictionary<int, Gap> _gaps = [];
 
@@ -90,24 +90,23 @@ public class Gaps : CommonIndicator
 			throw new InvalidOperationException(nameof(OnRender));
 		}
 
-		var visibleBoundary = RenderTarget.GetVisibleBoundary();
-
         var chartRightX = Chart.GetRightX();
-        var visibleGaps = GetVisibleGaps(visibleBoundary);
 
-        foreach (var visibleGap in visibleGaps)
+		var boundary = RenderTarget.GetVisibleBoundary();
+        var gaps = GetVisibleGaps(boundary);
+
+        foreach (var gap in gaps)
         {
-            if (visibleGap.IsEmpty)
+            if (gap.IsEmpty)
             {
                 continue;
             }
 
-            var gapStartX = Chart.GetXCoordinateByBarIndex(visibleGap.StartBarIndex);
-            var gapStartY = ChartScale.GetYCoordinateByValue(visibleGap.StartPrice);
+            var gapStartX = Chart.GetXCoordinateByBarIndex(gap.StartBarIndex);
+            var gapStartY = ChartScale.GetYCoordinateByValue(gap.StartPrice);
 
-            var gapEndX = visibleGap.EndBarIndex is null
-                ? chartRightX : Chart.GetXCoordinateByBarIndex(visibleGap.EndBarIndex.Value);
-            var gapEndY = ChartScale.GetYCoordinateByValue(visibleGap.EndPrice);
+            var gapEndX = gap.EndBarIndex is null ? chartRightX : Chart.GetXCoordinateByBarIndex(gap.EndBarIndex.Value);
+            var gapEndY = ChartScale.GetYCoordinateByValue(gap.EndPrice);
 
             drawingContext.DrawRectangle(gapStartX, gapStartY, gapEndX, gapEndY, FillColor);
         }

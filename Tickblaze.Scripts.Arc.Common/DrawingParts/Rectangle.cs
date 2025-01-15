@@ -2,7 +2,7 @@
 
 namespace Tickblaze.Scripts.Arc.Common;
 
-public readonly record struct Rectangle
+public readonly record struct Rectangle : IBoundable
 {
 	public Rectangle()
 	{
@@ -36,7 +36,9 @@ public readonly record struct Rectangle
 	public required int EndBarIndex { get; init; }
 
 	public required double EndPrice { get; init; }
-	
+
+	public Rectangle Boundary => this;
+
 	public Point TopRight => new(EndBarIndex, EndPrice);
 	
 	public Point TopLeft => new(StartBarIndex, EndPrice);
@@ -47,7 +49,7 @@ public readonly record struct Rectangle
 
 	public bool IsEmpty => StartBarIndex.Equals(EndBarIndex) && StartPrice.Equals(EndPrice);
 
-	public bool Contains(Point point, bool areBoundsIncluded = true)
+    public bool Contains(Point point, bool areBoundsIncluded = true)
 	{
 		return areBoundsIncluded
 			? StartBarIndex <= point.BarIndex && point.BarIndex <= EndBarIndex

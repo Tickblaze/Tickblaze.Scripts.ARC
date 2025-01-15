@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Tickblaze.Scripts.Arc.Common;
 
 [Browsable(false)]
-public class Flooding : CommonIndicator
+public class Flooding : ChildIndicator
 {
 	[AllowNull]
 	private Series<Trend> _trends;

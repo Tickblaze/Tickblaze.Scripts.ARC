@@ -104,7 +104,6 @@ public partial class SwingStructure : Indicator
 			RenderTarget = this,
 			IsSwingEnabled = true,
 			LabelFont = LabelFont,
-			IsDtbLabelColorEnabled = false,
 			UpLineColor = UpLineColor,
 			UpLabelColor = UpLineColor,
 			ShowLines = ShowSwingLines,
@@ -114,6 +113,7 @@ public partial class SwingStructure : Indicator
 			DownLineColor = DownLineColor,
 			LineThickness = LineThickness,
 			DownLabelColor = DownLineColor,
+			IsDtbLabelColorEnabled = false,
 			CalculationMode = CalculationMode,
 		};
 

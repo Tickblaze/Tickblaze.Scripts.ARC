@@ -21,7 +21,12 @@ public class DrawingPartDictionary<TDrawingPartKey, TDrawingPart> : IReadOnlyLis
 
 	public bool Contains(TDrawingPart drawingPart)
 	{
-		return _drawingParts.ContainsKey(drawingPart.Key);
+		return Contains(drawingPart.Key);
+	}
+
+	public bool Contains(TDrawingPartKey drawingPartKey)
+	{
+		return _drawingParts.ContainsKey(drawingPartKey);
 	}
 
 	public bool TryGetDrawingPart(TDrawingPartKey componentKey, [MaybeNullWhen(false)] out TDrawingPart drawingPart)

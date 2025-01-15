@@ -2,7 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Tickblaze.Scripts.Arc.Common;
 using Tickblaze.Scripts.Indicators;
-using Point = Tickblaze.Scripts.Arc.Common.Point;
 
 namespace Tickblaze.Scripts.Arc.Core;
 

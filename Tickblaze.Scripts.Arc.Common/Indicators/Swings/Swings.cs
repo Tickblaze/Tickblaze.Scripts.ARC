@@ -4,12 +4,12 @@ using System.Diagnostics;
 namespace Tickblaze.Scripts.Arc.Common;
 
 [Browsable(false)]
-public class Swings : CommonIndicator
+public class Swings : ChildIndicator
 {
     private int _currentIndex = 1;
     private StrictTrend _currentTrend;
     private StrictTrend? _previousTrend;
-    private readonly DrawingPartDictionary<DrawingPoint, SwingLine> _pendingSwings = [];
+    private readonly DrawingPartDictionary<Point, SwingLine> _pendingSwings = [];
 
     public required bool IsSwingEnabled { get; set; }
 
@@ -47,7 +47,7 @@ public class Swings : CommonIndicator
 
     private int BarOffset => CalculationMode is SwingCalculationMode.CurrentBar ? 0 : 1;
 
-    private readonly DrawingPartDictionary<DrawingPoint, SwingLine> _swings = [];
+    private readonly DrawingPartDictionary<Point, SwingLine> _swings = [];
 
     public IReadOnlyList<SwingLine> SwingList => _swings;
 
@@ -123,7 +123,7 @@ public class Swings : CommonIndicator
         return lookbackLow;
     }
 
-    private Trend GetTrendBias(int barIndex, DrawingPartDictionary<DrawingPoint, SwingLine> lastSwings)
+    private Trend GetTrendBias(int barIndex, DrawingPartDictionary<Point, SwingLine> lastSwings)
     {
         if (barIndex is 0
             || lastSwings is not [.., var thirdLastSwing, var secondLastSwing, var lastSwing])
@@ -372,7 +372,7 @@ public class Swings : CommonIndicator
     {
         const int biasRequiredSwingMaxCount = 4;
 
-        var lastSwings = new DrawingPartDictionary<DrawingPoint, SwingLine>();
+        var lastSwings = new DrawingPartDictionary<Point, SwingLine>();
         var startSwingIndex = Math.Max(0, _swings.Count - biasRequiredSwingMaxCount);
 
         for (var swingIndex = startSwingIndex; swingIndex < _swings.Count; swingIndex++)
@@ -473,17 +473,17 @@ public class Swings : CommonIndicator
         }
 
         var previousDotColor = Color.Transparent;
-        var visibleBoundary = RenderTarget.GetVisibleBoundary();
-        var visibleSwings = GetVisibleDrawingParts(visibleBoundary);
+        var boundary = RenderTarget.GetVisibleBoundary();
+        var swings = GetVisibleDrawingParts(boundary);
 
-        foreach (var visibleSwing in visibleSwings)
+        foreach (var swing in swings)
         {
-            var trend = visibleSwing.Trend;
-            var swingLabel = visibleSwing.Label;
+            var trend = swing.Trend;
+            var swingLabel = swing.Label;
             var lineColor = trend.Map(UpLineColor, DownLineColor);
+            var endPoint = RenderTarget.ToApiPoint(swing.EndPoint);
+            var startPoint = RenderTarget.ToApiPoint(swing.StartPoint);
             var isDtb = swingLabel.IsDoubleTop || swingLabel.IsDoubleBottom;
-            var endPoint = RenderTarget.ToApiPoint(visibleSwing.EndPoint);
-            var startPoint = RenderTarget.ToApiPoint(visibleSwing.StartPoint);
 
             if (ShowLines)
             {
@@ -499,9 +499,9 @@ public class Swings : CommonIndicator
 
             if (ShowLabels)
             {
-                var label = visibleSwing.Label.ShortName;
+                var label = swing.Label.ShortName;
                 var labelSize = drawingContext.MeasureText(label, LabelFont);
-                var labelVerticalOffset = visibleSwing.Trend.Map(-VerticalMargin - labelSize.Height, VerticalMargin);
+                var labelVerticalOffset = swing.Trend.Map(-VerticalMargin - labelSize.Height, VerticalMargin);
                 var labelHorizontalOffset = -labelSize.Width / 2.0;
                 var labelColor = trend switch
                 {
