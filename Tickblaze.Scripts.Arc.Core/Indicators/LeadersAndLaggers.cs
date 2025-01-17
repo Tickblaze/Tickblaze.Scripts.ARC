@@ -9,6 +9,7 @@ public partial class LeadersAndLaggers : Indicator
 	public LeadersAndLaggers()
 	{
 		ShortName = "LL";
+
 		Name = "Leaders and Laggers";
 	}
 
@@ -17,120 +18,127 @@ public partial class LeadersAndLaggers : Indicator
 	private int _leadingInstrumentIndex;
 	private int _laggingInstrumentIndex;
 
-	private string?[] _symbols = [];
-	private double[] _startingValues = [];
-	private BarSeries?[] _barSeriesCollection = [];
-	private PlotSeries[] _plotSeriesCollection = [];
+	[AllowNull]
+	private string?[] _symbols;
 
-	[Parameter("Start Type")]
+	[AllowNull]
+	private double[] _startingValues;
+
+	[AllowNull]
+	private BarSeries?[] _barSeriesCollection;
+
+	[AllowNull]
+	private PlotSeries[] _plotSeriesCollection;
+
+	[Parameter("Start Type", Description = "Type of calculation reset")]
 	public ResetType ResetTypeValue { get; set; }
 
-	[Parameter("Start Time")]
+	[Parameter("Start Time", Description = "Start time for a custom start type")]
 	public DateTime StartTime { get; set; }
 
-	[Parameter("Show Box")]
+	[Parameter("Show Box", GroupName = "Info Box", Description = "Whether info box is shown")]
 	public bool ShowBox { get; set; } = true;
 
-	[Parameter("Box Color", GroupName = "Info Box")]
-	public Color BoxColor { get; set; } = Color.FromDrawingColor(DrawingColor.Bisque);
+	[Parameter("Box Color", GroupName = "Info Box", Description = "Color for the info box background")]
+	public Color BoxColor { get; set; } = DrawingColor.Bisque;
 
-	[Parameter("Text Color", GroupName = "Info Box")]
+	[Parameter("Text Color", GroupName = "Info Box", Description = "Color for the info box text")]
 	public Color TextColor { get; set; } = Color.Black;
 
-	[Parameter("Outline Color", GroupName = "Info Box")]
+	[Parameter("Outline Color", GroupName = "Info Box", Description = "Color for the info box outline")]
 	public Color OutlineColor { get; set; } = Color.Black;
 
-	[Parameter("Font", GroupName = "Info Box")]
+	[Parameter("Font", GroupName = "Info Box", Description = "Font for the info box text")]
 	public Font TextFont { get; set; } = new("Arial", 12);
 
 	[Plot("Plot1")]
 	public PlotSeries Plot1 { get; set; } = new(Color.Red, LineStyle.Solid, 3);
 	
-	[Parameter("Inst2", GroupName = "Instruments")]
+	[Parameter("Instrument 2", GroupName = "Instruments", Description = "Symbol representing Instrument 2. Futures must have a contract in MM-YY format")]
 	public string? Symbol2 { get; set; }
 
 	[Plot("Plot2")]
 	public PlotSeries Plot2 { get; set; } = new(Color.Blue, LineStyle.Solid, 3);
 
-	[Parameter("Inst3", GroupName = "Instruments")]
+	[Parameter("Instrument 3", GroupName = "Instruments", Description = "Symbol representing Instrument 3. Futures must have a contract in MM-YY format")]
 	public string? Symbol3 { get; set; }
 
 	[Plot("Plot3")]
 	public PlotSeries Plot3 { get; set; } = new(Color.Yellow, LineStyle.Solid, 3);
 
-	[Parameter("Inst4", GroupName = "Instruments")]
+	[Parameter("Instrument 4", GroupName = "Instruments", Description = "Symbol representing Instrument 4. Futures must have a contract in MM-YY format")]
 	public string? Symbol4 { get; set; }
 
 	[Plot("Plot4")]
 	public PlotSeries Plot4 { get; set; } = new(Color.Cyan, LineStyle.Solid, 3);
 
-	[Parameter("Inst5", GroupName = "Instruments")]
+	[Parameter("Instrument 5", GroupName = "Instruments", Description = "Symbol representing Instrument 5. Futures must have a contract in MM-YY format")]
 	public string? Symbol5 { get; set; }
 
 	[Plot("Plot5")]
 	public PlotSeries Plot5 { get; set; } = new(Color.Orange, LineStyle.Solid, 3);
 
-	[Parameter("Inst6", GroupName = "Instruments")]
+	[Parameter("Instrument 6", GroupName = "Instruments", Description = "Symbol representing Instrument 6. Futures must have a contract in MM-YY format")]
 	public string? Symbol6 { get; set; }
 
 	[Plot("Plot6")]
 	public PlotSeries Plot6 { get; set; } = new(Color.Black, LineStyle.Solid, 3);
 
-	[Parameter("Inst7", GroupName = "Instruments")]
+	[Parameter("Instrument 7", GroupName = "Instruments", Description = "Symbol representing Instrument 7. Futures must have a contract in MM-YY format")]
 	public string? Symbol7 { get; set; }
 
 	[Plot("Plot7")]
 	public PlotSeries Plot7 { get; set; } = new(DrawingColor.Magenta, LineStyle.Solid, 3);
 
-	[Parameter("Inst8", GroupName = "Instruments")]
+	[Parameter("Instrument 8", GroupName = "Instruments", Description = "Symbol representing Instrument 8. Futures must have a contract in MM-YY format")]
 	public string? Symbol8 { get; set; }
 
 	[Plot("Plot8")]
 	public PlotSeries Plot8 { get; set; } = new(Color.Transparent, LineStyle.Solid, 3);
 
-	[Parameter("Inst9", GroupName = "Instruments")]
+	[Parameter("Instrument 9", GroupName = "Instruments", Description = "Symbol representing Instrument 9. Futures must have a contract in MM-YY format")]
 	public string? Symbol9 { get; set; }
 
 	[Plot("Plot9")]
 	public PlotSeries Plot9 { get; set; } = new(Color.Transparent, LineStyle.Solid, 3);
 
-	[Parameter("Inst10", GroupName = "Instruments")]
+	[Parameter("Instrument 10", GroupName = "Instruments", Description = "Symbol representing Instrument 10. Futures must have a contract in MM-YY format")]
 	public string? Symbol10 { get; set; }
 
 	[Plot("Plot10")]
 	public PlotSeries Plot10 { get; set; } = new(Color.Transparent, LineStyle.Solid, 3);
 
-	[Parameter("Inst11", GroupName = "Instruments")]
+	[Parameter("Instrument 11", GroupName = "Instruments", Description = "Symbol representing Instrument 11. Futures must have a contract in MM-YY format")]
 	public string? Symbol11 { get; set; }
 
 	[Plot("Plot11")]
 	public PlotSeries Plot11 { get; set; } = new(Color.Transparent, LineStyle.Solid, 3);
 
-	[Parameter("Inst12", GroupName = "Instruments")]
+	[Parameter("Instrument 12", GroupName = "Instruments", Description = "Symbol representing Instrument 12. Futures must have a contract in MM-YY format")]
 	public string? Symbol12 { get; set; }
 
 	[Plot("Plot12")]
 	public PlotSeries Plot12 { get; set; } = new(Color.Transparent, LineStyle.Solid, 3);
 
-	[Parameter("Inst13", GroupName = "Instruments")]
+	[Parameter("Instrument 13", GroupName = "Instruments", Description = "Symbol representing Instrument 13. Futures must have a contract in MM-YY format")]
 	public string? Symbol13 { get; set; }
 
 	[Plot("Plot13")]
 	public PlotSeries Plot13 { get; set; } = new(Color.Transparent, LineStyle.Solid, 3);
 
-	[Parameter("Inst14", GroupName = "Instruments")]
+	[Parameter("Instrument 14", GroupName = "Instruments", Description = "Symbol representing Instrument 14. Futures must have a contract in MM-YY format")]
 	public string? Symbol14 { get; set; }
 
 	[Plot("Plot14")]
 	public PlotSeries Plot14 { get; set; } = new(Color.Transparent, LineStyle.Solid, 3);
 
-	[Parameter("Inst15", GroupName = "Instruments")]
+	[Parameter("Instrument 15", GroupName = "Instruments", Description = "Symbol representing Instrument 15. Futures must have a contract in MM-YY format")]
 	public string? Symbol15 { get; set; }
 
 	[Plot("Plot15")]
 	public PlotSeries Plot15 { get; set; } = new(Color.Transparent, LineStyle.Solid, 3);
 
-	[Parameter("Inst16", GroupName = "Instruments")]
+	[Parameter("Instrument 16", GroupName = "Instruments", Description = "Symbol representing Instrument 16. Futures must have a contract in MM-YY format")]
 	public string? Symbol16 { get; set; }
 
 	[Plot("Plot16")]
@@ -166,7 +174,7 @@ public partial class LeadersAndLaggers : Indicator
 		{
 			barSeriesRequest.Contract = new ContractSettings
 			{
-				Year = contractYear,
+				Year = 2_000 + contractYear,
 				Month = contractMonth,
 				Type = ContractType.SingleContract,
 			};
@@ -266,17 +274,22 @@ public partial class LeadersAndLaggers : Indicator
 			}
 
 			var currentClose = barSeries.Close.GetLastOrDefault(double.NaN);
-			var currentValue = (currentClose - startingValue) / startingValue;
+			var currentValue = 100.0 * (currentClose - startingValue) / startingValue;
+			var currentValueReal = double.IsNaN(currentValue) ? default : currentValue;
 
-			plotSeries[index] = double.IsNaN(currentValue) ? default : currentValue;
+			plotSeries[index] = currentValueReal;
 
-			if (currentValue >= leadingInstrumentValue)
+			if (currentValueReal >= leadingInstrumentValue)
 			{
+				leadingInstrumentValue = currentValueReal;
+
 				_leadingInstrumentIndex = barSeriesIndex;
 			}
 
-			if (currentValue <= laggingInstrumentValue)
+			if (currentValueReal <= laggingInstrumentValue)
 			{
+				laggingInstrumentValue = currentValueReal;
+
 				_laggingInstrumentIndex = barSeriesIndex;
 			}
 		}
@@ -322,33 +335,51 @@ public partial class LeadersAndLaggers : Indicator
 			return;
 		}
 
+		var verticalMargin = 1.5 * VerticalMargin;
+		var horizontalMargin = 2.5 * HorizontalMargin;
+
 		var leadingSymbol = _symbols[_leadingInstrumentIndex]!;
 		var laggingSymbol = _symbols[_laggingInstrumentIndex]!;
 
-		var leadingSymbolTextSize = context.MeasureText(leadingSymbol, TextFont);
-		var laggingSymbolTextSize = context.MeasureText(laggingSymbol, TextFont);
+		var leadingText = "Leading: " + leadingSymbol;
+		var laggingText = "Lagging: " + laggingSymbol; 
 
-		var boxWidth = 2 * VerticalMargin + Math.Max(laggingSymbolTextSize.Width, leadingSymbolTextSize.Width);
-		var boxHeight = 3 * HorizontalMargin + leadingSymbolTextSize.Height + laggingSymbolTextSize.Height;
+		var leadingSymbolTextSize = context.MeasureText(leadingText, TextFont);
+		var laggingSymbolTextSize = context.MeasureText(laggingText, TextFont);
+
+		var boxWidth = 2 * horizontalMargin + Math.Max(laggingSymbolTextSize.Width, leadingSymbolTextSize.Width);
+		var boxHeight = 3 * verticalMargin + leadingSymbolTextSize.Height + laggingSymbolTextSize.Height;
 
 		var topLeftPoint = this.GetTopLeft();
 		var leadingSymbolTextPoint = new ApiPoint
 		{
-			X = topLeftPoint.X + VerticalMargin,
-			Y = topLeftPoint.Y + HorizontalMargin,
+			X = topLeftPoint.X + horizontalMargin,
+			Y = topLeftPoint.Y + verticalMargin,
 		};
 		var laggingSymbolTextPoint = new ApiPoint
 		{
 			X = leadingSymbolTextPoint.X,
-			Y = leadingSymbolTextPoint.Y + leadingSymbolTextSize.Height + HorizontalMargin
+			Y = leadingSymbolTextPoint.Y + leadingSymbolTextSize.Height + verticalMargin
 		};
 
 		context.DrawRectangle(topLeftPoint, boxWidth, boxHeight, BoxColor, OutlineColor);
 
-		context.DrawText(leadingSymbolTextPoint, leadingSymbol, TextColor, TextFont);
-		context.DrawText(laggingSymbolTextPoint, laggingSymbol, TextColor, TextFont);
+		context.DrawText(leadingSymbolTextPoint, leadingText, TextColor, TextFont);
+		context.DrawText(laggingSymbolTextPoint, laggingText, TextColor, TextFont);
 	}
 
-	[GeneratedRegex(@"(.+)(?: (\d{2})-(\d{2}))?")]
+	[GeneratedRegex(@"([^ ]+)(?: (\d{2})-(\d{2}))?")]
 	private static partial Regex GetSymbolRegex();
+
+	public enum ResetType
+	{
+		[DisplayName("Session")]
+		Session,
+
+		[DisplayName("Chart Start")]
+		ChartStart,
+
+		[DisplayName("Date")]
+		Custom,
+	}
 }

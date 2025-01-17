@@ -53,7 +53,7 @@ public static class ChartExtensions
     {
         ArgumentNullException.ThrowIfNull(chart);
 
-        return chart.GetXCoordinateByBarIndex(chart.FirstVisibleBarIndex);
+        return chart.GetXCoordinateByBarIndex(chart.FirstVisibleBarIndex) - chart.GetAbsoluteBarWidth() / 2.0;
     }
 
     public static double GetRightX(this IChart chart)

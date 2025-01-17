@@ -41,7 +41,7 @@ public partial class VmLean
 	{
 		var floodingOpacity = FloodingOpacity / 100.0f;
 
-		var histogramTrends = Histogram.Map(histogramValue => histogramValue.ToTrend());
+		var histogramTrends = Histogram.Map((double histogramValue) => histogramValue.ToTrend());
 
 		_histogramFlooding = new Flooding
 		{

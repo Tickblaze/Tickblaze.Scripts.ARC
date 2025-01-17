@@ -6,8 +6,9 @@ namespace Tickblaze.Scripts.Arc.Core;
 public static class XamlResourceResolver
 {
 	[ModuleInitializer]
-	public static void ReferenceXamlResources()
+	public static void LoadWpfResourceReferences()
 	{
-		var _ = new TiltBehavior();
+		// Todo; document this.
+		var _ = typeof(TiltBehavior);
 	}
 }

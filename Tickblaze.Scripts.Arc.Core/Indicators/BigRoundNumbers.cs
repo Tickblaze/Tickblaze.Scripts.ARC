@@ -8,7 +8,9 @@ public partial class BigRoundNumbers : Indicator
 	public BigRoundNumbers()
 	{
 		IsOverlay = true;
+		
 		ShortName = "BRN";
+		
 		Name = "Big Round Numbers";
 	}
 

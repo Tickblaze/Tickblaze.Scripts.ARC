@@ -243,8 +243,8 @@ public class Swings : ChildIndicator
 
     protected override void Initialize()
     {
-        _swingDeviation ??= Bars.Map(bar => 0.0d);
-        _swingDtbDeviation ??= Bars.Map(bar => 0.0d);
+        _swingDeviation ??= Bars.Map((Bar bar) => 0.0d);
+        _swingDtbDeviation ??= Bars.Map((Bar bar) => 0.0d);
     }
 
 	public void Reinitialize()

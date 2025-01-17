@@ -111,8 +111,8 @@ public partial class VmLean
 			SmoothingType = MovingAverageType.Simple,
 		};
 
-		_swings = new Swings
-		{
+        _swings = new Swings
+        {
 			Bars = Bars,
 			RenderTarget = this,
 			DotSize = SwingDotSize,
@@ -131,8 +131,8 @@ public partial class VmLean
 			DtbLabelColor = SwingDtbLabelColor,
 			DownLabelColor = SwingDownLabelColor,
 			CalculationMode = SwingCalculationMode.CurrentBar,
-			SwingDtbDeviation = SwingDeviationAtr.Map(atr => SwingDtbAtrMultiplier * atr),
-			SwingDeviation = SwingDeviationAtr.Map(atr => SwingDeviationAtrMultiplier * atr),
+			SwingDtbDeviation = SwingDeviationAtr.Map((double atr) => SwingDtbAtrMultiplier * atr),
+			SwingDeviation = SwingDeviationAtr.Map((double atr) => SwingDeviationAtrMultiplier * atr),
 		};
 		
 		if (forceReinitialization)

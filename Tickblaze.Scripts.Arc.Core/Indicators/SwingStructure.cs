@@ -21,6 +21,8 @@ public partial class SwingStructure : Indicator
 	[AllowNull]
 	private MenuViewModel _menuViewModel;
 
+	private const string _menuResourceName = "Tickblaze.Scripts.Arc.Core.Indicators.SwingStructure.Menu.xaml";
+
 	[Parameter("Calculation Mode", Description = "Whether to calculate the structure by current or closed bar highs and lows")]
 	public SwingCalculationMode CalculationMode { get; set; }
 
@@ -76,16 +78,11 @@ public partial class SwingStructure : Indicator
 
 	public override object? CreateChartToolbarMenuItem()
 	{
-		var uri = new Uri("/Tickblaze.Scripts.Arc.Core;component/Indicators/SwingStructure.Menu.xaml", UriKind.Relative);
+		var menu = ResourceDictionaries.LoadResource<Menu>(_menuResourceName);
 
-		var menuObject = Application.LoadComponent(uri);
+		menu.DataContext = _menuViewModel;
 
-		if (menuObject is Menu menu)
-		{
-			menu.DataContext = _menuViewModel;
-		}
-
-		return menuObject;
+		return menu;
 	}
 
 	protected override void Initialize()

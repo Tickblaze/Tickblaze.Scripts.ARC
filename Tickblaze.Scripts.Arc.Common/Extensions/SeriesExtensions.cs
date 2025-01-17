@@ -42,6 +42,25 @@ public static class SeriesExtensions
 		return items.GetAtOrDefault(^1, defaultItem);
 	}
 
+	public static int GetBarIndex(this BarSeries barSeries, DateTime timeUtc)
+	{
+		var barIndex = barSeries.Slice(timeUtc).FirstOrDefault(-1);
+
+		if (barIndex is -1)
+		{
+			return -1;
+		}
+
+		if (barSeries[barIndex] is var bar
+			&& bar is not null
+			&& DateTime.Equals(timeUtc, bar.Time))
+		{
+			return barIndex;
+		}
+
+		return barIndex - 1;
+	}
+
 	public static ISeries<TItem> AsSeries<TItem>(this IReadOnlyList<TItem> items)
     {
         return new ReadOnlySeries<TItem>(items);
@@ -51,4 +70,19 @@ public static class SeriesExtensions
     {
         return new SeriesTransform<TSource, TDestination>(sourceSeries, selector);
     }
+
+	public static ISeries<TDestination> Map<TSource, TDestination>(this ISeries<TSource> sourceSeries, Func<int, TDestination> selector)
+	{
+		return new SeriesIndex<TSource>(sourceSeries).Map(selector);
+	}
+
+	public static ISeries<TDestination> MapAndCache<TSource, TDestination>(this ISeries<TSource> sourceSeries, Func<TSource, TDestination> selector)
+	{
+		return new SeriesTransformCached<TSource, TDestination>(sourceSeries, selector);
+	}
+
+	public static ISeries<TDestination> MapAndCacheByIndex<TSource, TDestination>(this ISeries<TSource> sourceSeries, Func<int, TDestination> selector)
+	{
+		return new SeriesIndex<TSource>(sourceSeries).MapAndCache(selector);
+	}
 }

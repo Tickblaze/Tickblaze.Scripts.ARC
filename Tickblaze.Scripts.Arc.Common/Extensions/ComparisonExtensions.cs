@@ -4,6 +4,14 @@ public static class ComparisonExtensions
 {
 	public static readonly double Epsilon = 1e-10;
 
+	public static bool IsInRange<TComparable>(this TComparable value, TComparable minimum, TComparable maximum)
+		where TComparable : IComparable<TComparable>
+	{
+		var comparer = Comparer<TComparable>.Default;
+
+		return comparer.Compare(value, minimum) >= 0 && comparer.Compare(maximum, value) >= 0;
+	}
+
 	public static bool EnumEquals<TEnum>(this TEnum firstEnum, TEnum secondEnum)
 		where TEnum : Enum
 	{

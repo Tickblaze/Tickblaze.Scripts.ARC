@@ -5,14 +5,15 @@ using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
-// Todo: parameter descriptions.
 // Todo: support for custom input series.
 public partial class AtrTrailingStop : Indicator
 {
 	public AtrTrailingStop()
 	{
 		IsOverlay = true;
+		
 		ShortName = "ATS";
+		
 		Name = "ATR Trailing Stop";
 	}
 
@@ -28,48 +29,45 @@ public partial class AtrTrailingStop : Indicator
 	private Series<StrictTrend> _trends;
 
 	[AllowNull]
-	private AverageTrueRange _markerDeltaAtr;
-
-	[AllowNull]
 	private DrawingPartSet<Point> _markers;
 	
 	[AllowNull]
 	private DrawingPartDictionary<int, TrendInterval> _trendIntervals;
 
-	[Parameter("ATR Period")]
+	[Parameter("ATR Period", Description = "Period for the Average True Range")]
 	public int AtrPeriod { get; set; } = 10;
 
-	[Parameter("ATR Multiplier")]
+	[Parameter("ATR Multiplier", Description = "Multiplier for the Average True Range")]
 	public double AtrMultiplier { get; set; } = 2.5;
 
-	[Parameter("Enable Tick Rounding")]
+	[Parameter("Enable Tick Rounding", Description = "Whether indicator values are rounded to the nearest tick")]
 	public bool IsTickRoundingEnabled { get; set; }
 
-	[Parameter("Show Stop Line", GroupName = "Visuals")]
+	[Parameter("Show Stop Line", GroupName = "Visuals", Description = "Whether stop line is shown")]
 	public bool ShowStopLine { get; set; } = true;
 
-	[Parameter("Stop Line Thickness", GroupName = "Visuals")]
+	[Parameter("Stop Line Thickness", GroupName = "Visuals", Description = "Thickness of the stop line")]
 	public int StopLineThickness { get; set; } = 1;
 
-	[Parameter("Stop Line Style", GroupName = "Visuals")]
+	[Parameter("Stop Line Style", GroupName = "Visuals", Description = "Line style of the stop line")]
 	public LineStyle StopLineStyle { get; set; } = LineStyle.Solid;
 
-	[Parameter("Show Triangles", GroupName = "Visuals")]
+	[Parameter("Show Markers", GroupName = "Visuals", Description = "Whether markers are shown")]
 	public bool ShowMarkers { get; set; }
 
-	[Parameter("Triangle Size", GroupName = "Visuals")]
+	[Parameter("Marker Size", GroupName = "Visuals", Description = "Size of the marker")]
 	public int MarkerSize { get; set; } = 10;
 
-	[Parameter("Bullish Color", GroupName = "Visuals")]
+	[Parameter("Bullish Color", GroupName = "Visuals", Description = "Color for the bullish trend")]
 	public Color BullishColor { get; set; } = Color.Blue;
 
-	[Parameter("Bearish Color", GroupName = "Visuals")]
+	[Parameter("Bearish Color", GroupName = "Visuals", Description = "Color for the bearish trend")]
 	public Color BearishColor { get; set; } = Color.Red;
 
-	[Plot("Trailing Stop Dots")]
+	[Plot("Stop Dots")]
 	public PlotSeries StopDots { get; set; } = new(Color.Transparent, PlotStyle.Dot, 2);
 
-	[Plot("Trailing Reverse Dots")]
+	[Plot("Reverse Dots")]
 	public PlotSeries ReverseDots { get; set; } = new(Color.Yellow, PlotStyle.Dot, 2)
 	{
 		IsVisible = false
@@ -134,10 +132,7 @@ public partial class AtrTrailingStop : Indicator
 		var previousIndex = _currentIndex - 1;
 		var previousTrend = _trends[previousIndex];
 
-		var markerDeltaAtr = 0.3 * _markerDeltaAtr[previousIndex];
-		var markerPrice = previousTrend is StrictTrend.Up
-			? Bars.Low[previousIndex] - markerDeltaAtr
-			: Bars.High[previousIndex] + markerDeltaAtr;
+		var markerPrice = previousTrend.Map(Bars.Low[previousIndex], Bars.High[previousIndex]);
 		var markerPoint = new Point
 		{
 			Price = markerPrice,
@@ -162,11 +157,9 @@ public partial class AtrTrailingStop : Indicator
 
         _currentIndex = default;
 
-        _atr = new(AtrPeriod, MovingAverageType.WellesWilder);
-        
         _markerFont = new("Webdings", 3 * MarkerSize);
-
-		_markerDeltaAtr = new(256, MovingAverageType.Simple);
+        
+		_atr = new(2 * AtrPeriod - 1, MovingAverageType.Exponential);
     }
 
     protected override void Calculate(int barIndex)
@@ -298,10 +291,16 @@ public partial class AtrTrailingStop : Indicator
 			
 			var markerColor = trend.Map(BearishColor, BullishColor);
 			var markerText = trend.Map("5", "6");
+			var markerOffsetSignum = trend.Map(-1, 1);
 			var markerTextSize = drawingContext.MeasureText(markerText, _markerFont);
 
 			point.X -= markerTextSize.Width / 2.0;
-			point.Y -= markerTextSize.Height / 2.0;
+			point.Y -= markerOffsetSignum * VerticalMargin;
+
+			if (trend is StrictTrend.Down)
+			{
+				point.Y -= markerTextSize.Height;
+			}
 
 			drawingContext.DrawText(point, markerText, markerColor, _markerFont);
 		}

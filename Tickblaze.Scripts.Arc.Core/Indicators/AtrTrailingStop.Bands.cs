@@ -8,7 +8,9 @@ public partial class AtrTrailingStop
 {
 	[AllowNull]
 	private PlotSeries _bandUpper1;
-	
+
+	private ISeries<ApiPoint> BandUpper1 => field ??= _bandUpper1.MapAndCacheByIndex(index => this.ToApiPoint(_bandUpper1.GetPoint(index)));
+
 	[AllowNull]
 	private PlotSeries _bandLower1;
 
@@ -27,37 +29,37 @@ public partial class AtrTrailingStop
 	[AllowNull]
 	private BandInfo[] _bandInfos;
 
-	[Parameter("Band ATR Period", GroupName = "Band Parameters")]
+	[Parameter("Band ATR Period", GroupName = "Bands", Description = "Period of the band ATR")]
 	public int BandAtrPeriod { get; set; } = 14;
 
-	[Parameter("Show Opposite Bands", GroupName = "Band Visuals")]
+	[Parameter("Show Opposite Bands", GroupName = "Bands", Description = "Whether opposite bands are shown")]
 	public bool ShowOppositeBands { get; set; } = true;
 
-	[Parameter("Show Bands 1", GroupName = "Band Visuals")]
+	[Parameter("Show Bands 1", GroupName = "Bands", Description = "Whether bands 1 are shown")]
 	public bool ShowBands1 { get; set; } = true;
 
-	[Parameter("Show Bands 2", GroupName = "Band Visuals")]
+	[Parameter("Show Bands 2", GroupName = "Bands", Description = "Whether bands 2 are shown")]
 	public bool ShowBands2 { get; set; }
 
-	[Parameter("Show Bands 3", GroupName = "Band Visuals")]
+	[Parameter("Show Bands 3", GroupName = "Bands", Description = "Whether bands 3 are shown")]
 	public bool ShowBands3 { get; set; }
 
-	[Parameter("Band Multiplier 1", GroupName = "Band Visuals")]
+	[Parameter("Band Multiplier 1", GroupName = "Bands", Description = "Multiplier for the bands 1")]
 	public double BandMultiplier1 { get; set; } = 1;
 
-	[Parameter("Band Multiplier 2", GroupName = "Band Visuals")]
+	[Parameter("Band Multiplier 2", GroupName = "Bands", Description = "Multiplier for the bands 2")]
 	public double BandMultiplier2 { get; set; } = 2;
 	
-	[Parameter("Band Multiplier 3", GroupName = "Band Visuals")]
+	[Parameter("Band Multiplier 3", GroupName = "Bands", Description = "Multiplier for the bands 3")]
 	public double BandMultiplier3 { get; set; } = 3;
 	
-	[Parameter("Band Color 1", GroupName = "Band Visuals")]
+	[Parameter("Band Color 1", GroupName = "Bands", Description = "Color of the band shading 1")]
 	public Color BandColor1 { get; set; } = Color.Blue.With(opacity: 0.2f);
 
-	[Parameter("Band Color 2", GroupName = "Band Visuals")]
+	[Parameter("Band Color 2", GroupName = "Bands", Description = "Color of the band shading 1")]
 	public Color BandColor2 { get; set; } = Color.Orange.With(opacity: 0.2f);
 
-	[Parameter("Band Color 3", GroupName = "Band Visuals")]
+	[Parameter("Band Color 3", GroupName = "Bands", Description = "Color of the band shading 1")]
 	public Color BandColor3 { get; set; } = Color.Red.With(opacity: 0.2f);
 
 	private double GetBandAtr(int barIndex)
@@ -193,8 +195,14 @@ public partial class AtrTrailingStop
 		{
 			var trend = trendInterval.Trend;
 
+			var lastBarIndex = Bars.Count - 1;
 			var endBarIndex = trendInterval.EndBarIndex;
 			var startBarIndex = trendInterval.StartBarIndex;
+
+			if (!endBarIndex.Equals(lastBarIndex))
+			{
+				endBarIndex--;
+			}
 
 			var intervalLength = endBarIndex - startBarIndex + 1;
 			var intervalBarIndexRange = Enumerable.Range(startBarIndex, intervalLength);

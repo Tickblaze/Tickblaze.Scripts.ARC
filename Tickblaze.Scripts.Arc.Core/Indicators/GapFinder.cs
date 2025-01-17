@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Windows;
 using System.Windows.Controls;
 using Tickblaze.Scripts.Arc.Common;
 using Tickblaze.Scripts.Indicators;
@@ -12,12 +11,11 @@ public partial class GapFinder : Indicator
 	public GapFinder()
 	{
 		IsOverlay = true;
+		
 		ShortName = "GF";
+		
 		Name = "Gap Finder";
 	}
-
-	[AllowNull]
-	private MenuViewModel _menuViewModel;
 
 	[AllowNull]
 	private Gaps _freshGaps;
@@ -27,6 +25,11 @@ public partial class GapFinder : Indicator
 
 	[AllowNull]
 	private Gaps _brokenGaps;
+	
+	[AllowNull]
+	private MenuViewModel _menuViewModel;
+
+	private const string _menuResourceName = "Tickblaze.Scripts.Arc.Core.Indicators.GapFinder.Menu.xaml";
 
 	[Parameter("Measurement")]
 	public GapMeasurement GapMeasurementValue { get; set; } = GapMeasurement.Atr;
@@ -77,16 +80,11 @@ public partial class GapFinder : Indicator
 
 	public override object? CreateChartToolbarMenuItem()
 	{
-		var uri = new Uri("/Tickblaze.Scripts.Arc.Core;component/Indicators/GapFinder.Menu.xaml", UriKind.Relative);
+		var menu = ResourceDictionaries.LoadResource<Menu>(_menuResourceName);
 
-		var menuObject = Application.LoadComponent(uri);
+		menu.DataContext = _menuViewModel;
 
-		if (menuObject is Menu menu)
-		{
-			menu.DataContext = _menuViewModel;
-		}
-
-		return menuObject;
+		return menu;
 	}
 
 	protected override Parameters GetParameters(Parameters parameters)
@@ -136,10 +134,10 @@ public partial class GapFinder : Indicator
 		
 		return GapMeasurementValue switch
 		{
-			GapMeasurement.Point => Bars.Map(bar => 1.0 * GapPointCount),
-			GapMeasurement.Pip => Bars.Map(bar => 10.0 * GapPipCount * tickSize),
-			GapMeasurement.Tick => Bars.Map(bar => GapTickCount * tickSize),
-			GapMeasurement.Atr => GetAtrMinGapHeights(),
+            GapMeasurement.Point => Bars.Map((Bar bar) => 1.0 * GapPointCount),
+            GapMeasurement.Pip => Bars.Map((Bar bar) => 10.0 * GapPipCount * tickSize),
+            GapMeasurement.Tick => Bars.Map((Bar bar) => GapTickCount * tickSize),
+            GapMeasurement.Atr => GetAtrMinGapHeights(),
 			_ => throw new UnreachableException()
 		};
 	}
@@ -148,7 +146,7 @@ public partial class GapFinder : Indicator
 	{
 		var atr = new AverageTrueRange(AtrPeriod, MovingAverageType.Simple);
 
-		return atr.Result.Map(atr => AtrMultiple * atr);
+		return atr.Result.Map((double atr) => AtrMultiple * atr);
 	}
 
 	protected override void Initialize()

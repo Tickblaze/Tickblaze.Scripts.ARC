@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Windows;
 using System.Windows.Controls;
+using Tickblaze.Scripts.Arc.Common;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
@@ -16,6 +16,8 @@ public partial class VmLean : Indicator
 	[AllowNull]
 	private MenuViewModel _menuViewModel;
 
+	private const string _menuResourceName = "Tickblaze.Scripts.Arc.Core.Indicators.VmLean.Menu.xaml";
+
 	[Parameter("Menu Header", Description = "Menu settings header")]
 	public string MenuHeader { get; set; } = "VM Lean";
 
@@ -24,16 +26,11 @@ public partial class VmLean : Indicator
 
 	public override object? CreateChartToolbarMenuItem()
 	{
-		var uri = new Uri("/Tickblaze.Scripts.Arc.Core;component/Indicators/VmLean.Menu.xaml", UriKind.Relative);
+		var menu = ResourceDictionaries.LoadResource<Menu>(_menuResourceName);
 
-		var menuObject = Application.LoadComponent(uri);
+		menu.DataContext = _menuViewModel;
 
-		if (menuObject is Menu menu)
-		{
-			menu.DataContext = _menuViewModel;
-		}
-
-		return menuObject;
+		return menu;
 	}
 
 	protected override Parameters GetParameters(Parameters parameters)
