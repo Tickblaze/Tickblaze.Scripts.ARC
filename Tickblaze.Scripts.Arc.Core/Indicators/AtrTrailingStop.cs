@@ -34,10 +34,10 @@ public partial class AtrTrailingStop : Indicator
 	[AllowNull]
 	private DrawingPartDictionary<int, TrendInterval> _trendIntervals;
 
-	[Parameter("ATR Period", Description = "Period for the Average True Range")]
+	[Parameter("ATR Period", Description = "Period of the Average True Range")]
 	public int AtrPeriod { get; set; } = 10;
 
-	[Parameter("ATR Multiplier", Description = "Multiplier for the Average True Range")]
+	[Parameter("ATR Multiplier", Description = "Multiplier of the Average True Range")]
 	public double AtrMultiplier { get; set; } = 2.5;
 
 	[Parameter("Enable Tick Rounding", Description = "Whether indicator values are rounded to the nearest tick")]
@@ -58,10 +58,10 @@ public partial class AtrTrailingStop : Indicator
 	[Parameter("Marker Size", GroupName = "Visuals", Description = "Size of the marker")]
 	public int MarkerSize { get; set; } = 10;
 
-	[Parameter("Bullish Color", GroupName = "Visuals", Description = "Color for the bullish trend")]
+	[Parameter("Bullish Color", GroupName = "Visuals", Description = "Color of the bullish trend")]
 	public Color BullishColor { get; set; } = Color.Blue;
 
-	[Parameter("Bearish Color", GroupName = "Visuals", Description = "Color for the bearish trend")]
+	[Parameter("Bearish Color", GroupName = "Visuals", Description = "Color of the bearish trend")]
 	public Color BearishColor { get; set; } = Color.Red;
 
 	[Plot("Stop Dots")]
@@ -263,8 +263,8 @@ public partial class AtrTrailingStop : Indicator
 			var endTrend = _trends[endIndex];
 			var endPoint = StopDots.GetPoint(endIndex);
 
-			var startApiPoint = this.ToApiPoint(startPoint);
-			var endApiPoint = this.ToApiPoint(endPoint);
+			var startApiPoint = this.GetApiPoint(startPoint);
+			var endApiPoint = this.GetApiPoint(endPoint);
 
 			if (startTrend.EnumEquals(endTrend))
 			{
@@ -286,7 +286,7 @@ public partial class AtrTrailingStop : Indicator
 
 		foreach (var markerPoint in markerPoints)
 		{
-			var point = this.ToApiPoint(markerPoint);
+			var point = this.GetApiPoint(markerPoint);
 			var trend = _trends[markerPoint.BarIndex];
 			
 			var markerColor = trend.Map(BearishColor, BullishColor);

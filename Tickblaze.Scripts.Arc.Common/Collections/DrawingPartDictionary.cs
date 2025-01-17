@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Tickblaze.Scripts.Arc.Common;
 
-public class DrawingPartDictionary<TDrawingPartKey, TDrawingPart> : IReadOnlyList<TDrawingPart>
+public class DrawingPartDictionary<TDrawingPartKey, TDrawingPart> : ISeries<TDrawingPart>
 	where TDrawingPartKey : notnull, IEquatable<TDrawingPartKey>
 	where TDrawingPart : IDrawingPart<TDrawingPartKey>
 {
@@ -12,6 +12,8 @@ public class DrawingPartDictionary<TDrawingPartKey, TDrawingPart> : IReadOnlyLis
     public int Count => _drawingParts.Count;
 
     public bool IsEmpty => _drawingParts.Count is 0;
+
+	public TDrawingPart FirstDrawingPart => this[0];
 
 	public TDrawingPart LastDrawingPart => this[^1];
 
@@ -139,14 +141,12 @@ public class DrawingPartDictionary<TDrawingPartKey, TDrawingPart> : IReadOnlyLis
 
 	public bool Remove(TDrawingPartKey componentKey)
 	{
-		return TryGetDrawingPart(componentKey, out var component) && Remove(component);
+		return _drawingParts.Remove(componentKey);
 	}
 
 	public void RemoveAt(int index)
 	{
-		var component = _drawingParts.GetValueAt(index);
-
-		Remove(component);
+		_drawingParts.RemoveAt(index);
 	}
 
 	public void Clear()

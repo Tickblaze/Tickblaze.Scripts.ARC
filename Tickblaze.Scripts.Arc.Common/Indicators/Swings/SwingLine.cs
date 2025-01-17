@@ -12,5 +12,9 @@ public sealed class SwingLine : IDrawingPart<Point>
 
 	public required Point EndPoint { get; set; }
 
+	public double StartPrice => StartPoint.Price;
+
+	public double EndPrice => EndPoint.Price;
+
 	public Rectangle Boundary => new(StartPoint, EndPoint);
 }

@@ -1,5 +1,4 @@
-﻿using ControlzEx;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Tickblaze.Scripts.Arc.Common;
 
 namespace Tickblaze.Scripts.Arc.Core;
@@ -9,22 +8,32 @@ public partial class AtrTrailingStop
 	[AllowNull]
 	private PlotSeries _bandUpper1;
 
-	private ISeries<ApiPoint> BandUpper1 => field ??= _bandUpper1.MapAndCacheByIndex(index => this.ToApiPoint(_bandUpper1.GetPoint(index)));
+	private ISeries<ApiPoint> BandUpper1 => field ??= _bandUpper1.MapAndCache(GetApiPoint);
 
 	[AllowNull]
 	private PlotSeries _bandLower1;
 
+	private ISeries<ApiPoint> BandLower1 => field ??= _bandUpper1.MapAndCache(GetApiPoint);
+
 	[AllowNull]
 	private PlotSeries _bandUpper2;
-	
+
+	private ISeries<ApiPoint> BandUpper2 => field ??= _bandUpper1.MapAndCache(GetApiPoint);
+
 	[AllowNull]
 	private PlotSeries _bandLower2;
 
+	private ISeries<ApiPoint> BandLower2 => field ??= _bandUpper1.MapAndCache(GetApiPoint);
+
 	[AllowNull]
 	private PlotSeries _bandUpper3;
-	
+
+	private ISeries<ApiPoint> BandUpper3 => field ??= _bandUpper1.MapAndCache(GetApiPoint);
+
 	[AllowNull]
 	private PlotSeries _bandLower3;
+
+	private ISeries<ApiPoint> BandLower3 => field ??= _bandUpper1.MapAndCache(GetApiPoint);
 
 	[AllowNull]
 	private BandInfo[] _bandInfos;
@@ -61,6 +70,13 @@ public partial class AtrTrailingStop
 
 	[Parameter("Band Color 3", GroupName = "Bands", Description = "Color of the band shading 1")]
 	public Color BandColor3 { get; set; } = Color.Red.With(opacity: 0.2f);
+
+	private ApiPoint GetApiPoint(int barIndex, double price)
+	{
+		var point = new Point(barIndex, price);
+
+		return this.GetApiPoint(point);
+	}
 
 	private double GetBandAtr(int barIndex)
 	{
@@ -113,6 +129,8 @@ public partial class AtrTrailingStop
 		_bandUpper3 = new(BullishColor, LineStyle.Solid, 2);
 		_bandLower3 = new(BearishColor, LineStyle.Solid, 2);
 
+		var stopDotPoints = StopDots.MapAndCache(GetApiPoint);
+
 		_bandInfos =
 		[
 			new BandInfo
@@ -120,48 +138,48 @@ public partial class AtrTrailingStop
 				Color = BandColor3,
 				IsVisible = ShowBands3,
 				IsAboveBaseline = true,
-				TopSeries = _bandUpper3,
-				BottomSeries = _bandUpper2,
+				UpperSeries = BandUpper3,
+				LowerSeries = BandUpper2,
 			},
 			new BandInfo
 			{
 				Color = BandColor2,
 				IsVisible = ShowBands2,
 				IsAboveBaseline = true,
-				TopSeries = _bandUpper2,
-				BottomSeries = _bandUpper1,
+				UpperSeries = BandUpper2,
+				LowerSeries = BandUpper1,
 			},
 			new BandInfo
 			{
 				Color = BandColor1,
 				IsVisible = ShowBands1,
 				IsAboveBaseline = true,
-				TopSeries = _bandUpper1,
-				BottomSeries = StopDots,
+				UpperSeries = BandUpper1,
+				LowerSeries = stopDotPoints,
 			},
 			new BandInfo
 			{
 				Color = BandColor1,
 				IsVisible = ShowBands1,
 				IsAboveBaseline = false,
-				BottomSeries = _bandLower1,
-				TopSeries = StopDots,
+				LowerSeries = BandLower1,
+				UpperSeries = stopDotPoints,
 			},
 			new BandInfo
 			{
 				Color = BandColor2,
 				IsVisible = ShowBands2,
 				IsAboveBaseline = false,
-				TopSeries = _bandLower1,
-				BottomSeries = _bandLower2,
+				UpperSeries = BandLower1,
+				LowerSeries = BandLower2,
 			},
 			new BandInfo
 			{
 				Color = BandColor3,
 				IsVisible = ShowBands3,
 				IsAboveBaseline = false,
-				TopSeries = _bandLower2,
-				BottomSeries = _bandLower3,
+				UpperSeries = BandLower2,
+				LowerSeries = BandLower3,
 			}
 		];
 	}
@@ -221,23 +239,19 @@ public partial class AtrTrailingStop
 				var series = bandInfo.Series;
 				var seriesLineColor = bandInfo.IsAboveBaseline ? BullishColor : BearishColor;
 
-				var topPoints = intervalBarIndexRange.Select(bandInfo.TopSeries.GetPoint);
-				var bottomPoints = intervalBarIndexRange.Select(bandInfo.BottomSeries.GetPoint);
+				var upperPoints = intervalBarIndexRange.Select(barIndex => bandInfo.UpperSeries[barIndex]);
+				var lowerPoints = intervalBarIndexRange.Select(barIndex => bandInfo.LowerSeries[barIndex]);
 
-				var polygonPoints = bottomPoints
+				var polygonPoints = lowerPoints
 					.Reverse()
-					.Concat(topPoints)
-					.Select(this.ToApiPoint);
+					.Concat(upperPoints);
 
 				drawingContext.DrawPolygon(polygonPoints, bandInfo.Color);
 
 				for (var barIndex = startBarIndex; barIndex < endBarIndex; barIndex++)
 				{
-					var startPoint = series.GetPoint(barIndex);
-					var endPoint = series.GetPoint(barIndex + 1);
-
-					var startApiPoint = this.ToApiPoint(startPoint);
-					var endApiPoint = this.ToApiPoint(endPoint);
+					var startApiPoint = series[barIndex];
+					var endApiPoint = series[barIndex + 1];
 
 					drawingContext.DrawLine(startApiPoint, endApiPoint, seriesLineColor);
 				}
@@ -253,10 +267,10 @@ public partial class AtrTrailingStop
 
 		public required bool IsAboveBaseline { get; init; }
 
-		public required PlotSeries TopSeries { get; init; }
+		public required ISeries<ApiPoint> UpperSeries { get; init; }
 
-		public required PlotSeries BottomSeries { get; init; }
+		public required ISeries<ApiPoint> LowerSeries { get; init; }
 
-		public ISeries<double> Series => IsAboveBaseline ? TopSeries : BottomSeries;
+		public ISeries<ApiPoint> Series => IsAboveBaseline ? UpperSeries : LowerSeries;
 	}
 }

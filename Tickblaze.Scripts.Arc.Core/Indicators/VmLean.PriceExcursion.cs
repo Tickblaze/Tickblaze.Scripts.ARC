@@ -17,32 +17,32 @@ public partial class VmLean
 
 	public bool EnableLevels { get; set; } = true;
 
-	[Parameter("Level Plot Style", GroupName = "Price Excursion Parameters", Description = "Plot style of level lines")]
+	[Parameter("Level Plot Style", GroupName = "Price Excursion Visuals", Description = "Plot style of the level lines")]
 	public LevelPlotStyle LevelPlotStyleValue { get; set; } = LevelPlotStyle.StraightLines;
 
-	[Parameter("Level Line Style", GroupName = "Price Excursion Parameters", Description = "Style of level lines")]
+	[Parameter("Level Line Style", GroupName = "Price Excursion Visuals", Description = "Line style of the level lines")]
 	public LineStyle LevelLineStyle { get; set; } = LineStyle.Solid;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Level Line Thickness", GroupName = "Price Excursion Parameters", Description = "Thickness of level lines")]
+	[Parameter("Level Line Thickness", GroupName = "Price Excursion Visuals", Description = "Thickness of the level lines")]
 	public int LevelLineThickness { get; set; } = 3;
 
-	[Parameter("Show Level 1", GroupName = "Price Excursion Parameters", Description = "Whether level 1 is shown")]
+	[Parameter("Show Level 1", GroupName = "Price Excursion Visuals", Description = "Whether level 1 lines are shown")]
 	public bool ShowLevel1 { get; set; }
 
-	[Parameter("Level 1 Color", GroupName = "Price Excursion Parameters")]
+	[Parameter("Show Level 2", GroupName = "Price Excursion Visuals", Description = "Whether level 2 lines are shown")]
+	public bool ShowLevel2 { get; set; }
+	
+	[Parameter("Show Level 3", GroupName = "Price Excursion Visuals", Description = "Whether level 3 lines are shown")]
+	public bool ShowLevel3 { get; set; }
+
+	[Parameter("Level 1 Color", GroupName = "Price Excursion Visuals", Description = "Color of the level 1 lines")]
 	public Color Level1Color { get; set; } = DrawingColor.WhiteSmoke;
 
-	[Parameter("Show Level 2", GroupName = "Price Excursion Parameters", Description = "Whether level 2 is shown")]
-	public bool ShowLevel2 { get; set; }
-
-	[Parameter("Level 2 Color", GroupName = "Price Excursion Parameters")]
+	[Parameter("Level 2 Color", GroupName = "Price Excursion Visuals", Description = "Color of the level 2 lines")]
 	public Color Level2Color { get; set; } = Color.Blue;
 
-	[Parameter("Show Level 3", GroupName = "Price Excursion Parameters", Description = "Whether level 3 is shown")]
-	public bool ShowLevel3 { get; set; }
-	
-	[Parameter("Level 3 Color", GroupName = "Price Excursion Parameters")]
+	[Parameter("Level 3 Color", GroupName = "Price Excursion Visuals", Description = "Color of the level 3 lines")]
 	public Color Level3Color { get; set; } = Color.Red;
 
 	public void HidePriceExcursionParameters(Parameters parameters)

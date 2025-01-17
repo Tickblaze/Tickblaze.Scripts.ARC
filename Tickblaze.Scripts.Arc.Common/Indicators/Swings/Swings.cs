@@ -1,15 +1,19 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Tickblaze.Scripts.Arc.Common;
 
 [Browsable(false)]
 public class Swings : ChildIndicator
 {
-    private int _currentIndex = 1;
-    private StrictTrend _currentTrend;
-    private StrictTrend? _previousTrend;
-    private readonly DrawingPartDictionary<Point, SwingLine> _pendingSwings = [];
+    private int _currentIndex;
+    
+	private StrictTrend _currentTrend;
+    
+	private StrictTrend? _previousTrend;
+
+	private readonly DrawingPartDictionary<Point, SwingLine> _pendingSwings = [];
 
     public required bool IsSwingEnabled { get; set; }
 
@@ -47,13 +51,13 @@ public class Swings : ChildIndicator
 
     private int BarOffset => CalculationMode is SwingCalculationMode.CurrentBar ? 0 : 1;
 
-    private readonly DrawingPartDictionary<Point, SwingLine> _swings = [];
+	private readonly DrawingPartDictionary<Point, SwingLine> _swings = [];
 
     public IReadOnlyList<SwingLine> SwingList => _swings;
 
-    private readonly Series<Trend> _trendBiases = [];
+	private readonly List<Trend> _trendBiases = [];
 
-    public ISeries<Trend> TrendBiases => _trendBiases;
+    public ISeries<Trend> TrendBiases => field ??= _trendBiases.AsSeries();
 
     private ISeries<double> _swingDeviation = default!;
 
@@ -125,8 +129,7 @@ public class Swings : ChildIndicator
 
     private Trend GetTrendBias(int barIndex, DrawingPartDictionary<Point, SwingLine> lastSwings)
     {
-        if (barIndex is 0
-            || lastSwings is not [.., var thirdLastSwing, var secondLastSwing, var lastSwing])
+        if (barIndex is 0 || lastSwings is not [.., var thirdLastSwing, var secondLastSwing, var lastSwing])
         {
             return Trend.None;
         }
@@ -170,7 +173,67 @@ public class Swings : ChildIndicator
         return currentTrendBias;
     }
 
-    private IEnumerable<SwingLine> GetVisibleDrawingParts(Rectangle visibleRectangle)
+	private SwingLabel GetIncomingSwingLabel(StrictTrend incomingTrend, int incomingBarIndex, double incomingPrice)
+	{
+		var lastSwings = GetLastSwings(2);
+		var lastSwing = lastSwings.GetLastOrDefault();
+
+		if (Nullable.Equals(incomingTrend, lastSwing?.Trend))
+		{
+			lastSwing = lastSwings.GetAtOrDefault(^2, default);
+		}
+
+		if (lastSwing is null)
+		{
+			return incomingTrend.Map(SwingLabel.HigherHigh, SwingLabel.LowerLow);
+		}
+
+		var incomingDtbDeviation = SwingDtbDeviation[incomingBarIndex];
+
+		var priceDelta = incomingPrice - lastSwing.StartPrice;
+
+		if (Math.Abs(priceDelta) <= incomingDtbDeviation)
+		{
+			return incomingTrend.Map(SwingLabel.DoubleTop, SwingLabel.DoubleBottom);
+		}
+
+		return priceDelta.CompareTo(0) switch
+		{
+			> 0 when incomingTrend is StrictTrend.Up => SwingLabel.HigherHigh,
+			< 0 when incomingTrend is StrictTrend.Up => SwingLabel.LowerHigh,
+			> 0 when incomingTrend is StrictTrend.Down => SwingLabel.HigherLow,
+			< 0 when incomingTrend is StrictTrend.Down => SwingLabel.LowerLow,
+			_ => throw new UnreachableException(),
+		};
+	}
+
+	private DrawingPartDictionary<Point, SwingLine> GetLastSwings(int maxCount)
+	{
+		var lastSwings = new DrawingPartDictionary<Point, SwingLine>();
+
+		var startSwingIndex = Math.Max(0, _swings.Count - maxCount);
+
+		for (var swingIndex = startSwingIndex; swingIndex < _swings.Count; swingIndex++)
+		{
+			var swing = _swings.GetDrawingPartAt(swingIndex);
+
+			lastSwings.AddOrUpdate(swing);
+		}
+
+		foreach (var pendingSwing in _pendingSwings)
+		{
+			lastSwings.AddOrUpdate(pendingSwing);
+		}
+
+		while (!lastSwings.IsEmpty && lastSwings.Count > maxCount)
+		{
+			lastSwings.RemoveAt(0);
+		}
+
+		return lastSwings;
+	}
+
+	private IEnumerable<SwingLine> GetVisibleSwings(Rectangle visibleRectangle)
     {
         var visibleSwings = _swings.GetVisibleDrawingParts(visibleRectangle);
 
@@ -211,30 +274,34 @@ public class Swings : ChildIndicator
         _currentTrend = isUpTrend ? StrictTrend.Up : StrictTrend.Down;
 
         var oppositeTrend = _currentTrend.GetOppositeTrend();
-        var currentEndPrice = GetTrendPrice(_currentTrend, barIndex);
+        
+		var currentEndPrice = GetTrendPrice(_currentTrend, barIndex);
+		var currentLabel = GetIncomingSwingLabel(_currentTrend, barIndex, currentEndPrice);
+
         var previousEndPrice = GetTrendPrice(oppositeTrend, barIndex);
         var previousStartPrice = GetTrendPrice(_currentTrend, 0);
+		var previousLabel = GetIncomingSwingLabel(oppositeTrend, barIndex, previousEndPrice);
 
-        if (barIndex >= 2)
+		if (barIndex >= 2)
         {
             var previousSwing = new SwingLine
             {
+                Label = previousLabel,
                 Trend = oppositeTrend,
                 EndPoint = new(barIndex, previousEndPrice),
                 StartPoint = new(0, previousStartPrice),
-                Label = GetIncomingLabel(oppositeTrend, barIndex, previousEndPrice)
-            };
+			};
 
             _pendingSwings.AddOrUpdate(previousSwing);
         }
 
         var currentSwing = new SwingLine
         {
+            Label = currentLabel,
             Trend = _currentTrend,
             EndPoint = new(barIndex, currentEndPrice),
             StartPoint = new(barIndex, previousEndPrice),
-            Label = GetIncomingLabel(oppositeTrend, barIndex, currentEndPrice)
-        };
+		};
 
         _pendingSwings.AddOrUpdate(currentSwing);
 
@@ -243,8 +310,16 @@ public class Swings : ChildIndicator
 
     protected override void Initialize()
     {
-        _swingDeviation ??= Bars.Map((Bar bar) => 0.0d);
-        _swingDtbDeviation ??= Bars.Map((Bar bar) => 0.0d);
+		_currentIndex = default;
+		_currentTrend = default;
+		_previousTrend = default;
+
+		_swings.Clear();
+		_trendBiases.Clear();
+		_pendingSwings.Clear();
+
+        _swingDeviation ??= Bars.Map(bar => 0.0d);
+		_swingDtbDeviation ??= Bars.Map(bar => 0.0d);
     }
 
 	public void Reinitialize()
@@ -291,11 +366,13 @@ public class Swings : ChildIndicator
 
         TryUpsertPendingSwings(barIndex);
 
-        if (_previousTrend is null)
+		if (_previousTrend is null)
         {
             TryInitializeSwings(barIndex);
 
-            return;
+			CalculateTrendBiases(barIndex);
+
+			return;
         }
 
         var currentLow = Bars.Low[barIndex];
@@ -333,8 +410,8 @@ public class Swings : ChildIndicator
 
         CalculateSwings(barIndex, isOutsideBar);
 
-        CalculateTrendBiases(barIndex);
-    }
+		CalculateTrendBiases(barIndex);
+	}
 
     private void CalculateSwings(int barIndex, bool isOutsideBar)
     {
@@ -370,24 +447,10 @@ public class Swings : ChildIndicator
 
     private void CalculateTrendBiases(int barIndex)
     {
-        const int biasRequiredSwingMaxCount = 4;
+        var lastSwings = GetLastSwings(4);
+		var trendBias = GetTrendBias(barIndex, lastSwings);
 
-        var lastSwings = new DrawingPartDictionary<Point, SwingLine>();
-        var startSwingIndex = Math.Max(0, _swings.Count - biasRequiredSwingMaxCount);
-
-        for (var swingIndex = startSwingIndex; swingIndex < _swings.Count; swingIndex++)
-        {
-            var swing = _swings.GetDrawingPartAt(swingIndex);
-
-            lastSwings.AddOrUpdate(swing);
-        }
-
-        foreach (var pendingSwing in _pendingSwings)
-        {
-            lastSwings.AddOrUpdate(pendingSwing);
-        }
-
-        _trendBiases[barIndex] = GetTrendBias(barIndex, lastSwings);
+		_trendBiases.BackfillAddOrUpdate(barIndex, trendBias, Trend.None);
     }
 
     private void UpdateSwing(int barIndex)
@@ -396,7 +459,7 @@ public class Swings : ChildIndicator
         var currentTrend = currentSwing.Trend;
         var currentEndPrice = currentSwing.EndPoint.Price;
         var currentTrendPrice = GetTrendPrice(currentTrend, barIndex);
-        var currentLabel = GetIncomingLabel(currentTrend, barIndex, currentTrendPrice);
+        var currentLabel = GetIncomingSwingLabel(currentTrend, barIndex, currentTrendPrice);
 
         if (currentTrend is StrictTrend.Up && currentEndPrice <= currentTrendPrice
             || currentTrend is StrictTrend.Down && currentEndPrice >= currentTrendPrice)
@@ -420,7 +483,7 @@ public class Swings : ChildIndicator
         var previousStartPoint = previousSwing.EndPoint;
         var currentTrend = previousTrend.GetOppositeTrend();
         var currentTrendPrice = GetTrendPrice(currentTrend, barIndex);
-        var currentLabel = GetIncomingLabel(currentTrend, barIndex, currentTrendPrice);
+        var currentLabel = GetIncomingSwingLabel(currentTrend, barIndex, currentTrendPrice);
 
         var currentSwing = new SwingLine
         {
@@ -431,33 +494,6 @@ public class Swings : ChildIndicator
         };
 
         _pendingSwings.AddOrUpdate(currentSwing);
-    }
-
-    private SwingLabel GetIncomingLabel(StrictTrend incomingTrend, int incomingBarIndex, double incomingPrice)
-    {
-        if (_swings.IsEmpty)
-        {
-            return incomingTrend.Map(SwingLabel.HigherHigh, SwingLabel.LowerLow);
-        }
-
-        var lastPrice = LastSwing.StartPoint.Price;
-        var incomingDtbDeviation = SwingDtbDeviation[incomingBarIndex];
-
-        var priceDelta = incomingPrice - lastPrice;
-
-        if (Math.Abs(priceDelta) <= incomingDtbDeviation)
-        {
-            return incomingTrend.Map(SwingLabel.DoubleTop, SwingLabel.DoubleBottom);
-        }
-
-        return priceDelta.CompareTo(0) switch
-        {
-            > 0 when incomingTrend is StrictTrend.Up => SwingLabel.HigherHigh,
-            < 0 when incomingTrend is StrictTrend.Up => SwingLabel.LowerHigh,
-            > 0 when incomingTrend is StrictTrend.Down => SwingLabel.HigherLow,
-            < 0 when incomingTrend is StrictTrend.Down => SwingLabel.LowerLow,
-            _ => throw new UnreachableException(),
-        };
     }
 
     public override void OnRender(IDrawingContext drawingContext)
@@ -474,15 +510,15 @@ public class Swings : ChildIndicator
 
         var previousDotColor = Color.Transparent;
         var boundary = RenderTarget.GetVisibleBoundary();
-        var swings = GetVisibleDrawingParts(boundary);
+        var swings = GetVisibleSwings(boundary);
 
         foreach (var swing in swings)
         {
             var trend = swing.Trend;
             var swingLabel = swing.Label;
             var lineColor = trend.Map(UpLineColor, DownLineColor);
-            var endPoint = RenderTarget.ToApiPoint(swing.EndPoint);
-            var startPoint = RenderTarget.ToApiPoint(swing.StartPoint);
+            var endPoint = RenderTarget.GetApiPoint(swing.EndPoint);
+            var startPoint = RenderTarget.GetApiPoint(swing.StartPoint);
             var isDtb = swingLabel.IsDoubleTop || swingLabel.IsDoubleBottom;
 
             if (ShowLines)

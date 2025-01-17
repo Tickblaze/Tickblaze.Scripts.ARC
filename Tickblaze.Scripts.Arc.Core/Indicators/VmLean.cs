@@ -10,6 +10,7 @@ public partial class VmLean : Indicator
 	public VmLean()
 	{
 		Name = "VM Lean";
+
 		ShortName = "VML";
 	}
 
@@ -18,11 +19,11 @@ public partial class VmLean : Indicator
 
 	private const string _menuResourceName = "Tickblaze.Scripts.Arc.Core.Indicators.VmLean.Menu.xaml";
 
-	[Parameter("Menu Header", Description = "Menu settings header")]
+	[Parameter("Menu Header", Description = "Header of the menu")]
 	public string MenuHeader { get; set; } = "VM Lean";
 
 	[Plot("Zero Line")]
-	public PlotLevel ZeroLine { get; set; } = new(0.0, Color.Black, LineStyle.Solid, 2);
+	public PlotSeries ZeroLine { get; set; } = new(Color.Black, LineStyle.Solid, 2);
 
 	public override object? CreateChartToolbarMenuItem()
 	{
@@ -44,7 +45,7 @@ public partial class VmLean : Indicator
 
 	protected override void Initialize()
 	{
-		InitializeSwings(false);
+		InitializeSwings();
 
 		InitializeMacdBb();
 
@@ -57,6 +58,8 @@ public partial class VmLean : Indicator
 
 	protected override void Calculate(int barIndex)
 	{
+		ZeroLine[barIndex] = 0.0;
+
 		CalculateHistogram(barIndex);
 
 		CalculateMacdBb(barIndex);

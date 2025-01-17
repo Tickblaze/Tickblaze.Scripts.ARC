@@ -18,54 +18,54 @@ public partial class VmLean
 	public bool IsSwingEnabled { get; set; }
 
 	[NumericRange(MinValue = 1, MaxValue = 200)]
-	[Parameter("Swing Strength", GroupName = "Swing Structure Parameters", Description = "Number of bars used to identify a swing high or low")]
+	[Parameter("Swing Strength", GroupName = "Swing Structure Parameters", Description = "Bar lookback to calculate swing high or low")]
 	public int SwingStrength { get; set; } = 3;
 
 	[NumericRange(MaxValue = double.MaxValue, Step = 0.1)]
-	[Parameter("Swing Deviation Multiplier", GroupName = "Swing Structure Parameters", Description = "Multiplier used to calculate minimum deviation as an ATR multiple")]
+	[Parameter("Swing Deviation Multiplier", GroupName = "Swing Structure Parameters", Description = "ATR multipler of the minimum deviation required for a trend change")]
 	public double SwingDeviationAtrMultiplier { get; set; }
 
 	[NumericRange(MaxValue = double.MaxValue, Step = 0.1)]
-	[Parameter("Swing Double Top/Bottom ATR Multiplier", GroupName = "Swing Structure Parameters", Description = "Fraction of ATR ignored when detecting double tops or bottoms")]
+	[Parameter("Swing Double Top/Bottom ATR Multiplier", GroupName = "Swing Structure Parameters", Description = "ATR multiplier of the maximum deviation ignored for a double tops or bottoms recognition")]
 	public double SwingDtbAtrMultiplier { get; set; }
 
-	[Parameter("Show Swing Dots", GroupName = "Swing Structure Parameters", Description = "Whether swing dots are shown")]
+	[Parameter("Show Swing Dots", GroupName = "Swing Structure Visuals", Description = "Whether swing dots are shown")]
 	public bool ShowSwingDots { get; set; }
 
 	[NumericRange(MinValue = 1, MaxValue = 25)]
-	[Parameter("Swing Dot Size", GroupName = "Swing Structure Parameters", Description = "Size of dots representing swing highs and lows")]
+	[Parameter("Swing Dot Size", GroupName = "Swing Structure Visuals", Description = "Size of the swing dots")]
 	public int SwingDotSize { get; set; } = 7;
 
-	[Parameter("Show Swing Labels", GroupName = "Swing Structure Parameters", Description = "Whether swing labels are shown")]
+	[Parameter("Show Swing Labels", GroupName = "Swing Structure Visuals", Description = "Whether swing labels are shown")]
 	public bool ShowSwingLabels { get; set; }
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Swing Label Font", GroupName = "Swing Structure Parameters", Description = "Label font for swing highs and lows")]
+	[Parameter("Swing Label Font", GroupName = "Swing Structure Visuals", Description = "Font of the swing labels")]
 	public Font SwingLabelFont { get; set; } = new("Arial", 10);
 
-	[Parameter("Rising Swing Label Color", GroupName = "Swing Structure Parameters")]
+	[Parameter("Up-trend Swing Label Color", GroupName = "Swing Structure Visuals", Description = "Color of the up-trend swing label")]
 	public Color SwingUpLabelColor { get; set; } = Color.Black;
 
-	[Parameter("Falling Swing Label Color", GroupName = "Swing Structure Parameters")]
+	[Parameter("Down-trend Swing Label Color", GroupName = "Swing Structure Visuals", Description = "Color of the down-trend swing label")]
 	public Color SwingDownLabelColor { get; set; } = Color.Black;
 
-	[Parameter("Double Top/Bottom Swing Label Color", GroupName = "Swing Structure Parameters")]
+	[Parameter("Double Top/Bottom Swing Label Color", GroupName = "Swing Structure Visuals", Description = "Color of the double top/bottom swing label")]
 	public Color SwingDtbLabelColor { get; set; } = Color.Black;
 
-	[Parameter("Show Swing Lines", GroupName = "Swing Structure Parameters", Description = "Whether swing lines are shown")]
+	[Parameter("Show Swing Lines", GroupName = "Swing Structure Visuals", Description = "Whether swing lines are shown")]
 	public bool ShowSwingLines { get; set; }
 
-	[Parameter("Rising Swing Line Color", GroupName = "Swing Structure Parameters")]
+	[Parameter("Up-trend Swing Line Color", GroupName = "Swing Structure Visuals", Description = "Color of the up-trend swing line")]
 	public Color SwingUpLineColor { get; set; } = Color.Black;
 
-	[Parameter("Falling Swing Line Color", GroupName = "Swing Structure Parameters")]
+	[Parameter("Down-trend Swing Line Color", GroupName = "Swing Structure Visuals", Description = "Color of the down-trend swing line")]
 	public Color SwingDownLineColor { get; set; } = Color.Black;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Swing Line Thickness", GroupName = "Swing Structure Parameters", Description = "Thickness of lines connecting swing highs lows")]
+	[Parameter("Swing Line Thickness", GroupName = "Swing Structure Visuals", Description = "Thickness of the swing lines")]
 	public int SwingLineThickness { get; set; } = 2;
 
-	[Parameter("Swing Line Style", GroupName = "Swing Structure Parameters", Description = "Style of lines connecting swing highs lows")]
+	[Parameter("Swing Line Style", GroupName = "Swing Structure Visuals", Description = "Line style of the swing lines")]
 	public LineStyle SwingLineStyle { get; set; } = LineStyle.Solid;
 
 	public void HideSwingParameters(Parameters parameters)
@@ -102,7 +102,7 @@ public partial class VmLean
 		}
 	}
 
-	public Swings InitializeSwings(bool forceReinitialization)
+	public Swings InitializeSwings()
 	{
 		_swingDeviationAtr = new AverageTrueRange
 		{
@@ -131,14 +131,11 @@ public partial class VmLean
 			DtbLabelColor = SwingDtbLabelColor,
 			DownLabelColor = SwingDownLabelColor,
 			CalculationMode = SwingCalculationMode.CurrentBar,
-			SwingDtbDeviation = SwingDeviationAtr.Map((double atr) => SwingDtbAtrMultiplier * atr),
-			SwingDeviation = SwingDeviationAtr.Map((double atr) => SwingDeviationAtrMultiplier * atr),
+			SwingDtbDeviation = SwingDeviationAtr.Map(atr => SwingDtbAtrMultiplier * atr),
+			SwingDeviation = SwingDeviationAtr.Map(atr => SwingDeviationAtrMultiplier * atr),
 		};
 		
-		if (forceReinitialization)
-		{
-			_swings.Reinitialize();
-		}
+		_swings.Reinitialize();
 
 		return _swings;
 	}

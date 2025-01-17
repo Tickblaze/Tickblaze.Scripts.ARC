@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Tickblaze.Scripts.Arc.Common;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
@@ -17,10 +18,10 @@ public partial class VmLean
 	[AllowNull]
 	private Macd _histomgraMacd4;
 
-	[Parameter("Histogram Up Color", GroupName = "Histogram Parameters")]
+	[Parameter("Histogram Up Color", GroupName = "Histogram Visuals", Description = "Color of the positive histogram values")]
 	public Color HistogramUpColor { get; set; } = DrawingColor.LimeGreen;
 
-	[Parameter("Histogram Down Color", GroupName = "Histogram Parameters")]
+	[Parameter("Histogram Down Color", GroupName = "Histogram Visuals", Description = "Color of the negative histogram values")]
 	public Color HistogramDownColor { get; set; } = DrawingColor.Maroon;
 
 	[Plot("Histogram")]
@@ -63,11 +64,6 @@ public partial class VmLean
 
 	public void CalculateHistogram(int barIndex)
 	{
-		if (barIndex is 0)
-		{
-			return;
-		}
-
 		var currentValue = Histogram[barIndex]
 			= _histomgraMacd1.Histogram[barIndex]
 			+ _histomgraMacd2.Histogram[barIndex]
@@ -84,7 +80,7 @@ public partial class VmLean
 		}
 		else
 		{
-			Histogram.Colors[barIndex] = Histogram.Colors[barIndex - 1];
+			Histogram.Colors[barIndex] = Histogram.Colors.GetAtOrDefault(barIndex - 1, Color.Transparent);
 		}
 	}
 }

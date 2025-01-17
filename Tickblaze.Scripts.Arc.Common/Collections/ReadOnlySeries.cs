@@ -15,11 +15,6 @@ public class ReadOnlySeries<TItem> : ISeries<TItem>
 
     public TItem? this[int index] => _items[index];
 
-    public TItem? Last(int barsAgo = 0)
-    {
-		return _items[^(barsAgo + 1)];
-	}
-    
 	public IEnumerator<TItem?> GetEnumerator()
     {
 		return _items.GetEnumerator();

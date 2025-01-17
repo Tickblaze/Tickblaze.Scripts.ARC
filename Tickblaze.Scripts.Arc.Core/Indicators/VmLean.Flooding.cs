@@ -15,33 +15,30 @@ public partial class VmLean
 	[AllowNull]
 	private FloodingWithOverlaps _bothFlooding;
 
-	[Parameter("Flooding Type", GroupName = "Background Flooding Parameters", Description = "Type of chart panel background flooding")]
+	[Parameter("Flooding Type", GroupName = "Flooding Visuals", Description = "Type of the flooding")]
 	public FloodingType FloodingTypeValue { get; set; } = FloodingType.None;
 
 	[NumericRange(MinValue = 0, MaxValue = 100)]
-	[Parameter("Flooding Opacity", GroupName = "Background Flooding Parameters", Description = "Opacity of chart panel background flooding")]
+	[Parameter("Flooding Opacity", GroupName = "Flooding Visuals", Description = "Opacity of the flooding")]
 	public int FloodingOpacity { get; set; } = 30;
 
-	[Parameter("Flooding Deep Bullish Color", GroupName = "Background Flooding Parameters")]
+	[Parameter("Flooding Deep Bullish Color", GroupName = "Flooding Visuals", Description = "Color of the deep bullish flooding")]
 	public Color FloodingDeepBullishColor { get; set; } = DrawingColor.DarkGreen;
 
-	[Parameter("Flooding Bullish Color", GroupName = "Background Flooding Parameters")]
+	[Parameter("Flooding Bullish Color", GroupName = "Flooding Visuals", Description = "Color of the bullish flooding")]
 	public Color FloodingBullishColor { get; set; } = Color.Green;
 
-	[Parameter("Flooding Opposite Color", GroupName = "Background Flooding Parameters")]
-	public Color FloodingOppositeColor { get; set; } = Color.Gray;
-
-	[Parameter("Flooding Bearish Color", GroupName = "Background Flooding Parameters")]
+	[Parameter("Flooding Bearish Color", GroupName = "Flooding Visuals", Description = "Color of the deep bearish flooding")]
 	public Color FloodingBearishColor { get; set; } = Color.Red;
 
-	[Parameter("Flooding Deep Bearish Color", GroupName = "Background Flooding Parameters")]
+	[Parameter("Flooding Deep Bearish Color", GroupName = "Flooding Visuals", Description = "Color of the bearish flooding")]
 	public Color FloodingDeepBearishColor { get; set; } = DrawingColor.DarkRed;
 
 	public void InitializeFlooding()
 	{
 		var floodingOpacity = FloodingOpacity / 100.0f;
 
-		var histogramTrends = Histogram.Map((double histogramValue) => histogramValue.ToTrend());
+		var histogramTrends = Histogram.Map(histogramValue => histogramValue.ToTrend());
 
 		_histogramFlooding = new Flooding
 		{

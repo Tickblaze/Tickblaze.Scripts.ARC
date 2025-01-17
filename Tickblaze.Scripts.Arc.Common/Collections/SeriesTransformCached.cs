@@ -6,14 +6,21 @@ public class SeriesTransformCached<TSource, TDestination> : ISeries<TDestination
 {
     public SeriesTransformCached(ISeries<TSource> sourceSeries, Func<TSource, TDestination> selector)
     {
-        _selector = selector;
+        _selector = (index, source) => selector(source);
 
 		_sourceSeries = sourceSeries;
     }
 
-    private readonly ISeries<TSource> _sourceSeries;
+	public SeriesTransformCached(ISeries<TSource> sourceSeries, Func<int, TSource, TDestination> selector)
+	{
+		_selector = selector;
+
+		_sourceSeries = sourceSeries;
+	}
+
+	private readonly ISeries<TSource> _sourceSeries;
     
-	private readonly Func<TSource, TDestination> _selector;
+	private readonly Func<int, TSource, TDestination> _selector;
 	
 	private readonly Series<Lazy<TDestination?>> destinationSeries = [];
 
@@ -31,14 +38,9 @@ public class SeriesTransformCached<TSource, TDestination> : ISeries<TDestination
 		{
 			var sourceValue = _sourceSeries[index];
 
-            return sourceValue is null ? default : _selector(sourceValue);
+            return sourceValue is null ? default : _selector(index, sourceValue);
 		}
 	}
-
-    public TDestination? Last(int barsAgo = 0)
-    {
-		return GetDestination(Count - 1 - barsAgo);
-    }
     
 	public IEnumerator<TDestination?> GetEnumerator()
     {

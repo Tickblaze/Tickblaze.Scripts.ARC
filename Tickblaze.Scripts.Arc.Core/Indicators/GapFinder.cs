@@ -134,9 +134,9 @@ public partial class GapFinder : Indicator
 		
 		return GapMeasurementValue switch
 		{
-            GapMeasurement.Point => Bars.Map((Bar bar) => 1.0 * GapPointCount),
-            GapMeasurement.Pip => Bars.Map((Bar bar) => 10.0 * GapPipCount * tickSize),
-            GapMeasurement.Tick => Bars.Map((Bar bar) => GapTickCount * tickSize),
+            GapMeasurement.Point => Bars.Map(bar => 1.0 * GapPointCount),
+            GapMeasurement.Pip => Bars.Map(bar => 10.0 * GapPipCount * tickSize),
+            GapMeasurement.Tick => Bars.Map(bar => GapTickCount * tickSize),
             GapMeasurement.Atr => GetAtrMinGapHeights(),
 			_ => throw new UnreachableException()
 		};
@@ -146,7 +146,7 @@ public partial class GapFinder : Indicator
 	{
 		var atr = new AverageTrueRange(AtrPeriod, MovingAverageType.Simple);
 
-		return atr.Result.Map((double atr) => AtrMultiple * atr);
+		return atr.Result.Map(atr => AtrMultiple * atr);
 	}
 
 	protected override void Initialize()

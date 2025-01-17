@@ -23,33 +23,33 @@ public partial class SwingStructure : Indicator
 
 	private const string _menuResourceName = "Tickblaze.Scripts.Arc.Core.Indicators.SwingStructure.Menu.xaml";
 
-	[Parameter("Calculation Mode", Description = "Whether to calculate the structure by current or closed bar highs and lows")]
+	[Parameter("Calculation Mode", Description = "Whether to calculate the swing by current or closed bar highs and lows")]
 	public SwingCalculationMode CalculationMode { get; set; }
 
 	[NumericRange(MinValue = 1, MaxValue = 200)]
 	[Parameter("Swing strength", Description = "Number of bars used to identify a swing high or low")]
 	public int SwingStrength { get; set; } = 1;
 
-	[Parameter("Show Lines", Description = "Show structure trend lines")]
+	[Parameter("Show Lines", Description = "Whether swing lines are shown")]
 	public bool ShowSwingLines { get; set; } = true;
 
-	[Parameter("Up-trend line color", Description = "Line color for up-trending structure")]
+	[Parameter("Up-trend line color", Description = "Color of the up-trending swing line")]
 	public Color UpLineColor { get; set; } = DrawingColor.DarkGreen;
 
-	[Parameter("Down-trend line color", Description = "Line color for down-trending structure")]
+	[Parameter("Down-trend line color", Description = "Color of the down-trending swing line")]
 	public Color DownLineColor { get; set; } = Color.Red;
 
 	[NumericRange(MinValue = 1, MaxValue = 10)]
-	[Parameter("Line Thickness", Description = "Thickness of structure lines")]
+	[Parameter("Line Thickness", Description = "Thickness of the swing lines")]
 	public int LineThickness { get; set; } = 3;
 
-	[Parameter("Show Labels", Description = "Whether structure labels such as 'HH' and 'LH' need to be shown")]
+	[Parameter("Show Labels", Description = "Whether swing labels such as 'HH' and 'LH' are shown")]
 	public bool ShowSwingLabels { get; set; }
 
-	[Parameter("Label Font", Description = "Font for structure labels")]
+	[Parameter("Label Font", Description = "Font of the swing labels")]
 	public Font LabelFont { get; set; } = new("Arial", 12);
 
-	[Parameter("Settings Header", Description = "Quick access settings header")]
+	[Parameter("Menu Header", Description = "Header of the menu")]
 	public string MenuHeader { get; set; } = "Swing";
 
 	protected override Parameters GetParameters(Parameters parameters)

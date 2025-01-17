@@ -25,7 +25,7 @@ public static class ChartExtensions
         };
     }
 
-    public static ApiPoint ToApiPoint(this IChartObject chartObject, Point point)
+    public static ApiPoint GetApiPoint(this IChartObject chartObject, Point point)
     {
         var (chart, chartScale) = Deconstruct(chartObject);
 
