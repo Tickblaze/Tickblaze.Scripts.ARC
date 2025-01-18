@@ -7,6 +7,8 @@ namespace Tickblaze.Scripts.Arc.Core;
 
 public partial class VmLean
 {
+	private int _currentIndex;
+
 	[AllowNull]
 	private SimpleMovingAverage _priceExcursion;
 
@@ -27,22 +29,22 @@ public partial class VmLean
 	[Parameter("Level Line Thickness", GroupName = "Price Excursion Visuals", Description = "Thickness of the level lines")]
 	public int LevelLineThickness { get; set; } = 3;
 
-	[Parameter("Show Level 1", GroupName = "Price Excursion Visuals", Description = "Whether level 1 lines are shown")]
+	[Parameter("Show Level 1 Lines", GroupName = "Price Excursion Visuals", Description = "Whether level 1 lines are shown")]
 	public bool ShowLevel1 { get; set; }
 
-	[Parameter("Show Level 2", GroupName = "Price Excursion Visuals", Description = "Whether level 2 lines are shown")]
+	[Parameter("Show Level 2 Lines", GroupName = "Price Excursion Visuals", Description = "Whether level 2 lines are shown")]
 	public bool ShowLevel2 { get; set; }
 	
-	[Parameter("Show Level 3", GroupName = "Price Excursion Visuals", Description = "Whether level 3 lines are shown")]
+	[Parameter("Show Level 3 Lines", GroupName = "Price Excursion Visuals", Description = "Whether level 3 lines are shown")]
 	public bool ShowLevel3 { get; set; }
 
-	[Parameter("Level 1 Color", GroupName = "Price Excursion Visuals", Description = "Color of the level 1 lines")]
+	[Parameter("Level 1 Line Color", GroupName = "Price Excursion Visuals", Description = "Color of the level 1 lines")]
 	public Color Level1Color { get; set; } = DrawingColor.WhiteSmoke;
 
-	[Parameter("Level 2 Color", GroupName = "Price Excursion Visuals", Description = "Color of the level 2 lines")]
+	[Parameter("Level 2 Line Color", GroupName = "Price Excursion Visuals", Description = "Color of the level 2 lines")]
 	public Color Level2Color { get; set; } = Color.Blue;
 
-	[Parameter("Level 3 Color", GroupName = "Price Excursion Visuals", Description = "Color of the level 3 lines")]
+	[Parameter("Level 3 Line Color", GroupName = "Price Excursion Visuals", Description = "Color of the level 3 lines")]
 	public Color Level3Color { get; set; } = Color.Red;
 
 	public void HidePriceExcursionParameters(Parameters parameters)
@@ -65,11 +67,26 @@ public partial class VmLean
 
 	public void InitializePriceExcursions()
 	{
+		_currentIndex = 0;
+
 		_priceExcursionAtr = new(256, MovingAverageType.Simple);
 
-		PriceExcursion.LineStyle = LevelLineStyle;
+		_priceExcursion = new(_priceExcursionAtr.Result, 65);
+	}
 
-		_priceExcursion = new(_priceExcursion.Result, 65);
+	private void CalculatePriceExcursions(int barIndex)
+	{
+		if (_currentIndex.Equals(barIndex))
+		{
+			return;
+		}
+
+		_currentIndex = barIndex;
+
+		// Todo: fix wrong calculations [calculating on bar open, not close];
+		_priceExcursionAtr.Calculate();
+
+		_priceExcursion.Calculate();
 	}
 
 	public void RenderPriceExcursions(IDrawingContext drawingContext)
@@ -79,52 +96,48 @@ public partial class VmLean
 			return;
 		}
 
-		var barIndexDelta = LevelPlotStyleValue switch
+		var lastBarIndex = Chart.LastVisibleBarIndex;
+		var firstBarIndex = Chart.FirstVisibleBarIndex;
+
+		var barIndexes = LevelPlotStyleValue switch
 		{
-			LevelPlotStyle.DynamicLines => 1,
-			LevelPlotStyle.StraightLines => Chart.LastVisibleBarIndex - Chart.FirstVisibleBarIndex,
+			LevelPlotStyle.StraightLines => [firstBarIndex, lastBarIndex],
+			LevelPlotStyle.DynamicLines => Enumerable.Range(firstBarIndex, lastBarIndex - firstBarIndex),
 			_ => throw new UnreachableException(),
 		};
 
-		for (var barIndex = Chart.FirstVisibleBarIndex; barIndex < Chart.LastVisibleBarIndex;)
+		if (ShowLevel1)
 		{
-			var nextBarIndex = barIndex + barIndexDelta;
+			DrawPriceExcursionLevel(drawingContext, barIndexes, 1, Level1Color);
+		}
 
-			if (ShowLevel1)
-			{
-				DrawPriceExcursionLevel(drawingContext, barIndex, nextBarIndex, 1, Level1Color);
-			}
+		if (ShowLevel2)
+		{
+			DrawPriceExcursionLevel(drawingContext, barIndexes, 2, Level2Color);
+		}
 
-			if (ShowLevel2)
-			{
-				DrawPriceExcursionLevel(drawingContext, barIndex, nextBarIndex, 2, Level2Color);
-			}
-
-			if (ShowLevel3)
-			{
-				DrawPriceExcursionLevel(drawingContext, barIndex, nextBarIndex, 3, Level3Color);
-			}
-
-			barIndex = nextBarIndex;
+		if (ShowLevel3)
+		{
+			DrawPriceExcursionLevel(drawingContext, barIndexes, 3, Level3Color);
 		}
 	}
 
 	private void DrawPriceExcursionLevel(IDrawingContext drawingContext
-		, int startBarIndex, int endBarIndex, int levelMultiplier, Color levelColor)
+		, IEnumerable<int> barIndexes, int levelMultiplier, Color levelLineColor)
     {
 		ReadOnlySpan<int> levelSignums = [-1, 1];
 
 		foreach (var levelSignum in levelSignums)
 		{
-			var startX = Chart.GetXCoordinateByBarIndex(startBarIndex);
-			var startPrice = levelSignum * levelMultiplier * _priceExcursion[startBarIndex];
-			var startY = ChartScale.GetYCoordinateByValue(startPrice);
+			var levelApiPoints = barIndexes
+				.Select(PriceExcursion.GetPoint)
+				.Select(point => point with
+				{
+					Price = levelSignum * levelMultiplier * point.Price
+				})
+				.Select(this.GetApiPoint);
 
-			var endX = Chart.GetRightX();
-			var endPrice = levelSignum * levelMultiplier * _priceExcursion[endBarIndex];
-			var endPriceY = ChartScale.GetYCoordinateByValue(endPrice);
-
-			drawingContext.DrawLine(startX, startY, endX, endPriceY, levelColor, LevelLineThickness, LevelLineStyle);
+			drawingContext.DrawPolygon(levelApiPoints, default, levelLineColor, LevelLineThickness, LevelLineStyle);
 		}
     }
 

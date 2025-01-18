@@ -11,7 +11,7 @@ public partial class GapFinder
 		{
 			_gapFinder = gapFinder;
 
-			MenuHeader = _gapFinder.SettingsHeader;
+			MenuHeader = _gapFinder.MenuHeader;
 
 			ShowFreshGaps = _gapFinder.ShowFreshGaps;
 			ShowTestedGaps = _gapFinder.ShowTestedGaps;
@@ -59,7 +59,7 @@ public partial class GapFinder
 			get;
 			private set
 			{
-				_gapFinder.SettingsHeader = value;
+				_gapFinder.MenuHeader = value;
 
 				this.RaiseAndSetIfChanged(ref field, value);
 			}

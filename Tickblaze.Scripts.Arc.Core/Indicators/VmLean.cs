@@ -4,7 +4,6 @@ using Tickblaze.Scripts.Arc.Common;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
-// Todo: separate paremeters and their visuals.
 public partial class VmLean : Indicator
 {
 	public VmLean()
@@ -53,11 +52,14 @@ public partial class VmLean : Indicator
 
 		InitializeFlooding();
 
+		InitializePriceExcursions();
+
 		_menuViewModel = new(this);
 	}
 
 	protected override void Calculate(int barIndex)
 	{
+		// Todo: document this.
 		ZeroLine[barIndex] = 0.0;
 
 		CalculateHistogram(barIndex);
@@ -67,9 +69,11 @@ public partial class VmLean : Indicator
 		CalculateSwings(barIndex);
 
 		CalculateFlooding(barIndex);
+
+		CalculatePriceExcursions(barIndex);
 	}
 
-	public override void OnRender(IDrawingContext drawingContext)
+    public override void OnRender(IDrawingContext drawingContext)
 	{
 		RenderFlooding(drawingContext);
 

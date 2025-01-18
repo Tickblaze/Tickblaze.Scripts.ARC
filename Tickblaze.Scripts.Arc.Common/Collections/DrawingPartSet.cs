@@ -1,7 +1,7 @@
 ﻿namespace Tickblaze.Scripts.Arc.Common;
 
 public class DrawingPartSet<TBoundable> : DrawingPartDictionary<TBoundable, DrawingPart<TBoundable>>
-	where TBoundable : notnull, IBoundable, IEquatable<TBoundable>
+	where TBoundable : notnull, IBoundable, IXPositionable<TBoundable>, IEquatable<TBoundable>
 {
 	public void AddOrUpdate(TBoundable boundable)
 	{

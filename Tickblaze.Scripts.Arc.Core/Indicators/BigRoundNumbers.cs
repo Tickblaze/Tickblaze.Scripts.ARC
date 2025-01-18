@@ -24,37 +24,37 @@ public partial class BigRoundNumbers : Indicator
 	public IntervalType IntervalTypeValue { get; set; } = IntervalType.Points;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Interval in Points", Description = "Distance between lines in points")]
+	[Parameter("Interval in Points", Description = "Distance between the lines in points")]
 	public int IntervalInPoints { get; set; } = 10;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Interval in Ticks", Description = "Distance between lines in ticks")]
+	[Parameter("Interval in Ticks", Description = "Distance between the lines in ticks")]
 	public int IntervalInTicks { get; set; } = 10;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Interval in Pips", Description = "Distance between lines in pips = 10 * ticks")]
+	[Parameter("Interval in Pips", Description = "Distance between the lines in pips = 10 * ticks")]
 	public int IntervalInPips { get; set; } = 1;
 
-	[Parameter("Level Color", GroupName = "Level Visual Parameters", Description = "Color of the level line")]
-	public Color LevelColor { get; set; } = DrawingColor.Navy;
-
 	[NumericRange(MinValue = 1, MaxValue = 10)]
-	[Parameter("Level Thickness", GroupName = "Level Visual Parameters", Description = "Thickness of the level line")]
+	[Parameter("Level Thickness", GroupName = "Level Visuals", Description = "Thickness of the level line")]
 	public int LevelThickness { get; set; } = 2;
 
-	[Parameter("Highlight Color", GroupName = "Level Visual Parameters", Description = "Color of the highlighted region")]
-	public Color HighlightColor { get; set; } = DrawingColor.Gold.With(0.0f);
-
-	[Parameter("Highlight Thickness Type", GroupName = "Level Visual Parameters", Description = "Type of highlighted region height measurement")]
+	[Parameter("Highlight Thickness Type", GroupName = "Level Visuals", Description = "Type of the highlighted region height measurement")]
 	public HighlightRegionHeightType HighlightThicknessTypeValue { get; set; } = HighlightRegionHeightType.Ticks;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Highlight Thickness Ticks", GroupName = "Level Visual Parameters", Description = "Height of the highlighted region in ticks")]
+	[Parameter("Highlight Thickness Ticks", GroupName = "Level Visuals", Description = "Height of the highlighted region in ticks")]
 	public int HighlightGapHeightInTicks { get; set; } = 1;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Highlight Thickness Pixels", GroupName = "Level Visual Parameters", Description = "Height of the highlighted region in pixels")]
+	[Parameter("Highlight Thickness Pixels", GroupName = "Level Visuals", Description = "Height of the highlighted region in pixels")]
 	public int HighlightGapHeightInPixels { get; set; } = 5;
+
+	[Parameter("Level Color", GroupName = "Level Visuals", Description = "Color of the level line")]
+	public Color LevelColor { get; set; } = DrawingColor.Navy;
+
+	[Parameter("Highlight Color", GroupName = "Level Visuals", Description = "Color of the highlighted region")]
+	public Color HighlightColor { get; set; } = DrawingColor.Gold.With(0.0f);
 
 	protected override Parameters GetParameters(Parameters parameters)
 	{

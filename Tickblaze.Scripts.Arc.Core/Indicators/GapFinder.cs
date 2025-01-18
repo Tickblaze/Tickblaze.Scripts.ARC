@@ -31,52 +31,52 @@ public partial class GapFinder : Indicator
 
 	private const string _menuResourceName = "Tickblaze.Scripts.Arc.Core.Indicators.GapFinder.Menu.xaml";
 
-	[Parameter("Measurement")]
+	[Parameter("Gap Measurement Type", Description = "Type of the gap measurement")]
 	public GapMeasurement GapMeasurementValue { get; set; } = GapMeasurement.Atr;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Gap in Ticks")]
+	[Parameter("Gap in Ticks", Description = "Minimum price delta in ticks needed to create a gap")]
 	public int GapTickCount { get; set; } = 8;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Gap in Points")]
+	[Parameter("Gap in Points", Description = "Minimum price delta in points needed to create a gap")]
 	public int GapPointCount { get; set; } = 5;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Gap in Pips")]
+	[Parameter("Gap in Pips", Description = "Minimum price delta in pips = 10 * ticks needed to create a gap")]
 	public int GapPipCount { get; set; } = 20;
 
 	[NumericRange(MinValue = 0.01, MaxValue = double.MaxValue, Step = 0.5d)]
-	[Parameter("Gap ATR Multiple")]
+	[Parameter("Gap in ATR Multiples", Description = "Minimum price delta in ATR multiples needed to create a gap")]
 	public double AtrMultiple { get; set; } = 0.5;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("ATR Period")]
+	[Parameter("ATR Period", Description = "Period of the ATR")]
 	public int AtrPeriod { get; set; } = 14;
 
-	[Parameter("Restrict to New Session")]
+	[Parameter("Restrict to New Session", Description = "Whether gap is calculated only on session change")]
 	public bool IsRestrictedToNewSession { get; set; }
 
-	[Parameter("Show Fresh Gaps", GroupName = "Visual Parameters")]
+	[Parameter("Menu Header", GroupName = "Visuals", Description = "Header of the menu")]
+	public string MenuHeader { get; set; } = "Gap Finder";
+
+	[Parameter("Show Fresh Gaps", GroupName = "Visuals", Description = "Whether fresh gaps are shown")]
 	public bool ShowFreshGaps { get; set; } = true;
 
-	[Parameter("Fresh Gap Color", GroupName = "Visual Parameters")]
-	public Color FreshGapColor { get; set; } = Color.Orange.With(opacity: 0.5f);
-
-	[Parameter("Show Tested Gaps", GroupName = "Visual Parameters")]
+	[Parameter("Show Tested Gaps", GroupName = "Visuals", Description = "Whether tested gaps are shown")]
 	public bool ShowTestedGaps { get; set; } = true;
 
-	[Parameter("Tested Gap Color", GroupName = "Visual Parameters")]
+	[Parameter("Show Broken Gaps", GroupName = "Visuals", Description = "Whether broken gaps are shown")]
+	public bool ShowBrokenGaps { get; set; } = true;
+	
+	[Parameter("Fresh Gap Color", GroupName = "Visuals", Description = "Color of the fresh gap")]
+	public Color FreshGapColor { get; set; } = Color.Orange.With(opacity: 0.5f);
+	
+	[Parameter("Tested Gap Color", GroupName = "Visuals", Description = "Color of the tested gap")]
 	public Color TestedGapColor { get; set; } = Color.Silver.With(opacity: 0.5f);
 
-	[Parameter("Show Broken Gaps", GroupName = "Visual Parameters")]
-	public bool ShowBrokenGaps { get; set; } = true;
-
-	[Parameter("Broken Gap Color", GroupName = "Visual Parameters")]
+	[Parameter("Broken Gap Color", GroupName = "Visuals", Description = "Color of the broken gap")]
 	public Color BrokenGapColor { get; set; } = Color.DimGray.With(opacity: 0.5f);
-
-	[Parameter("Settings Header", GroupName = "Visual Parameters")]
-	public string SettingsHeader { get; set; } = "Gap Finder";
 
 	public override object? CreateChartToolbarMenuItem()
 	{
@@ -185,7 +185,9 @@ public partial class GapFinder : Indicator
 		}
 
 		CalculateFreshGaps(barIndex);
+
 		CalculateTestedGaps(barIndex);
+		
 		CalculateBrokenGaps(barIndex);
 	}
 

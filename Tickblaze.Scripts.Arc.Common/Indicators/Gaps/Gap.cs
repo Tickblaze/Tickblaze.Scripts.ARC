@@ -1,8 +1,10 @@
 ﻿namespace Tickblaze.Scripts.Arc.Common;
 
-public sealed class Gap : IDrawingPart<int>
+public sealed class Gap : IDrawingPart<int>, IXPositionable<Gap>
 {
-	public int Key => StartBarIndex;
+    public int Key => StartBarIndex;
+
+	public static bool IsSequential => false;
 
 	public bool IsResistance => !IsSupport;
 

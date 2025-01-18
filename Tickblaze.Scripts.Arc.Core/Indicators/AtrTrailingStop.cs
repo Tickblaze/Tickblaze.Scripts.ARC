@@ -30,7 +30,10 @@ public partial class AtrTrailingStop : Indicator
 
 	[AllowNull]
 	private DrawingPartSet<Point> _markers;
-	
+
+	[AllowNull]
+	private AverageTrueRange _markerDeltaAtr;
+
 	[AllowNull]
 	private DrawingPartDictionary<int, TrendInterval> _trendIntervals;
 
@@ -132,12 +135,12 @@ public partial class AtrTrailingStop : Indicator
 		var previousIndex = _currentIndex - 1;
 		var previousTrend = _trends[previousIndex];
 
-		var markerPrice = previousTrend.Map(Bars.Low[previousIndex], Bars.High[previousIndex]);
-		var markerPoint = new Point
-		{
-			Price = markerPrice,
-			BarIndex = previousIndex,
-		};
+		var markerDeltaAtr = 0.3 * _markerDeltaAtr[previousIndex];
+		var markerPrice = previousTrend is StrictTrend.Up
+			? Bars.Low[previousIndex] - markerDeltaAtr
+			: Bars.High[previousIndex] + markerDeltaAtr;
+
+		var markerPoint = new Point(previousIndex, markerPrice);
 
 		_markers.AddOrUpdate(markerPoint);
 	}
@@ -160,7 +163,9 @@ public partial class AtrTrailingStop : Indicator
         _markerFont = new("Webdings", 3 * MarkerSize);
         
 		_atr = new(2 * AtrPeriod - 1, MovingAverageType.Exponential);
-    }
+
+		_markerDeltaAtr = new(256, MovingAverageType.Simple);
+	}
 
     protected override void Calculate(int barIndex)
     {
@@ -233,8 +238,6 @@ public partial class AtrTrailingStop : Indicator
 
     public override void OnRender(IDrawingContext drawingContext)
     {
-		// Todo: test performance with precached canvas points.
-
 		RenderBands(drawingContext);
 
 		RenderTrailingStopLine(drawingContext);

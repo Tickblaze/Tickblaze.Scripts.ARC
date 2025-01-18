@@ -2,7 +2,7 @@
 
 namespace Tickblaze.Scripts.Arc.Common;
 
-public readonly record struct Point : IBoundable
+public readonly record struct Point : IBoundable, IXPositionable<Point>
 {
     public Point()
     {
@@ -17,7 +17,9 @@ public readonly record struct Point : IBoundable
         Price = price;
     }
 
-	public Rectangle Boundary => new(this, this);
+	public static bool IsSequential => true;
+
+    public Rectangle Boundary => new(this, this);
 
     public required int BarIndex { get; init; }
 

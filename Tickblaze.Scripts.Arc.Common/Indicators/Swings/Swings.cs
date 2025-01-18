@@ -57,6 +57,7 @@ public class Swings : ChildIndicator
 
 	private readonly List<Trend> _trendBiases = [];
 
+	[field: AllowNull]
     public ISeries<Trend> TrendBiases => field ??= _trendBiases.AsSeries();
 
     private ISeries<double> _swingDeviation = default!;

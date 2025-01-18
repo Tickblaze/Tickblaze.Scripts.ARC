@@ -1,8 +1,10 @@
 ﻿namespace Tickblaze.Scripts.Arc.Common;
 
-public sealed class SwingLine : IDrawingPart<Point>
+public sealed class SwingLine : IDrawingPart<Point>, IXPositionable<SwingLine>
 {
-	public Point Key => StartPoint;
+    public Point Key => StartPoint;
+
+	public static bool IsSequential => true;
 
 	public required SwingLabel Label { get; set; } = SwingLabel.None;
 	

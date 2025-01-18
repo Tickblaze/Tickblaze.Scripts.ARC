@@ -31,41 +31,41 @@ public partial class FairValueGaps : Indicator
 
 	private const string _menuResourceName = "Tickblaze.Scripts.Arc.Core.Indicators.FairValueGaps.Menu.xaml";
 	
-	[Parameter("Measurement")]
+	[Parameter("Gap Measurement Type", Description = "Type of the gap measurement")]
 	public GapMeasurement GapMeasurementValue { get; set; } = GapMeasurement.Atr;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("FVG Ticks")]
+	[Parameter("FVG in Ticks", Description = "Minimum price delta in ticks needed to create a gap")]
 	public int GapTickCount { get; set; } = 8;
 
 	[NumericRange(MinValue = 0.01d, MaxValue = double.MaxValue, Step = 0.5d)]
-	[Parameter("FVG ATR Multiple")]
+	[Parameter("FVG in ATR Multiples", Description = "Minimum price delta in ATR multiples needed to create a gap")]
 	public double AtrMultiple { get; set; } = 0.5d;
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("ATR Period")]
+	[Parameter("ATR Period", Description = "Period of the ATR")]
 	public int AtrPeriod { get; set; } = 14;
 
-	[Parameter("Show Fresh FVGs", GroupName = "Visuals")]
+	[Parameter("Menu Header", GroupName = "Visuals", Description = "Header of the menu")]
+	public string MenuHeader { get; set; } = "Fair Value Gaps";
+
+	[Parameter("Show Fresh FVGs", GroupName = "Visuals", Description = "Whether fresh FVGs are shown")]
 	public bool ShowFreshGaps { get; set; } = true;
 
-	[Parameter("Fresh FGV Color", GroupName = "Visuals")]
-	public Color FreshGapColor { get; set; } = Color.Orange.With(opacity: 0.5f);
-
-	[Parameter("Show Tested FGVs", GroupName = "Visuals")]
+	[Parameter("Show Tested FGVs", GroupName = "Visuals", Description = "Whether tested FVGs are shown")]
 	public bool ShowTestedGaps { get; set; } = true;
 
-	[Parameter("Tested FGV Color", GroupName = "Visuals")]
-	public Color TestedGapColor { get; set; } = Color.Silver.With(opacity: 0.5f);
-
-	[Parameter("Show Broken FGVs", GroupName = "Visuals")]
+	[Parameter("Show Broken FGVs", GroupName = "Visuals", Description = "Whether broken FVGs are shown")]
 	public bool ShowBrokenGaps { get; set; } = true;
 
-	[Parameter("Broken FGV Color", GroupName = "Visuals")]
-	public Color BrokenGapColor { get; set; } = Color.DimGray.With(opacity: 0.5f);
+	[Parameter("Fresh FGV Color", GroupName = "Visuals", Description = "Color of the fresh FVG")]
+	public Color FreshGapColor { get; set; } = Color.Orange.With(opacity: 0.5f);
 
-	[Parameter("Menu Header", GroupName = "Visuals")]
-	public string MenuHeader { get; set; } = "Fair Value Gaps";
+	[Parameter("Tested FGV Color", GroupName = "Visuals", Description = "Color of the tested FVG")]
+	public Color TestedGapColor { get; set; } = Color.Silver.With(opacity: 0.5f);
+
+	[Parameter("Broken FGV Color", GroupName = "Visuals", Description = "Color of the broken FVG")]
+	public Color BrokenGapColor { get; set; } = Color.DimGray.With(opacity: 0.5f);
 
 	public override object? CreateChartToolbarMenuItem()
     {
@@ -158,7 +158,9 @@ public partial class FairValueGaps : Indicator
 		}
 
 		CalculateFreshGaps(barIndex);
+
 		CalculateTestedGaps(barIndex);
+		
 		CalculateBrokenGaps(barIndex);
 	}
 

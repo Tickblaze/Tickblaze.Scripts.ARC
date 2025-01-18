@@ -40,11 +40,6 @@ public class Gaps : ChildIndicator
         return _gaps.GetVisibleDrawingParts(visibleBoundary);
     }
 
-    public int IndexOf(Gap gap)
-    {
-        return _gaps.IndexOf(gap.Key);
-    }
-
 	public void AddGaps(int barIndex, params IEnumerable<Gap> gaps)
     {
 		var minGapHeight = MinHeights[barIndex];

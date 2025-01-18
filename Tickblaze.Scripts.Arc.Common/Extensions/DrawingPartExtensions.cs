@@ -12,7 +12,7 @@ public static class DrawingPartExtensions
 	}
 
 	public static DrawingPart<TBoundable> ToDrawingPart<TBoundable>(this TBoundable boundable)
-		where TBoundable : IBoundable, IEquatable<TBoundable>
+		where TBoundable : IBoundable, IXPositionable<TBoundable>, IEquatable<TBoundable>
 	{
 		ArgumentNullException.ThrowIfNull(boundable);
 

@@ -5,15 +5,13 @@ namespace Tickblaze.Scripts.Arc.Common;
 
 public class DrawingPartDictionary<TDrawingPartKey, TDrawingPart> : ISeries<TDrawingPart>
 	where TDrawingPartKey : notnull, IEquatable<TDrawingPartKey>
-	where TDrawingPart : IDrawingPart<TDrawingPartKey>
+	where TDrawingPart : IDrawingPart<TDrawingPartKey>, IXPositionable<TDrawingPart>
 {
 	protected readonly OrderedDictionary<TDrawingPartKey, TDrawingPart> _drawingParts = [];
 
     public int Count => _drawingParts.Count;
 
     public bool IsEmpty => _drawingParts.Count is 0;
-
-	public TDrawingPart FirstDrawingPart => this[0];
 
 	public TDrawingPart LastDrawingPart => this[^1];
 
@@ -45,12 +43,10 @@ public class DrawingPartDictionary<TDrawingPartKey, TDrawingPart> : ISeries<TDra
 
 	public virtual IEnumerable<TDrawingPart> GetVisibleDrawingParts(Rectangle visibleBoundary)
     {
-        var componentIndex = _drawingParts.Values
+		var componentIndex = _drawingParts.Values
 			.AsSeries()
 			.Map(component => component.Boundary.StartBarIndex)
 			.BinarySearch(visibleBoundary.EndBarIndex);
-
-		// Todo: redo.
 
 		if (componentIndex < 0)
         {
@@ -76,9 +72,14 @@ public class DrawingPartDictionary<TDrawingPartKey, TDrawingPart> : ISeries<TDra
 
 		while (currentIndex >= 0
 			&& this[currentIndex] is var component
-			&& component.Boundary is var boundary
-			&& boundary.EndBarIndex >= visibleBoundary.StartBarIndex)
+			&& component.Boundary is var boundary)
 		{
+			if (TDrawingPart.IsSequential
+				&& boundary.EndBarIndex < visibleBoundary.StartBarIndex)
+			{
+				break;
+			}
+			
 			if (component.Intersects(visibleBoundary))
 			{
 				yield return component;
@@ -134,14 +135,14 @@ public class DrawingPartDictionary<TDrawingPartKey, TDrawingPart> : ISeries<TDra
         _drawingParts.Insert(insertionIndex, drawingPartKey, drawingPart);
 	}
 
-	public bool Remove(TDrawingPart component)
+	public bool Remove(TDrawingPart drawingPart)
     {
-		return _drawingParts.Remove(component.Key);
+		return _drawingParts.Remove(drawingPart.Key);
     }
 
-	public bool Remove(TDrawingPartKey componentKey)
+	public bool Remove(TDrawingPartKey drawingPartKey)
 	{
-		return _drawingParts.Remove(componentKey);
+		return TryGetDrawingPart(drawingPartKey, out var drawingPart) && Remove(drawingPart);
 	}
 
 	public void RemoveAt(int index)

@@ -3,10 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
-public static class XamlResourceResolver
+public static class AssemblyReferenceLoader
 {
 	[ModuleInitializer]
-	public static void LoadWpfResourceReferences()
+	public static void LoadReferences()
 	{
 		// Todo; document this.
 		var _ = typeof(TiltBehavior);

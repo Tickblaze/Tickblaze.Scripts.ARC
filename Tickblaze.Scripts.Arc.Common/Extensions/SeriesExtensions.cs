@@ -33,11 +33,11 @@ public static class SeriesExtensions
 
 	public static ISeries<TDestination> MapAndCache<TSource, TDestination>(this ISeries<TSource> sourceSeries, Func<TSource, TDestination> selector)
 	{
-		return new SeriesTransformCached<TSource, TDestination>(sourceSeries, selector);
+		return new CachedSeriesTransform<TSource, TDestination>(sourceSeries, selector);
 	}
 
 	public static ISeries<TDestination> MapAndCache<TSource, TDestination>(this ISeries<TSource> sourceSeries, Func<int, TSource, TDestination> selector)
 	{
-		return new SeriesTransformCached<TSource, TDestination>(sourceSeries, selector);
+		return new CachedSeriesTransform<TSource, TDestination>(sourceSeries, selector);
 	}
 }

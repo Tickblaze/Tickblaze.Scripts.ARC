@@ -5,13 +5,14 @@ using Tickblaze.Scripts.Arc.Common;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
-// Todo: quick access settings.
 public partial class SwingStructure : Indicator
 {
 	public SwingStructure()
 	{
 		IsOverlay = true;
+		
 		ShortName = "SS";
+		
 		Name = "Swing Structure";
 	}
 

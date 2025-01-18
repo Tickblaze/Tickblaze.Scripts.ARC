@@ -1,8 +1,10 @@
 ﻿namespace Tickblaze.Scripts.Arc.Common;
 
-public class Interval : IDrawingPart<int>
+public class Interval : IDrawingPart<int>, IXPositionable<Interval>
 {
-	public int Key => StartBarIndex;
+    public int Key => StartBarIndex;
+
+	public static bool IsSequential => true;
 
 	public Rectangle Boundary => new()
 	{
