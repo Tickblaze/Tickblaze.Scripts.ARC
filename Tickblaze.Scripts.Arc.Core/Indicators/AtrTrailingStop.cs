@@ -199,8 +199,8 @@ public partial class AtrTrailingStop : Indicator
         var previousClose = Bars.Close[previousBarIndex];
         var previousTrailingStop = StopDots[previousBarIndex];
 
-        var isTrendBreak = previousTrend is StrictTrend.Down && previousClose > previousTrailingStop
-            || previousTrend is StrictTrend.Up && previousClose < previousTrailingStop;
+        var isTrendBreak = previousTrend is StrictTrend.Down && previousClose.EpsilonGreaterThan(previousTrailingStop)
+            || previousTrend is StrictTrend.Up && previousClose.EpsilonLessThan(previousTrailingStop);
 
         if (isTrendBreak)
         {

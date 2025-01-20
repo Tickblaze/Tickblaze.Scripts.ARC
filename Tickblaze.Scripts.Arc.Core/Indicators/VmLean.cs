@@ -14,6 +14,9 @@ public partial class VmLean : Indicator
 	}
 
 	[AllowNull]
+	private VmLeanCore _vmLeanCore;
+
+	[AllowNull]
 	private MenuViewModel _menuViewModel;
 
 	private const string _menuResourceName = "Tickblaze.Scripts.Arc.Core.Indicators.VmLean.Menu.xaml";
@@ -44,11 +47,24 @@ public partial class VmLean : Indicator
 
 	protected override void Initialize()
 	{
+		_vmLeanCore = new VmLeanCore
+		{
+			Bars = Bars,
+			RenderTarget = this,
+
+			BandPeriod = BandPeriod,
+			BandMultiplier = BandMultiplier,
+			MacdSlowPeriod = MacdSlowPeriod,
+			MacdFastPeriod = MacdFastPeriod,
+
+			SwingStrength = SwingStrength,
+			SwingDtbAtrMultiplier = SwingDtbAtrMultiplier,
+			SwingDeviationAtrMultiplier = SwingDeviationAtrMultiplier,
+		};
+
 		InitializeSwings();
 
 		InitializeMacdBb();
-
-		InitializeHistogram();
 
 		InitializeFlooding();
 
@@ -62,11 +78,11 @@ public partial class VmLean : Indicator
 		// Todo: document this.
 		ZeroLine[barIndex] = 0.0;
 
+		_vmLeanCore.Calculate();
+
 		CalculateHistogram(barIndex);
 
 		CalculateMacdBb(barIndex);
-
-		CalculateSwings(barIndex);
 
 		CalculateFlooding(barIndex);
 
@@ -82,5 +98,7 @@ public partial class VmLean : Indicator
 		RenderPriceExcursions(drawingContext);
 
 		RenderSentimentBox(drawingContext);
+
+		// RenderSwings(drawingContext);
 	}
 }

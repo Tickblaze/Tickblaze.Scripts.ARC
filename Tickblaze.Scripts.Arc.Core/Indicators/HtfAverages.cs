@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Tickblaze.Scripts.Api.Models;
 using Tickblaze.Scripts.Arc.Common;
 using Tickblaze.Scripts.Indicators;
 
@@ -43,7 +44,7 @@ public partial class HtfAverages : Indicator
 	public int TimeInMinutes { get; set; } = 240;
 
 	[Parameter("MA Type")]
-	public MovingAverageType MovingAverageTypeValue { get; set; } = MovingAverageType.Exponential;
+	public MaType MaTypeValue { get; set; } = MaType.Exponential;
 	
 	[Parameter("Show MAs Continuously")]
 	public bool ShowMasContinuously { get; set; }
@@ -141,22 +142,12 @@ public partial class HtfAverages : Indicator
 		};
 	}
 
-	private Indicator GetMovingAverageSeries(BarSeries barSeries, int period)
+	private MovingAverageType GetMovingAverageType()
 	{
-		return MovingAverageTypeValue switch
+		return MaTypeValue switch
 		{
-			MovingAverageType.Simple => new SimpleMovingAverage
-			{
-				Period = period,
-				Bars = barSeries,
-				Source = barSeries.Close,
-			},
-			MovingAverageType.Exponential => new ExponentialMovingAverage
-			{
-				Period = period,
-				Bars = barSeries,
-				Source = barSeries.Close,
-			},
+			MaType.Simple => MovingAverageType.Simple,
+			MaType.Exponential => MovingAverageType.Exponential,
 			_ => throw new UnreachableException(),
 		};
 	}
@@ -199,6 +190,8 @@ public partial class HtfAverages : Indicator
 		
 		_maMaxPeriod = _maPeriods.Max();
 
+		var maType = GetMovingAverageType();
+
 		var barSeriesRequest = new BarSeriesRequest
 		{
 			Period = GetBarType(),
@@ -218,7 +211,13 @@ public partial class HtfAverages : Indicator
 
 			if (maPeriod is not 0)
 			{
-				_maIndicators[maIndex] = GetMovingAverageSeries(_higherTimeframeBars, maPeriod);
+				_maIndicators[maIndex] = new MovingAverage
+				{
+					Type = maType,
+					Period = maPeriod,
+					Bars = _higherTimeframeBars,
+					Source = _higherTimeframeBars.Close,
+				};
 			}
 		}
 	}
@@ -318,5 +317,32 @@ public partial class HtfAverages : Indicator
 
 			drawingContext.DrawText(textStartX, maValueY + VerticalMargin, maValueText, maPlot.Color, LabelFont);
 		}
+	}
+
+	public enum LineOrigin
+	{
+		[DisplayName("From Left")]
+		FromLeft,
+
+		[DisplayName("From Right")]
+		FromRight,
+	}
+
+	public enum MaType
+	{
+		[DisplayName("SMA")]
+		Simple,
+
+		[DisplayName("EMA")]
+		Exponential,
+	}
+
+	public enum Timeframe
+	{
+		[DisplayName("Day")]
+		Day,
+
+		[DisplayName("Minutes")]
+		Minute,
 	}
 }

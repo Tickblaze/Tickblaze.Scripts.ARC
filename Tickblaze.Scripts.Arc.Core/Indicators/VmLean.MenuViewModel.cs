@@ -12,7 +12,7 @@ public partial class VmLean
 		{
 			_vmLean = vmLean;
 
-			_swings = _vmLean._swings;
+			_swings = _vmLean.Swings;
 
 			SwingStrength = _vmLean.SwingStrength;
 			IsSwingEnabled = _vmLean.IsSwingEnabled;
@@ -20,9 +20,9 @@ public partial class VmLean
 			ShowSwingLabels = _vmLean.ShowSwingLabels;
 			SwingDtbAtrMultiplier = _vmLean.SwingDtbAtrMultiplier;
 
-			ShowLevel1 = _vmLean.ShowLevel1;
-			ShowLevel2 = _vmLean.ShowLevel2;
-			ShowLevel3 = _vmLean.ShowLevel3;
+			ShowLevel1Lines = _vmLean.ShowLevel1Lines;
+			ShowLevel2Lines = _vmLean.ShowLevel2Lines;
+			ShowLevel3Lines = _vmLean.ShowLevel3Lines;
 			EnableLevels = _vmLean.EnableLevels;
 			LevelPlotStyle = _vmLean.LevelPlotStyleValue;
 
@@ -103,34 +103,34 @@ public partial class VmLean
 			}
         }
 
-        public bool ShowLevel1
+        public bool ShowLevel1Lines
 		{
 			get;
 			set
 			{
-				_vmLean.ShowLevel1 = value;
+				_vmLean.ShowLevel1Lines = value;
 
 				this.RaiseAndSetIfChanged(ref field, value);
 			}
 		}
 
-		public bool ShowLevel2
+		public bool ShowLevel2Lines
 		{
 			get;
 			set
 			{
-				_vmLean.ShowLevel2 = value;
+				_vmLean.ShowLevel2Lines = value;
 
 				this.RaiseAndSetIfChanged(ref field, value);
 			}
 		}
 
-		public bool ShowLevel3
+		public bool ShowLevel3Lines
 		{
 			get;
 			set
 			{
-				_vmLean.ShowLevel3 = value;
+				_vmLean.ShowLevel3Lines = value;
 
 				this.RaiseAndSetIfChanged(ref field, value);
 			}

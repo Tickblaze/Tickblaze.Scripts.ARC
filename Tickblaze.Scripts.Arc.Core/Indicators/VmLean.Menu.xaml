@@ -51,15 +51,15 @@
 				IsOn="{Binding EnableLevels, Mode=TwoWay}" />
 			<common:OnOffMenuItem
 				Header="Show Level 1"
-				IsOn="{Binding ShowLevel1, Mode=TwoWay}"
+				IsOn="{Binding ShowLevel1Lines, Mode=TwoWay}"
 				IsEnabled="{Binding EnableLevels, Mode=OneWay}" />
 			<common:OnOffMenuItem
 				Header="Show Level 2"
-				IsOn="{Binding ShowLevel2, Mode=TwoWay}"
+				IsOn="{Binding ShowLevel2Lines, Mode=TwoWay}"
 				IsEnabled="{Binding EnableLevels, Mode=OneWay}" />
 			<common:OnOffMenuItem
 				Header="Show Level 3"
-				IsOn="{Binding ShowLevel3, Mode=TwoWay}"
+				IsOn="{Binding ShowLevel3Lines, Mode=TwoWay}"
 				IsEnabled="{Binding EnableLevels, Mode=OneWay}" />
 			<common:EnumMenuItem
 				Header="Level Plot Style"

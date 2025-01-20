@@ -6,7 +6,8 @@ namespace Tickblaze.Scripts.Arc.Common;
 [Browsable(false)]
 public class Gaps : ChildIndicator
 {
-    private readonly DrawingPartDictionary<int, Gap> _gaps = [];
+	[AllowNull]
+    private DrawingPartDictionary<int, Gap> _gaps;
 
     public IReadOnlyList<Gap> GapList => _gaps;
 
@@ -20,15 +21,17 @@ public class Gaps : ChildIndicator
 
     public Gap this[int index] => GetGapAt(index);
 
-    public bool Contains(Gap gap)
+    protected override void Initialize()
     {
-        return _gaps.Contains(gap);
-    }
+		if (IsInitialized)
+		{
+			return;
+		}
 
-    public bool TryGetGap(int startBarIndex, [MaybeNullWhen(false)] out Gap gap)
-    {
-        return _gaps.TryGetDrawingPart(startBarIndex, out gap);
-    }
+		_gaps = [];
+
+		IsInitialized = true;
+	}
 
     public Gap GetGapAt(Index index)
     {
@@ -39,19 +42,6 @@ public class Gaps : ChildIndicator
     {
         return _gaps.GetVisibleDrawingParts(visibleBoundary);
     }
-
-	public void AddGaps(int barIndex, params IEnumerable<Gap> gaps)
-    {
-		var minGapHeight = MinHeights[barIndex];
-
-		foreach (var gap in gaps)
-		{
-			if (gap.EndPrice - gap.StartPrice > minGapHeight)
-			{
-				AddOrUpdate(gap);
-			}
-		}
-	}
 
 	public void AddOrUpdate(Gap gap)
 	{
@@ -71,11 +61,6 @@ public class Gaps : ChildIndicator
     public void RemoveAt(int index)
     {
         _gaps.RemoveAt(index);
-    }
-
-    public void Clear()
-    {
-        _gaps.Clear();
     }
 
     public override void OnRender(IDrawingContext drawingContext)

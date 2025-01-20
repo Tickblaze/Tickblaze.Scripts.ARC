@@ -15,35 +15,35 @@ public class Swings : ChildIndicator
 
 	private readonly DrawingPartDictionary<Point, SwingLine> _pendingSwings = [];
 
-    public required bool IsSwingEnabled { get; set; }
+    public bool IsSwingEnabled { get; set; }
 
     public required int SwingStrength { get; init; }
 
-    public bool ShowDots { get; init; }
+    public bool ShowDots { get; set; }
 
-    public int DotSize { get; init; }
+    public int DotSize { get; set; }
 
     public bool ShowLabels { get; set; }
 
-    public required Font LabelFont { get; init; }
+	public Font LabelFont { get; set; } = new("Arial", 12);
 
-    public Color UpLabelColor { get; init; }
+    public Color UpLabelColor { get; set; }
 
-    public Color DownLabelColor { get; init; }
+    public Color DownLabelColor { get; set; }
 
-	public bool IsDtbLabelColorEnabled { get; init; }
+	public bool IsDtbLabelColorEnabled { get; set; }
     
-	public Color DtbLabelColor { get; init; }
+	public Color DtbLabelColor { get; set; }
 
     public bool ShowLines { get; set; }
 
-    public Color UpLineColor { get; init; }
+    public Color UpLineColor { get; set; }
 
-    public Color DownLineColor { get; init; }
+    public Color DownLineColor { get; set; }
 
-    public int LineThickness { get; init; }
+    public int LineThickness { get; set; }
 
-    public LineStyle LineStyle { get; init; }
+    public LineStyle LineStyle { get; set; }
 
     public required SwingCalculationMode CalculationMode { get; init; }
 
@@ -136,7 +136,11 @@ public class Swings : ChildIndicator
         }
 
         var lastLabel = lastSwing.Label;
-        var isForthLastLowerLow = false;
+		var secondLastLabel = secondLastSwing.Label;
+		var secondLastEndBarIndex = secondLastSwing.EndPoint.BarIndex;
+		var thirdLastLabel = thirdLastSwing.Label;
+
+		var isForthLastLowerLow = false;
         var isForthLastHigherHigh = false;
 
         if (lastSwings.Count >= 4)
@@ -152,21 +156,27 @@ public class Swings : ChildIndicator
         var currentTrendBias = previousTrendBias;
 
         if (lastLabel.IsHigherHigh
-            && !secondLastSwing.Label.IsLowerLow
-            && (thirdLastSwing.Label.IsHigherHigh || !isForthLastLowerLow))
+            && !secondLastLabel.IsLowerLow
+            && (thirdLastLabel.IsHigherHigh || !isForthLastLowerLow))
         {
             currentTrendBias = Trend.Up;
         }
 
         if (lastLabel.IsLowerLow
-            && !secondLastSwing.Label.IsHigherHigh
-            && (thirdLastSwing.Label.IsLowerLow || !isForthLastHigherHigh))
+            && !secondLastLabel.IsHigherHigh
+            && (thirdLastLabel.IsLowerLow || !isForthLastHigherHigh))
         {
             currentTrendBias = Trend.Down;
         }
 
-        if (lastLabel.IsLowerLow && previousTrendBias is Trend.Up
-            || lastLabel.IsHigherHigh && previousTrendBias is Trend.Down)
+		var isUpTrendBreak = lastLabel.IsLowerLow
+			|| barIndex.Equals(secondLastEndBarIndex) && secondLastLabel.IsLowerLow;
+
+		var isDownTrendBreak = lastLabel.IsHigherLow
+			|| barIndex.Equals(secondLastEndBarIndex) && secondLastLabel.IsHigherHigh;
+
+		if (previousTrendBias is Trend.Up && isUpTrendBreak
+			|| previousTrendBias is Trend.Down && isDownTrendBreak)
         {
             currentTrendBias = Trend.None;
         }
@@ -264,8 +274,14 @@ public class Swings : ChildIndicator
 
     private bool TryInitializeSwings(int barIndex)
     {
-        var isUpTrend = Bars.High[barIndex] > Bars.High[barIndex - 1];
-        var isDownTrend = Bars.Low[barIndex] < Bars.Low[barIndex - 1];
+		var currentLow = Bars.Low[barIndex];
+		var currentHigh = Bars.High[barIndex];
+
+		var previousLow = Bars.Low[barIndex - 1];
+		var previousHigh = Bars.High[barIndex - 1];
+		
+        var isDownTrend = currentLow.EpsilonLessThan(previousLow);
+		var isUpTrend = currentHigh.EpsilonGreaterThan(previousHigh);
 
         if (!isUpTrend && !isDownTrend)
         {
@@ -311,6 +327,11 @@ public class Swings : ChildIndicator
 
     protected override void Initialize()
     {
+		if (IsInitialized)
+		{
+			return;
+		}
+
 		_currentIndex = default;
 		_currentTrend = default;
 		_previousTrend = default;
@@ -321,14 +342,9 @@ public class Swings : ChildIndicator
 
         _swingDeviation ??= Bars.Map(bar => 0.0d);
 		_swingDtbDeviation ??= Bars.Map(bar => 0.0d);
+
+		IsInitialized = true;
     }
-
-	public void Reinitialize()
-	{
-		Initialize();
-
-		Calculate();
-	}
 
     private void TryUpsertPendingSwings(int barIndex)
     {
@@ -383,13 +399,13 @@ public class Swings : ChildIndicator
         var lookbackLow = GetLookbackLow(barIndex);
         var lookbackHigh = GetLookbackHigh(barIndex);
 
-        var isUpTrend = currentHigh > lookbackHigh;
-        var isDownTrend = currentLow < lookbackLow;
+        var isDownTrend = currentLow.EpsilonLessThan(lookbackLow);
+        var isUpTrend = currentHigh.EpsilonGreaterThan(lookbackHigh);
         var isOutsideBar = isUpTrend && isDownTrend;
 
         if (isOutsideBar)
         {
-            _currentTrend = (currentHigh - currentClose).CompareTo(currentClose - currentLow) switch
+            _currentTrend = (currentHigh - currentClose).EpsilonCompare(currentClose - currentLow) switch
             {
                 > 0 => StrictTrend.Up,
                 < 0 => StrictTrend.Down,
@@ -462,8 +478,8 @@ public class Swings : ChildIndicator
         var currentTrendPrice = GetTrendPrice(currentTrend, barIndex);
         var currentLabel = GetIncomingSwingLabel(currentTrend, barIndex, currentTrendPrice);
 
-        if (currentTrend is StrictTrend.Up && currentEndPrice <= currentTrendPrice
-            || currentTrend is StrictTrend.Down && currentEndPrice >= currentTrendPrice)
+        if (currentTrend is StrictTrend.Up && currentEndPrice.EpsilonLessThanOrEquals(currentTrendPrice)
+            || currentTrend is StrictTrend.Down && currentEndPrice.EpsilonGreaterThanOrEquals(currentTrendPrice))
         {
             var updatedSwing = new SwingLine
             {

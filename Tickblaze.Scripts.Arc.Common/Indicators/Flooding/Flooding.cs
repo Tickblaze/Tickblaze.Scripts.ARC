@@ -22,9 +22,16 @@ public class Flooding : ChildIndicator
 
     protected override void Initialize()
 	{
+		if (IsInitialized)
+		{
+			return;
+		}
+
 		_trends = [];
 
 		_intervals = [];
+
+		IsInitialized = true;
 	}
 
 	protected virtual bool TryGetCurrentValues(out Trend currentTrend, out Color currentColor)

@@ -7,7 +7,7 @@ namespace Tickblaze.Scripts.Arc.Core;
 
 public partial class VmLean
 {
-	private int _currentIndex;
+	private int _priceExcursionBarIndex;
 
 	[AllowNull]
 	private SimpleMovingAverage _priceExcursion;
@@ -30,45 +30,43 @@ public partial class VmLean
 	public int LevelLineThickness { get; set; } = 3;
 
 	[Parameter("Show Level 1 Lines", GroupName = "Price Excursion Visuals", Description = "Whether level 1 lines are shown")]
-	public bool ShowLevel1 { get; set; }
+	public bool ShowLevel1Lines { get; set; }
 
 	[Parameter("Show Level 2 Lines", GroupName = "Price Excursion Visuals", Description = "Whether level 2 lines are shown")]
-	public bool ShowLevel2 { get; set; }
+	public bool ShowLevel2Lines { get; set; }
 	
 	[Parameter("Show Level 3 Lines", GroupName = "Price Excursion Visuals", Description = "Whether level 3 lines are shown")]
-	public bool ShowLevel3 { get; set; }
+	public bool ShowLevel3Lines { get; set; }
 
 	[Parameter("Level 1 Line Color", GroupName = "Price Excursion Visuals", Description = "Color of the level 1 lines")]
-	public Color Level1Color { get; set; } = DrawingColor.WhiteSmoke;
+	public Color Level1LineColor { get; set; } = DrawingColor.WhiteSmoke;
 
 	[Parameter("Level 2 Line Color", GroupName = "Price Excursion Visuals", Description = "Color of the level 2 lines")]
-	public Color Level2Color { get; set; } = Color.Blue;
+	public Color Level2LineColor { get; set; } = Color.Blue;
 
 	[Parameter("Level 3 Line Color", GroupName = "Price Excursion Visuals", Description = "Color of the level 3 lines")]
-	public Color Level3Color { get; set; } = Color.Red;
+	public Color Level3LineColor { get; set; } = Color.Red;
 
 	public void HidePriceExcursionParameters(Parameters parameters)
 	{
-		if (!ShowLevel1)
+		if (!ShowLevel1Lines)
 		{
-			parameters.Remove(nameof(Level1Color));
+			parameters.Remove(nameof(Level1LineColor));
 		}
 
-		if (!ShowLevel2)
+		if (!ShowLevel2Lines)
 		{
-			parameters.Remove(nameof(Level2Color));
+			parameters.Remove(nameof(Level2LineColor));
 		}
 
-		if (!ShowLevel3)
+		if (!ShowLevel3Lines)
 		{
-			parameters.Remove(nameof(Level3Color));
+			parameters.Remove(nameof(Level3LineColor));
 		}
 	}
 
 	public void InitializePriceExcursions()
 	{
-		_currentIndex = 0;
-
 		_priceExcursionAtr = new(256, MovingAverageType.Simple);
 
 		_priceExcursion = new(_priceExcursionAtr.Result, 65);
@@ -76,14 +74,6 @@ public partial class VmLean
 
 	private void CalculatePriceExcursions(int barIndex)
 	{
-		if (_currentIndex.Equals(barIndex))
-		{
-			return;
-		}
-
-		_currentIndex = barIndex;
-
-		// Todo: fix wrong calculations [calculating on bar open, not close];
 		_priceExcursionAtr.Calculate();
 
 		_priceExcursion.Calculate();
@@ -91,7 +81,7 @@ public partial class VmLean
 
 	public void RenderPriceExcursions(IDrawingContext drawingContext)
 	{
-		if (!EnableLevels || !ShowLevel1 && !ShowLevel2 && !ShowLevel3)
+		if (!EnableLevels || !ShowLevel1Lines && !ShowLevel2Lines && !ShowLevel3Lines)
 		{
 			return;
 		}
@@ -106,19 +96,19 @@ public partial class VmLean
 			_ => throw new UnreachableException(),
 		};
 
-		if (ShowLevel1)
+		if (ShowLevel1Lines)
 		{
-			DrawPriceExcursionLevel(drawingContext, barIndexes, 1, Level1Color);
+			DrawPriceExcursionLevel(drawingContext, barIndexes, 1, Level1LineColor);
 		}
 
-		if (ShowLevel2)
+		if (ShowLevel2Lines)
 		{
-			DrawPriceExcursionLevel(drawingContext, barIndexes, 2, Level2Color);
+			DrawPriceExcursionLevel(drawingContext, barIndexes, 2, Level2LineColor);
 		}
 
-		if (ShowLevel3)
+		if (ShowLevel3Lines)
 		{
-			DrawPriceExcursionLevel(drawingContext, barIndexes, 3, Level3Color);
+			DrawPriceExcursionLevel(drawingContext, barIndexes, 3, Level3LineColor);
 		}
 	}
 
@@ -130,10 +120,10 @@ public partial class VmLean
 		foreach (var levelSignum in levelSignums)
 		{
 			var levelApiPoints = barIndexes
-				.Select(PriceExcursion.GetPoint)
-				.Select(point => point with
+				.Select(barIndex => new Point
 				{
-					Price = levelSignum * levelMultiplier * point.Price
+					BarIndex = barIndex,
+					Price = levelSignum * levelMultiplier * PriceExcursion[barIndex],
 				})
 				.Select(this.GetApiPoint);
 

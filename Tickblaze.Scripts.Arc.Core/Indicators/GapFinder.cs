@@ -98,7 +98,7 @@ public partial class GapFinder : Indicator
 			nameof(AtrPeriod),
 		];
 
-		var _ = GapMeasurementValue switch
+		_ = GapMeasurementValue switch
 		{
 			GapMeasurement.Tick => propertyNames.Remove(nameof(GapTickCount)),
 			GapMeasurement.Point => propertyNames.Remove(nameof(GapPointCount)),

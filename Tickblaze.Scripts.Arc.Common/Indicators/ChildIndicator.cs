@@ -7,4 +7,11 @@ public abstract class ChildIndicator : Indicator
 	public new IChart? Chart => RenderTarget?.Chart;
 
 	public new IChartScale? ChartScale => RenderTarget?.ChartScale;
+
+	public void Reinitialize()
+	{
+		Initialize();
+
+		Calculate();
+	}
 }

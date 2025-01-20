@@ -48,7 +48,7 @@ public partial class VmLean
 	public void GetCurrentTrendBiasValues(int lastVisibleIndex, out string trendBiasText,
 		out Color trendBiasTextColor, out Color trendBiasBackgroundColor)
 	{
-		var trendBias = _swings.TrendBiases.GetAtOrDefault(lastVisibleIndex, Trend.None);
+		var trendBias = Swings.TrendBiases.GetAtOrDefault(lastVisibleIndex, Trend.None);
 
 		(trendBiasText, trendBiasTextColor, trendBiasBackgroundColor) = trendBias switch
 		{

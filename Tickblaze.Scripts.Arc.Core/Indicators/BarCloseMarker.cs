@@ -11,8 +11,10 @@ public partial class BarCloseMarker : Indicator
 	public BarCloseMarker()
 	{
 		IsOverlay = true;
-		ShortName = "TBC BCM";
-		Name = "TB Core Bar Close Marker";
+		
+		ShortName = "BCM";
+		
+		Name = "Bar Close Marker";
 	}
 
 	private double _lastOpen;
@@ -92,6 +94,7 @@ public partial class BarCloseMarker : Indicator
 		_lastOpen = default;
 		_lastClose = default;
 		_lastRealtimeBar = default;
+		
 		_markerLowSolidColor = MarkerLowColor.With(opacity: 1.0f);
 		_markerHighSolidColor = MarkerHighColor.With(opacity: 1.0f);
 	}
@@ -132,6 +135,7 @@ public partial class BarCloseMarker : Indicator
 		_lastRealtimeBar = lastBar;
 		_lastOpen = _lastRealtimeBar.Open;
 		_lastClose = _lastRealtimeBar.Close;
+
 		_potentialLow = Math.Max(0.0, _lastOpen - rangeDelta);
 		_potentialLow = Math.Round(_potentialLow, Symbol.Decimals);
 		_potentialHigh = Math.Round(_lastOpen + rangeDelta, Symbol.Decimals);

@@ -53,7 +53,7 @@ public partial class VmLean
 			RenderTarget = this,
 			UpTrendColor = FloodingBullishColor.With(opacity: floodingOpacity),
 			DownTrendColor = FloodingBearishColor.With(opacity: floodingOpacity),
-			TrendSeriesCollection = [_swings.TrendBiases],
+			TrendSeriesCollection = [Swings.TrendBiases],
 		};
 
 		_bothFlooding = new FloodingWithOverlaps
@@ -63,7 +63,7 @@ public partial class VmLean
 			DownTrendColor = FloodingBearishColor.With(opacity: floodingOpacity),
 			OverlapUpTrendColor = FloodingDeepBullishColor.With(opacity: floodingOpacity),
 			OverlapDownTrendColor = FloodingDeepBearishColor.With(opacity: floodingOpacity),
-			TrendSeriesCollection = [_swings.TrendBiases, histogramTrends],
+			TrendSeriesCollection = [Swings.TrendBiases, histogramTrends],
 		};
 	}
 

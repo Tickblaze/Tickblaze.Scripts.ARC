@@ -1,18 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Tickblaze.Scripts.Arc.Common;
-using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
 public partial class VmLean
 {
 	[AllowNull]
-	private Swings _swings;
-
-	[AllowNull]
-	private AverageTrueRange _swingDeviationAtr;
-
-	private ISeries<double> SwingDeviationAtr => _swingDeviationAtr.Result;
+	private Swings Swings => _vmLeanCore.Swings;
 
 	[Parameter("Enable Swing Calculations", GroupName = "Swing Structure Parameters", Description = "Whether swings are enabled")]
 	public bool IsSwingEnabled { get; set; }
@@ -68,7 +62,7 @@ public partial class VmLean
 	[Parameter("Swing Line Style", GroupName = "Swing Structure Visuals", Description = "Line style of the swing lines")]
 	public LineStyle SwingLineStyle { get; set; } = LineStyle.Solid;
 
-	public void HideSwingParameters(Parameters parameters)
+	private void HideSwingParameters(Parameters parameters)
 	{
 		if (!ShowSwingDots)
 		{
@@ -102,51 +96,30 @@ public partial class VmLean
 		}
 	}
 
-	public Swings InitializeSwings()
+	private Swings InitializeSwings()
 	{
-		_swingDeviationAtr = new AverageTrueRange
-		{
-			Bars = Bars,
-			Period = 256,
-			SmoothingType = MovingAverageType.Simple,
-		};
+		_vmLeanCore.InitializeSwings();
 
-        _swings = new Swings
-        {
-			Bars = Bars,
-			RenderTarget = this,
-			DotSize = SwingDotSize,
-			ShowDots = ShowSwingDots,
-			LabelFont = SwingLabelFont,
-			LineStyle = SwingLineStyle,
-			ShowLines = ShowSwingLines,
-			ShowLabels = ShowSwingLabels,
-			SwingStrength = SwingStrength,
-			IsDtbLabelColorEnabled = true,
-			UpLineColor = SwingUpLineColor,
-			IsSwingEnabled = IsSwingEnabled,
-			UpLabelColor = SwingUpLabelColor,
-			DownLineColor = SwingDownLineColor,
-			LineThickness = SwingLineThickness,
-			DtbLabelColor = SwingDtbLabelColor,
-			DownLabelColor = SwingDownLabelColor,
-			CalculationMode = SwingCalculationMode.CurrentBar,
-			SwingDtbDeviation = SwingDeviationAtr.Map(atr => SwingDtbAtrMultiplier * atr),
-			SwingDeviation = SwingDeviationAtr.Map(atr => SwingDeviationAtrMultiplier * atr),
-		};
-		
-		_swings.Reinitialize();
+		Swings.DotSize = SwingDotSize;
+		Swings.ShowDots = ShowSwingDots;
+		Swings.LabelFont = SwingLabelFont;
+		Swings.LineStyle = SwingLineStyle;
+		Swings.ShowLines = ShowSwingLines;
+		Swings.ShowLabels = ShowSwingLabels;
+		Swings.IsDtbLabelColorEnabled = true;
+		Swings.UpLineColor = SwingUpLineColor;
+		Swings.IsSwingEnabled = IsSwingEnabled;
+		Swings.UpLabelColor = SwingUpLabelColor;
+		Swings.DownLineColor = SwingDownLineColor;
+		Swings.LineThickness = SwingLineThickness;
+		Swings.DtbLabelColor = SwingDtbLabelColor;
+		Swings.DownLabelColor = SwingDownLabelColor;
 
-		return _swings;
+		return Swings;
 	}
 
-	public void CalculateSwings(int barIndex)
+	private void RenderSwings(IDrawingContext drawingContext)
 	{
-		_swings.Calculate();
-	}
-
-	public void RenderSwings(IDrawingContext drawingContext)
-	{
-		//_swings.OnRender(drawingContext);
+		Swings.OnRender(drawingContext);
 	}
 }
