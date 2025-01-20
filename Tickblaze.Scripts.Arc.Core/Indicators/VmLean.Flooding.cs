@@ -87,7 +87,12 @@ public partial class VmLean
 			_ => throw new UnreachableException(),
 		};
 
-		flooding?.OnRender(drawingContext);
+		var isFloodingDisabled = !IsSwingEnabled && FloodingTypeValue is FloodingType.Structure or FloodingType.Both;
+
+		if (flooding is not null && !isFloodingDisabled)
+		{
+			flooding.OnRender(drawingContext);
+		}
 	}
 
 	public enum FloodingType

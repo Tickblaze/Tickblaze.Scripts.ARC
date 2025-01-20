@@ -16,7 +16,7 @@ public partial class VmLean
 
 	private void CalculateHistogram(int barIndex)
 	{
-		var currentValue = _vmLeanCore.Histogram[barIndex] = _vmLeanCore.Histogram[barIndex];
+		var currentValue = Histogram[barIndex] = _vmLeanCore.Histogram[barIndex];
 
 		if (currentValue > 0)
 		{

@@ -62,6 +62,8 @@ public partial class VmLean : Indicator
 			SwingDeviationAtrMultiplier = SwingDeviationAtrMultiplier,
 		};
 
+		_vmLeanCore.Reinitialize();
+
 		InitializeSwings();
 
 		InitializeMacdBb();

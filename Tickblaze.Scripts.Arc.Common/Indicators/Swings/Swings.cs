@@ -140,8 +140,8 @@ public class Swings : ChildIndicator
 		var secondLastEndBarIndex = secondLastSwing.EndPoint.BarIndex;
 		var thirdLastLabel = thirdLastSwing.Label;
 
-		var isForthLastLowerLow = false;
-        var isForthLastHigherHigh = false;
+		var isForthLastLowerLow = true;
+        var isForthLastHigherHigh = true;
 
         if (lastSwings.Count >= 4)
         {
@@ -152,10 +152,9 @@ public class Swings : ChildIndicator
             isForthLastHigherHigh = forthLastLabel.IsHigherHigh;
         }
 
-        var previousTrendBias = _trendBiases[barIndex - 1];
-        var currentTrendBias = previousTrendBias;
+        var currentTrendBias = _trendBiases[barIndex - 1];
 
-        if (lastLabel.IsHigherHigh
+		if (lastLabel.IsHigherHigh
             && !secondLastLabel.IsLowerLow
             && (thirdLastLabel.IsHigherHigh || !isForthLastLowerLow))
         {
@@ -172,11 +171,11 @@ public class Swings : ChildIndicator
 		var isUpTrendBreak = lastLabel.IsLowerLow
 			|| barIndex.Equals(secondLastEndBarIndex) && secondLastLabel.IsLowerLow;
 
-		var isDownTrendBreak = lastLabel.IsHigherLow
+		var isDownTrendBreak = lastLabel.IsHigherHigh
 			|| barIndex.Equals(secondLastEndBarIndex) && secondLastLabel.IsHigherHigh;
 
-		if (previousTrendBias is Trend.Up && isUpTrendBreak
-			|| previousTrendBias is Trend.Down && isDownTrendBreak)
+		if (currentTrendBias is Trend.Up && isUpTrendBreak
+			|| currentTrendBias is Trend.Down && isDownTrendBreak)
         {
             currentTrendBias = Trend.None;
         }
@@ -292,6 +291,7 @@ public class Swings : ChildIndicator
 
         var oppositeTrend = _currentTrend.GetOppositeTrend();
         
+		var currentStartBarIndex = barIndex <= 1 ? 0 : barIndex;
 		var currentEndPrice = GetTrendPrice(_currentTrend, barIndex);
 		var currentLabel = GetIncomingSwingLabel(_currentTrend, barIndex, currentEndPrice);
 
@@ -299,14 +299,14 @@ public class Swings : ChildIndicator
         var previousStartPrice = GetTrendPrice(_currentTrend, 0);
 		var previousLabel = GetIncomingSwingLabel(oppositeTrend, barIndex, previousEndPrice);
 
-		if (barIndex >= 2)
+		if (currentStartBarIndex is not 0)
         {
             var previousSwing = new SwingLine
             {
                 Label = previousLabel,
                 Trend = oppositeTrend,
-                EndPoint = new(barIndex, previousEndPrice),
                 StartPoint = new(0, previousStartPrice),
+                EndPoint = new(currentStartBarIndex, previousEndPrice),
 			};
 
             _pendingSwings.AddOrUpdate(previousSwing);
@@ -317,7 +317,7 @@ public class Swings : ChildIndicator
             Label = currentLabel,
             Trend = _currentTrend,
             EndPoint = new(barIndex, currentEndPrice),
-            StartPoint = new(barIndex, previousEndPrice),
+            StartPoint = new(currentStartBarIndex, previousEndPrice),
 		};
 
         _pendingSwings.AddOrUpdate(currentSwing);
