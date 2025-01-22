@@ -9,7 +9,14 @@ namespace Tickblaze.Scripts.Arc.Core;
 // Todo: multi panel extension.
 public partial class MtfFilter : Indicator
 {
-	[AllowNull]
+    public MtfFilter()
+    {
+		ShortName = "MF";
+
+		Name = "MTF Filter";
+    }
+
+    [AllowNull]
     private BarSeries _bars;
 
     [AllowNull]
@@ -52,14 +59,14 @@ public partial class MtfFilter : Indicator
 	[Parameter("Swing Double Top/Bottom ATR Multiplier", Description = "ATR multiplier of the maximum deviation ignored for a double tops or bottoms recognition")]
 	public double SwingDtbAtrMultiplier { get; set; }
 
-	[NumericRange(MaxValue = 1)]
+	[NumericRange(MinValue = 1)]
 	[Parameter("Fast MA Period", Description = "Period of the fast MA")]
 	public int FastMaPeriod { get; set; } = 100;
 
 	[Parameter("Fast MA Type", Description = "Smoothing type of the fast MA")]
 	public MaType FastMaType { get; set; } = MaType.Exponential;
 
-	[NumericRange(MaxValue = 1)]
+	[NumericRange(MinValue = 1)]
 	[Parameter("Slow MA Period", Description = "Period of the slow MA")]
 	public int SlowMaPeriod { get; set; } = 200;
 
@@ -134,7 +141,7 @@ public partial class MtfFilter : Indicator
 
 	private BarSeries GetBars()
 	{
-		if (BarTypeValue is BarType.Chart )
+		if (BarTypeValue is BarType.Chart or BarType.RenkoBxt)
 		{
 			return Bars;
 		}
@@ -233,80 +240,6 @@ public partial class MtfFilter : Indicator
 		return trendSelectors
 			.Select(selector => barIndexes.Map(selector))
 			.ToArray();
-	}
-
-	protected override Parameters GetParameters(Parameters parameters)
-    {
-		List<string> propertyNames =
-		[
-			nameof(MinuteBarSize),
-			nameof(RangeBarSize),
-			nameof(RenkoBarSize),
-			nameof(RenkoBarSize),
-			nameof(RenkoBxtOffset),
-			nameof(RenkoBxtReversal),
-		];
-
-		_ = BarTypeValue switch
-		{
-			BarType.Minute => propertyNames.Remove(nameof(MinuteBarSize)),
-			BarType.Range => propertyNames.Remove(nameof(RangeBarSize)),
-			BarType.Renko => propertyNames.Remove(nameof(RenkoBarSize)),
-			BarType.RenkoBxt => propertyNames.Remove(nameof(RenkoBxtBarSize))
-				& propertyNames.Remove(nameof(RenkoBxtOffset))
-				& propertyNames.Remove(nameof(RenkoBxtReversal)),
-			_ => false,
-		};
-
-		parameters.RemoveRange(propertyNames);
-
-		return parameters;
-	}
-    
-	protected override void Initialize()
-    {
-		_bars = GetBars();
-
-		_vmLeanCore = new VmLeanCore
-		{
-			Bars = _bars,
-			RenderTarget = this,
-
-			BandPeriod = BandPeriod,
-			BandMultiplier = BandMultiplier,
-			MacdSlowPeriod = MacdSlowPeriod,
-			MacdFastPeriod = MacdFastPeriod,
-
-			SwingStrength = SwingStrength,
-			SwingDtbAtrMultiplier = SwingDtbAtrMultiplier,
-			SwingDeviationAtrMultiplier = SwingDeviationAtrMultiplier,
-		};
-
-		_fastMa = new MovingAverage
-		{
-			Bars = _bars,
-			Source = _bars.Close,
-			Period = FastMaPeriod,
-			Type = GetMovingAverageType(FastMaType),
-		};
-
-		_slowMa = new MovingAverage
-		{
-			Bars = _bars,
-			Source = _bars.Close,
-			Period = SlowMaPeriod,
-			Type = GetMovingAverageType(SlowMaType),
-		};
-
-		var trendSeriesCollection = GetTrendSeriesCollection();
-
-		_flooding = new Flooding
-		{
-			RenderTarget = this,
-			UpTrendColor = UpTrendColor,
-			DownTrendColor = DownTrendColor,
-			TrendSeriesCollection = trendSeriesCollection,
-		};
 	}
 
 	private Trend GetHistogramToZeroLineTrend(int barIndex)
@@ -430,10 +363,91 @@ public partial class MtfFilter : Indicator
 
 	private Trend GetSwingTrendBias(int barIndex)
 	{
-		return _vmLeanCore.Swings.TrendBiases[barIndex];
+		return _vmLeanCore.Swings.TrendBiases.GetAtOrDefault(barIndex, Trend.None);
 	}
 
-	public override void OnRender(IDrawingContext drawingContext)
+	protected override Parameters GetParameters(Parameters parameters)
+	{
+		List<string> propertyNames =
+		[
+			nameof(MinuteBarSize),
+			nameof(RangeBarSize),
+			nameof(RenkoBarSize),
+			nameof(RenkoBxtBarSize),
+			nameof(RenkoBxtOffset),
+			nameof(RenkoBxtReversal),
+		];
+
+		_ = BarTypeValue switch
+		{
+			BarType.Minute => propertyNames.Remove(nameof(MinuteBarSize)),
+			BarType.Range => propertyNames.Remove(nameof(RangeBarSize)),
+			BarType.Renko => propertyNames.Remove(nameof(RenkoBarSize)),
+			BarType.RenkoBxt => propertyNames.Remove(nameof(RenkoBxtBarSize))
+				& propertyNames.Remove(nameof(RenkoBxtOffset))
+				& propertyNames.Remove(nameof(RenkoBxtReversal)),
+			_ => false,
+		};
+
+		parameters.RemoveRange(propertyNames);
+
+		return parameters;
+	}
+
+	protected override void Initialize()
+	{
+		_bars = GetBars();
+
+		_vmLeanCore = new VmLeanCore
+		{
+			Bars = _bars,
+			RenderTarget = this,
+
+			BandPeriod = BandPeriod,
+			BandMultiplier = BandMultiplier,
+			MacdSlowPeriod = MacdSlowPeriod,
+			MacdFastPeriod = MacdFastPeriod,
+
+			SwingStrength = SwingStrength,
+			SwingDtbAtrMultiplier = SwingDtbAtrMultiplier,
+			SwingDeviationAtrMultiplier = SwingDeviationAtrMultiplier,
+		};
+
+		_fastMa = new MovingAverage
+		{
+			Bars = _bars,
+			Source = _bars.Close,
+			Period = FastMaPeriod,
+			Type = GetMovingAverageType(FastMaType),
+		};
+
+		_slowMa = new MovingAverage
+		{
+			Bars = _bars,
+			Source = _bars.Close,
+			Period = SlowMaPeriod,
+			Type = GetMovingAverageType(SlowMaType),
+		};
+
+		var trendSeriesCollection = GetTrendSeriesCollection();
+
+		_flooding = new Flooding
+		{
+			RenderTarget = this,
+			UpTrendColor = UpTrendColor,
+			DownTrendColor = DownTrendColor,
+			TrendSeriesCollection = trendSeriesCollection,
+		};
+	}
+
+	protected override void Calculate(int barIndex)
+    {
+		_vmLeanCore.Calculate();
+
+		_flooding.Calculate();
+	}
+
+    public override void OnRender(IDrawingContext drawingContext)
     {
 		_flooding.OnRender(drawingContext);
 	}

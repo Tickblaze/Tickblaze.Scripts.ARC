@@ -1,4 +1,6 @@
-﻿using Tickblaze.Scripts.Arc.Common;
+﻿using Tickblaze.Scripts.Api.Models;
+using Tickblaze.Scripts.Arc.Common;
+using Tickblaze.Scripts.BarTypes;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
@@ -22,37 +24,39 @@ public partial class BarCloseMarker : Indicator
 	private double _potentialLow;
 	private double _potentialHigh;
 
-	private Bar? _lastRealtimeBar;
+	private RenkoBxt? _renkoBxt;
+
+	private Bar? _lastBar;
 
 	private Color _markerLowSolidColor;
 	private Color _markerHighSolidColor;
 
-	[Parameter("MarkerType", GroupName = "Marker Parameters")]
+	[Parameter("Marker Type")]
 	public MarkerType MarkerTypeValue { get; set; } = MarkerType.ExtendedLines;
 
-	[Parameter("Text Font", GroupName = "Marker Parameters")]
+	[Parameter("Display Shadow", GroupName = "Visuals")]
+	public bool ShowShadows { get; set; } = true;
+	
+	[Parameter("Text Font", GroupName = "Visuals")]
 	public Font TextFont { get; set; } = new("Arial", 12);
 
 	[NumericRange(MinValue = 1)]
-	[Parameter("Marker Width", GroupName = "Marker Parameters")]
+	[Parameter("Marker Width", GroupName = "Visuals")]
 	public int MarkerThickness { get; set; } = 2;
 
-	[Parameter("Bar Close High Color", GroupName = "Marker Parameters")]
+	[Parameter("Bar Close High Color", GroupName = "Visuals")]
 	public Color MarkerHighColor { get; set; } = DrawingColor.Lime.With(0.5f);
 
-	[Parameter("Current Price Color", GroupName = "Marker Parameters")]
+	[Parameter("Current Price Color", GroupName = "Visuals")]
 	public Color CurrentPriceColor { get; set; } = Color.Black.With(opacity: 0.5f);
 
-	[Parameter("Bar Close Low Color", GroupName = "Marker Parameters")]
+	[Parameter("Bar Close Low Color", GroupName = "Visuals")]
 	public Color MarkerLowColor { get; set; } = Color.Red.With(opacity: 0.5f);
 
-	[Parameter("Display Shadow", GroupName = "Shadow Parameters")]
-	public bool ShowShadows { get; set; } = true;
-
-	[Parameter("Top Shadow Color", GroupName = "Shadow Parameters")]
+	[Parameter("Top Shadow Color", GroupName = "Visuals")]
 	public Color TopShadowColor { get; set; } = DrawingColor.Lime.With(0.1f);
 
-	[Parameter("Bottom Shadow Color", GroupName = "Shadow Parameters")]
+	[Parameter("Bottom Shadow Color", GroupName = "Visuals")]
 	public Color BottomShadowColor { get; set; } = Color.Red.With(opacity: 0.1f);
 
     protected override Parameters GetParameters(Parameters parameters)
@@ -91,59 +95,86 @@ public partial class BarCloseMarker : Indicator
 
     protected override void Initialize()
     {
+		_lastBar = default;
 		_lastOpen = default;
 		_lastClose = default;
-		_lastRealtimeBar = default;
-		
+
+		_renkoBxt = Bars.BarType as RenkoBxt;
+
 		_markerLowSolidColor = MarkerLowColor.With(opacity: 1.0f);
 		_markerHighSolidColor = MarkerHighColor.With(opacity: 1.0f);
 	}
 
-    protected override void Calculate(int index)
-    {
-        if (Bars is not ([.., var lastBar]) || lastBar is null)
-        {
-			return;
-        }
-        
-		CalculatePotentialHighLow(lastBar);
-    }
-
-    private void CalculatePotentialHighLow(Bar lastBar)
+    protected override void Calculate(int barIndex)
     {
 		var barTypeSettings = Bars.Period;
 
+		if (_renkoBxt is not null)
+		{
+			CalculateRenkoBxtPotentialHighLow(barIndex);
+		}
 		if (barTypeSettings.Type is BarType.Range)
 		{
-			CalculateRangePotentialHighLow(lastBar);
+			CalculateRangePotentialHighLow(barIndex);
 		}
 	}
 
-	private void CalculateRangePotentialHighLow(Bar lastBar)
+    private void CalculateRenkoBxtPotentialHighLow(int barIndex)
+    {
+		if (_renkoBxt is null || barIndex is 0)
+        {
+			return;
+		}
+
+		_lastBar = Bars[barIndex]!;
+		_lastOpen = _lastBar.Open;
+		_lastClose = _lastBar.Close;
+
+		var tickSize = Bars.Symbol.TickSize;
+		var barSizeInPoints = _renkoBxt.BarSize * tickSize;
+		var reversalSizeInPoints = _renkoBxt.ReversalSize * tickSize;
+		
+		var isUpTrend = Bars.Close[barIndex - 1] > Bars.Open[barIndex - 1];
+
+		if (isUpTrend)
+		{
+			_potentialHigh = Bars.Open[barIndex] + barSizeInPoints;
+
+			_potentialLow = Bars.High[barIndex] - reversalSizeInPoints;
+		}
+		else
+		{
+			_potentialHigh = Bars.Open[barIndex] - barSizeInPoints;
+
+			_potentialLow = Bars.Low[barIndex] + reversalSizeInPoints;
+		}
+    }
+
+    private void CalculateRangePotentialHighLow(int barIndex)
 	{
+		var bar = Bars[barIndex]!;
 		var barTypeSettings = Bars.Period;
 		var tickSize = Bars.Symbol.TickSize;
+		
 		var rangeDelta = barTypeSettings.Size * tickSize;
-
-		var currentDelta = Math.Abs(lastBar.Close - lastBar.Open);
+		var currentDelta = Math.Abs(bar.Close - bar.Open);
 
 		if (currentDelta.EpsilonGreaterThanOrEquals(rangeDelta))
 		{
 			return;
 		}
 
-		_lastRealtimeBar = lastBar;
-		_lastOpen = _lastRealtimeBar.Open;
-		_lastClose = _lastRealtimeBar.Close;
+		_lastBar = bar;
+		_lastOpen = _lastBar.Open;
+		_lastClose = _lastBar.Close;
 
-		_potentialLow = Math.Max(0.0, _lastOpen - rangeDelta);
-		_potentialLow = Math.Round(_potentialLow, Symbol.Decimals);
+		_potentialLow = Math.Round(_lastOpen - rangeDelta, Symbol.Decimals);
 		_potentialHigh = Math.Round(_lastOpen + rangeDelta, Symbol.Decimals);
 	}
 
 	public override void OnRender(IDrawingContext context)
     {
-		if (_lastRealtimeBar is null || double.IsInfinity(_potentialHigh))
+		if (_lastBar is null)
 		{
 			return;
 		}

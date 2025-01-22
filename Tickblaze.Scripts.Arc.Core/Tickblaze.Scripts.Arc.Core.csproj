@@ -27,7 +27,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.45-pre.38" />
+		<PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.47-pre.51" />
 	</ItemGroup>
 
 	<ItemGroup>

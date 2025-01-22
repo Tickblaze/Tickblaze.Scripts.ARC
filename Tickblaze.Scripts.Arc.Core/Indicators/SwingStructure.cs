@@ -26,8 +26,8 @@ public partial class SwingStructure : Indicator
 	[Parameter("Calculation Mode", Description = "Whether to calculate the swing by current or closed bar highs and lows")]
 	public SwingCalculationMode CalculationMode { get; set; }
 
-	[NumericRange(MinValue = 1, MaxValue = 200)]
-	[Parameter("Swing strength", Description = "Number of bars used to identify a swing high or low")]
+	[NumericRange(MinValue = 1, MaxValue = 256)]
+	[Parameter("Swing Strength", Description = "Number of bars used to identify a swing high or low")]
 	public int SwingStrength { get; set; } = 1;
 
 	[Parameter("Show Lines", Description = "Whether swing lines are shown")]
