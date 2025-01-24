@@ -91,12 +91,7 @@ public partial class VmLean
 	{
 		for (var barIndex = Chart.FirstVisibleBarIndex; barIndex <= Chart.LastVisibleBarIndex; barIndex++)
 		{
-			var point = new Point
-			{
-				BarIndex = barIndex,
-				Price = _macdDots[barIndex],
-			};
-
+			var point = _macdDots.GetPoint(barIndex);
 			var apiPoint = this.GetApiPoint(point);
 
 			var dotRadius = MacdDotSize / 2.0;

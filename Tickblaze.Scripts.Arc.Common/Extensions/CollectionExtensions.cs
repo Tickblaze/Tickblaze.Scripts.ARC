@@ -37,6 +37,13 @@ public static class CollectionExtensions
 		return items.GetAtOrDefault(offset, defaultItem);
 	}
 
+	public static TItem GetLast<TItem>(this IReadOnlyList<TItem> items)
+	{
+		ArgumentNullException.ThrowIfNull(items);
+
+		return items.GetAt(items.Count - 1);
+	}
+
 	public static TItem GetLastOrDefault<TItem>(this IReadOnlyList<TItem> items, TItem defaultItem)
 	{
 		return items.GetAtOrDefault(^1, defaultItem);

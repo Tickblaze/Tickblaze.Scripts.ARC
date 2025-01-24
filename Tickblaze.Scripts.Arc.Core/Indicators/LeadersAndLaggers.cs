@@ -250,7 +250,7 @@ public partial class LeadersAndLaggers : Indicator
 				continue;
 			}
 
-			_barSeriesCollection[barSeriesIndex] = GetBarSeries(barSeriesRequest);
+			_barSeriesCollection[barSeriesIndex] = GetBars(barSeriesRequest);
 		}
 	}
 

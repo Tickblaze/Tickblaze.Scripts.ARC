@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Tickblaze.Scripts.Arc.Common;
+using Tickblaze.Scripts.BarTypes;
 using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc.Core;
@@ -111,19 +112,19 @@ public partial class MtfFilter : Indicator
 
 	[NumericRange(MinValue = 1)]
 	[Parameter("Minute Bar Size", GroupName = "Timeframes", Description = "Size of the minute bar")]
-	public int MinuteBarSize { get; set; }
+	public int MinuteBarSize { get; set; } = 10;
 
 	[NumericRange(MinValue = 1)]
 	[Parameter("Range Bar Size", GroupName = "Timeframes", Description = "Size of the range bar")]
-	public int RangeBarSize { get; set; }
+	public int RangeBarSize { get; set; } = 14;
 
 	[NumericRange(MinValue = 1)]
 	[Parameter("Renko Bar Size", GroupName = "Timeframes", Description = "Size of the renko bar")]
-	public int RenkoBarSize { get; set; }
+	public int RenkoBarSize { get; set; } = 14;
 
 	[NumericRange(MinValue = 1)]
 	[Parameter("RenkoBXT Bar Size", GroupName = "Timeframes", Description = "Size of the RenkoBXT bar")]
-	public int RenkoBxtBarSize { get; set; }
+	public int RenkoBxtBarSize { get; set; } = 8;
 
 	[NumericRange(MinValue = 1)]
 	[Parameter("RenkoBXT Offset", GroupName = "Timeframes", Description = "Offset of the RenkoBXT bar")]
@@ -131,7 +132,7 @@ public partial class MtfFilter : Indicator
 
 	[NumericRange(MinValue = 1)]
 	[Parameter("RenkoBXT Reversal", GroupName = "Timeframes", Description = "Reversal of the RenkoBXT bar")]
-	public int RenkoBxtReversal { get; set; } = 14;
+	public int RenkoBxtReversalSize { get; set; } = 14;
 
 	[Parameter("Up-trend Color", GroupName = "Visuals", Description = "Color of the up-trend flooding")]
 	public Color UpTrendColor { get; set; } = Color.Green.With(opacity: 0.9f);
@@ -141,7 +142,7 @@ public partial class MtfFilter : Indicator
 
 	private BarSeries GetBars()
 	{
-		if (BarTypeValue is BarType.Chart or BarType.RenkoBxt)
+		if (BarTypeValue is BarType.Chart)
 		{
 			return Bars;
 		}
@@ -151,11 +152,22 @@ public partial class MtfFilter : Indicator
 			BarType.Minute => new BarPeriod(SourceBarType.Minute, BarPeriod.PeriodType.Minute, MinuteBarSize),
 			BarType.Range => new BarPeriod(SourceBarType.Trade, BarPeriod.PeriodType.Range, RangeBarSize),
 			BarType.Renko => new BarPeriod(SourceBarType.Trade, BarPeriod.PeriodType.Renko, RenkoBarSize),
+			BarType.RenkoBxt => new BarPeriod(SourceBarType.Trade, BarPeriod.PeriodType.Custom, 1.0),
 			_ => throw new UnreachableException(),
 		};
 
+		var barType = BarTypeValue is not BarType.RenkoBxt
+			? null
+			: new RenkoBxt
+			{
+				BarSize = RenkoBarSize,
+				Offset = RenkoBxtOffset,
+				ReversalSize = RenkoBxtReversalSize,
+			};
+
 		var barSeriesRequest = new BarSeriesRequest
 		{
+			BarType = barType,
 			SymbolCode = Symbol.Code,
 			Period = barTypeSettings,
 			Exchange = Symbol.Exchange,
@@ -163,7 +175,7 @@ public partial class MtfFilter : Indicator
 			Contract = Bars.ContractSettings,
 		};
 
-		return GetBarSeries(barSeriesRequest);
+		return GetBars(barSeriesRequest);
 	}
 
 	private static MovingAverageType GetMovingAverageType(MaType maType)
@@ -244,15 +256,25 @@ public partial class MtfFilter : Indicator
 
 	private Trend GetHistogramToZeroLineTrend(int barIndex)
 	{
-		var histogramValue = _vmLeanCore.Histogram[barIndex];
+		if (_bars.Count is 0)
+		{
+			return Trend.None;
+		}
+
+		var histogramValue = _vmLeanCore.Histogram.GetLast();
 
 		return histogramValue.EpsilonCompare(0).ToTrend();
 	}
 
 	private Trend GetBbAndHistogramToZeroLineTrend(int barIndex)
 	{
-		var bbValue = _vmLeanCore.Macd.Signal[barIndex];
-		var histogramValue = _vmLeanCore.Histogram[barIndex];
+		if (_bars.Count is 0)
+		{
+			return Trend.None;
+		}
+
+		var bbValue = _vmLeanCore.Macd.Signal.GetLast();
+		var histogramValue = _vmLeanCore.Histogram.GetLast();
 
 		if (bbValue.EpsilonGreaterThan(0) && histogramValue.EpsilonGreaterThan(0))
 		{
@@ -268,9 +290,14 @@ public partial class MtfFilter : Indicator
 
 	private Trend GetBbToBollingerBandTrend(int barIndex)
 	{
-		var bbValue = _vmLeanCore.Macd.Signal[barIndex];
-		var upperBandValue = _vmLeanCore.BollingerBands.Upper[barIndex];
-		var lowerBandValue = _vmLeanCore.BollingerBands.Lower[barIndex];
+		if (_bars.Count is 0)
+		{
+			return Trend.None;
+		}
+
+		var bbValue = _vmLeanCore.Macd.Signal.GetLast();
+		var upperBandValue = _vmLeanCore.BollingerBands.Upper.GetLast();
+		var lowerBandValue = _vmLeanCore.BollingerBands.Lower.GetLast();
 
 		if (bbValue.EpsilonGreaterThan(upperBandValue))
 		{
@@ -286,9 +313,14 @@ public partial class MtfFilter : Indicator
 
 	private Trend GetBbToMiddleLineTrend(int barIndex)
 	{
-		var bbValue = _vmLeanCore.Macd.Signal[barIndex];
-		var upperBandValue = _vmLeanCore.BollingerBands.Upper[barIndex];
-		var lowerBandValue = _vmLeanCore.BollingerBands.Lower[barIndex];
+		if (_bars.Count is 0)
+		{
+			return Trend.None;
+		}
+
+		var bbValue = _vmLeanCore.Macd.Signal.GetLast();
+		var upperBandValue = _vmLeanCore.BollingerBands.Upper.GetLast();
+		var lowerBandValue = _vmLeanCore.BollingerBands.Lower.GetLast();
 		var middleValue = (upperBandValue + lowerBandValue) / 2.0;
 
 		return bbValue.EpsilonCompare(middleValue).ToTrend();
@@ -296,40 +328,65 @@ public partial class MtfFilter : Indicator
 
 	private Trend GetBbToZeroLineTrend(int barIndex)
 	{
-		var bbValue = _vmLeanCore.Macd.Signal[barIndex];
+		if (_bars.Count is 0)
+		{
+			return Trend.None;
+		}
+
+		var bbValue = _vmLeanCore.Macd.Signal.GetLastOrDefault(0);
 
 		return bbValue.EpsilonCompare(0).ToTrend();
 	}
 
 	private Trend GetFastMaToSlowMaTrend(int barIndex)
 	{
-		var fastMaValue = _fastMa[barIndex];
-		var slowMaValue = _slowMa[barIndex];
+		if (_bars.Count is 0)
+		{
+			return Trend.None;
+		}
+
+		var fastMaValue = _fastMa.Result.GetLast();
+		var slowMaValue = _slowMa.Result.GetLast();
 
 		return fastMaValue.EpsilonCompare(slowMaValue).ToTrend();
 	}
 
 	private Trend GetCloseToFastMaTrend(int barIndex)
 	{
-		var fastMaValue = _fastMa[barIndex];
-		var closeValue = _bars.Close[barIndex];
+		if (_bars.Count is 0)
+		{
+			return Trend.None;
+		}
+
+		var closeValue = _bars.Close.GetLast();
+		var fastMaValue = _fastMa.Result.GetLast();
 
 		return closeValue.EpsilonCompare(fastMaValue).ToTrend();
 	}
 
 	private Trend GetCloseToSlowMaTrend(int barIndex)
 	{
-		var slowMaValue = _slowMa[barIndex];
-		var closeValue = _bars.Close[barIndex];
+		if (_bars.Count is 0)
+		{
+			return Trend.None;
+		}
+
+		var closeValue = _bars.Close.GetLast();
+		var slowMaValue = _slowMa.Result.GetLast();
 
 		return closeValue.EpsilonCompare(slowMaValue).ToTrend();
 	}
 
 	private Trend GetHighLowToFastMaTrend(int barIndex)
 	{
-		var lowValue = _bars.Low[barIndex];
-		var highValue = _bars.High[barIndex];
-		var fastMaValue = _fastMa[barIndex];
+		if (_bars.Count is 0)
+		{
+			return Trend.None;
+		}
+
+		var lowValue = _bars.Low.GetLast();
+		var highValue = _bars.High.GetLast();
+		var fastMaValue = _fastMa.Result.GetLast();
 
 		if (lowValue.EpsilonGreaterThan(fastMaValue))
 		{
@@ -345,9 +402,14 @@ public partial class MtfFilter : Indicator
 
 	private Trend GetHighLowToSlowMaTrend(int barIndex)
 	{
-		var lowValue = _bars.Low[barIndex];
-		var highValue = _bars.High[barIndex];
-		var slowMaValue = _slowMa[barIndex];
+		if (_bars.Count is 0)
+		{
+			return Trend.None;
+		}
+
+		var lowValue = _bars.Low.GetLast();
+		var highValue = _bars.High.GetLast();
+		var slowMaValue = _slowMa.Result.GetLast();
 
 		if (lowValue.EpsilonGreaterThan(slowMaValue))
 		{
@@ -375,7 +437,7 @@ public partial class MtfFilter : Indicator
 			nameof(RenkoBarSize),
 			nameof(RenkoBxtBarSize),
 			nameof(RenkoBxtOffset),
-			nameof(RenkoBxtReversal),
+			nameof(RenkoBxtReversalSize),
 		];
 
 		_ = BarTypeValue switch
@@ -385,7 +447,7 @@ public partial class MtfFilter : Indicator
 			BarType.Renko => propertyNames.Remove(nameof(RenkoBarSize)),
 			BarType.RenkoBxt => propertyNames.Remove(nameof(RenkoBxtBarSize))
 				& propertyNames.Remove(nameof(RenkoBxtOffset))
-				& propertyNames.Remove(nameof(RenkoBxtReversal)),
+				& propertyNames.Remove(nameof(RenkoBxtReversalSize)),
 			_ => false,
 		};
 
@@ -442,6 +504,12 @@ public partial class MtfFilter : Indicator
 
 	protected override void Calculate(int barIndex)
     {
+		var barIndex2 = _bars.Count - 1;
+
+		_slowMa.Calculate();
+		
+		_fastMa.Calculate();
+
 		_vmLeanCore.Calculate();
 
 		_flooding.Calculate();

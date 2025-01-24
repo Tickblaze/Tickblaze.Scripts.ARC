@@ -201,7 +201,7 @@ public partial class HtfAverages : Indicator
 			Contract = Bars.ContractSettings,
 		};
 
-		_higherTimeframeBars = GetBarSeries(barSeriesRequest);
+		_higherTimeframeBars = GetBars(barSeriesRequest);
 
 		for (var maIndex = 0; maIndex < _maCount; maIndex++)
 		{
