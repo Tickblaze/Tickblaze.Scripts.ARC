@@ -1,6 +1,6 @@
 ﻿using ReactiveUI;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reactive;
 using System.Reactive.Linq;
 using Tickblaze.Scripts.Arc.Common;
 
@@ -12,33 +12,21 @@ public partial class SwingStructure
 	{
 		public MenuViewModel(SwingStructure swingStructure)
 		{
-			_swings = swingStructure._swings;
-
 			_swingStructure = swingStructure;
-
-			MenuHeader = _swingStructure.MenuHeader;
-
-			SwingStrength = _swingStructure.SwingStrength;
-			ShowSwingLines = _swingStructure.ShowSwingLines;
-			ShowSwingLabels = _swingStructure.ShowSwingLabels;
-
-			this.WhenAnyValue(viewModel => viewModel.SwingStrength)
-				.Throttle(TimeSpan.FromSeconds(0.75), RxApp.TaskpoolScheduler)
-				.DistinctUntilChanged()
-				.ObserveOn(RxApp.MainThreadScheduler)
-				.Subscribe(_ => OnSwingStrengthChanged());
 		}
 
-        private Swings _swings;
+		private IDisposable? _swingSubscription;
 
 		private readonly SwingStructure _swingStructure;
+
+		private Swings Swings => _swingStructure._swings;
 
 		public bool ShowSwingLines
 		{
 			get;
 			set
 			{
-				_swings.ShowLines = _swingStructure.ShowSwingLines = value;
+				Swings.ShowLines = _swingStructure.ShowSwingLines = value;
 
 				this.RaiseAndSetIfChanged(ref field, value);
 			}
@@ -49,7 +37,7 @@ public partial class SwingStructure
 			get;
 			set
 			{
-				_swings.ShowLabels = _swingStructure.ShowSwingLabels = value;
+				Swings.ShowLabels = _swingStructure.ShowSwingLabels = value;
 
 				this.RaiseAndSetIfChanged(ref field, value);
 			}
@@ -78,9 +66,28 @@ public partial class SwingStructure
 			}
 		}
 
-		private void OnSwingStrengthChanged()
+		public void Initialize()
 		{
-			_swings = _swingStructure.InitializeSwings(true);
+			_swingSubscription?.Dispose();
+
+			MenuHeader = _swingStructure.MenuHeader;
+
+			SwingStrength = _swingStructure.SwingStrength;
+			ShowSwingLines = _swingStructure.ShowSwingLines;
+			ShowSwingLabels = _swingStructure.ShowSwingLabels;
+
+			_swingSubscription = this
+				.WhenAnyValue(viewModel => viewModel.SwingStrength)
+				.Throttle(TimeSpan.FromSeconds(0.75), RxApp.TaskpoolScheduler)
+				.DistinctUntilChanged()
+				.Select(swingStrength => Unit.Default)
+				.ObserveOn(RxApp.MainThreadScheduler)
+				.Subscribe(OnSwingStrengthChanged);
+		}
+
+		private void OnSwingStrengthChanged(Unit unit)
+		{
+			_swingStructure.InitializeSwings(true);
 		}
 	}
 }

@@ -34,10 +34,10 @@ public class FloodingWithOverlaps : Flooding
 
 	public required Color OverlapDownTrendColor { get; init; }
 
-    protected override bool TryGetCurrentValues(out Trend currentTrend, out Color currentColor)
+    protected override bool TryGetCurrentValues(int barIndex, out Trend currentTrend, out Color currentColor)
     {
-		var firstTrend = FirstTrendSeries.GetLastOrDefault(Trend.None);
-		var secondTrend = SecondTrendSeries.GetLastOrDefault(Trend.None);
+		var firstTrend = GetTrend(FirstTrendSeries, barIndex);
+		var secondTrend = GetTrend(SecondTrendSeries, barIndex);
 		var aggregatedTrend = firstTrend.ToSignum() + secondTrend.ToSignum();
 
 		if (aggregatedTrend is 0 or < -2 or > 2)

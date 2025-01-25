@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -7,11 +8,11 @@ namespace Tickblaze.Scripts.Arc.Common;
 
 public class EnumMenuItem : MenuItem
 {
-    public static readonly DependencyProperty SelectedEnumProperty = DependencyProperty.Register(nameof(SelectedEnum), typeof(object), typeof(EnumMenuItem));
-	
-	public object? SelectedEnum
+    public static readonly DependencyProperty SelectedEnumProperty = DependencyProperty.Register(nameof(SelectedEnum), typeof(string), typeof(EnumMenuItem));
+
+	public string? SelectedEnum
     {
-        get => GetValue(SelectedEnumProperty);
+        get => (string) GetValue(SelectedEnumProperty);
         set => SetValue(SelectedEnumProperty, value);
     }
 
@@ -52,7 +53,7 @@ public class EnumMenuItem : MenuItem
 			var displayName = displayNameAttribute?.DisplayName ?? enumString;
 			var enumItem = new EnumItem
 			{
-				Value = @enum,
+				Name = enumString,
 				DisplayName = displayName,
 			};
 

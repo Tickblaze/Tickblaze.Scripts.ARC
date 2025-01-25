@@ -159,7 +159,7 @@ public partial class BarCloseMarker : Indicator
 		var rangeDelta = barTypeSettings.Size * tickSize;
 		var currentDelta = Math.Abs(bar.Close - bar.Open);
 
-		if (currentDelta.EpsilonGreaterThanOrEquals(rangeDelta))
+		if (currentDelta.ApproxGreaterThanOrEquals(rangeDelta))
 		{
 			return;
 		}

@@ -8,6 +8,8 @@ public partial class SwingStructure : Indicator
 {
 	public SwingStructure()
 	{
+		_menuViewModel = new(this);
+
 		IsOverlay = true;
 		
 		ShortName = "SS";
@@ -15,11 +17,12 @@ public partial class SwingStructure : Indicator
 		Name = "Swing Structure";
 	}
 
+	private readonly Lock _lock = new();
+
 	[AllowNull]
 	private Swings _swings;
 
-	[AllowNull]
-	private MenuViewModel _menuViewModel;
+	private readonly MenuViewModel _menuViewModel;
 
 	private const string _menuResourceName = "Tickblaze.Scripts.Arc.Core.Indicators.SwingStructure.Menu.xaml";
 
@@ -89,11 +92,13 @@ public partial class SwingStructure : Indicator
 	{
 		InitializeSwings(false);
 
-		_menuViewModel = new(this);
+        _menuViewModel.Initialize();
 	}
 
-	private Swings InitializeSwings(bool forceReinitialization)
+	private void InitializeSwings(bool forceReinitialization)
 	{
+		using var lockScope = _lock.EnterScope();
+
 		_swings = new Swings
 		{
 			Bars = Bars,
@@ -116,14 +121,14 @@ public partial class SwingStructure : Indicator
 
 		if (forceReinitialization)
 		{
-			_swings.Reinitialize();
+			_swings.Reinitialize(this);
 		}
-
-		return _swings;
 	}
 
 	protected override void Calculate(int index)
 	{
+		using var lockScope = _lock.EnterScope();
+
 		_swings.Calculate();
 	}
 

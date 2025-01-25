@@ -34,7 +34,7 @@ public partial class VmLean
 	[Parameter("Flooding Deep Bearish Color", GroupName = "Flooding Visuals", Description = "Color of the bearish flooding")]
 	public Color FloodingDeepBearishColor { get; set; } = DrawingColor.DarkRed;
 
-	public void InitializeFlooding()
+	public void InitializeFlooding(bool forceReinitialization)
 	{
 		var floodingOpacity = FloodingOpacity / 100.0f;
 
@@ -42,6 +42,8 @@ public partial class VmLean
 
 		_histogramFlooding = new Flooding
 		{
+			Bars = Bars,
+			IsMtf = false,
 			RenderTarget = this,
 			UpTrendColor = FloodingBullishColor.With(opacity: floodingOpacity),
 			DownTrendColor = FloodingBearishColor.With(opacity: floodingOpacity),
@@ -50,6 +52,8 @@ public partial class VmLean
 
 		_swingStructureFlooding = new Flooding
 		{
+			Bars = Bars,
+			IsMtf = false,
 			RenderTarget = this,
 			UpTrendColor = FloodingBullishColor.With(opacity: floodingOpacity),
 			DownTrendColor = FloodingBearishColor.With(opacity: floodingOpacity),
@@ -58,6 +62,8 @@ public partial class VmLean
 
 		_bothFlooding = new FloodingWithOverlaps
 		{
+			Bars = Bars,
+			IsMtf = false,
 			RenderTarget = this,
 			UpTrendColor = FloodingBullishColor.With(opacity: floodingOpacity),
 			DownTrendColor = FloodingBearishColor.With(opacity: floodingOpacity),
@@ -65,6 +71,15 @@ public partial class VmLean
 			OverlapDownTrendColor = FloodingDeepBearishColor.With(opacity: floodingOpacity),
 			TrendSeriesCollection = [Swings.TrendBiases, histogramTrends],
 		};
+
+		if (forceReinitialization)
+		{
+			_histogramFlooding.Reinitialize(this);
+
+			_swingStructureFlooding.Reinitialize(this);
+
+			_bothFlooding.Reinitialize(this);
+		}
 	}
 
 	public void CalculateFlooding(int barIndex)
@@ -87,12 +102,7 @@ public partial class VmLean
 			_ => throw new UnreachableException(),
 		};
 
-		var isFloodingDisabled = !IsSwingEnabled && FloodingTypeValue is FloodingType.Structure or FloodingType.Both;
-
-		if (flooding is not null && !isFloodingDisabled)
-		{
-			flooding.OnRender(drawingContext);
-		}
+		flooding?.OnRender(drawingContext);
 	}
 
 	public enum FloodingType

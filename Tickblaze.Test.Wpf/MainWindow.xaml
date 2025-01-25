@@ -41,8 +41,8 @@
 					</Style>
 				</MenuItem.Resources>
 				<MenuItem Header="ASDSD" />
-				<common:ToggleButtonMenuItem Header="ASDSDAAA" />
-				<common:ToggleButtonMenuItem Header="ASDSDAAA" />
+				<common:EnumMenuItem Header="ASDSDAAA" EnumType="{x:Type local:FloodingType}" />
+				<common:OnOffMenuItem Header="ASDSDAAA" />
 			</MenuItem>
 			<MenuItem Header="ASDSD" />
 		</Menu>

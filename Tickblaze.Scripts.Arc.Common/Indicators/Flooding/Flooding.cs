@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using Tickblaze.Scripts.Api.Models;
 
 namespace Tickblaze.Scripts.Arc.Common;
 
@@ -13,6 +14,8 @@ public class Flooding : ChildIndicator
 	private DrawingPartDictionary<int, FloodingInterval> _intervals;
 
 	public virtual required ISeries<Trend>[] TrendSeriesCollection { get; init; }
+
+	public required bool IsMtf { get; init; }
 
 	public required Color UpTrendColor { get; init; }
 
@@ -34,10 +37,17 @@ public class Flooding : ChildIndicator
 		IsInitialized = true;
 	}
 
-	protected virtual bool TryGetCurrentValues(out Trend currentTrend, out Color currentColor)
+	protected Trend GetTrend(ISeries<Trend> series, int barIndex)
+    {
+		return IsMtf
+			? series.GetLastOrDefault(Trend.None)
+			: series.GetAtOrDefault(barIndex, Trend.None);
+	}
+
+	protected virtual bool TryGetCurrentValues(int barIndex, out Trend currentTrend, out Color currentColor)
 	{
 		var currentTrends = TrendSeriesCollection
-			.Select(series => series.GetLastOrDefault(Trend.None))
+			.Select(series => GetTrend(series, barIndex))
 			.Distinct()
 			.ToArray();
 
@@ -63,7 +73,7 @@ public class Flooding : ChildIndicator
 
 		var previousTrend = _trends.GetAtOrDefault(barIndex - 1, Trend.None);
 
-		if (!TryGetCurrentValues(out var currentTrend, out var currentColor))
+		if (!TryGetCurrentValues(barIndex, out var currentTrend, out var currentColor))
 		{
 			return;
 		}

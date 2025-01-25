@@ -1,5 +1,7 @@
 ﻿using ReactiveUI;
 using System.Diagnostics.CodeAnalysis;
+using System.Reactive;
+using System.Reactive.Linq;
 using Tickblaze.Scripts.Arc.Common;
 
 namespace Tickblaze.Scripts.Arc.Core;
@@ -11,38 +13,20 @@ public partial class VmLean
 		public MenuViewModel(VmLean vmLean)
 		{
 			_vmLean = vmLean;
-
-			_swings = _vmLean.Swings;
-
-			SwingStrength = _vmLean.SwingStrength;
-			IsSwingEnabled = _vmLean.IsSwingEnabled;
-			ShowSwingLines = _vmLean.ShowSwingLines;
-			ShowSwingLabels = _vmLean.ShowSwingLabels;
-			SwingDtbAtrMultiplier = _vmLean.SwingDtbAtrMultiplier;
-
-			ShowLevel1Lines = _vmLean.ShowLevel1Lines;
-			ShowLevel2Lines = _vmLean.ShowLevel2Lines;
-			ShowLevel3Lines = _vmLean.ShowLevel3Lines;
-			EnableLevels = _vmLean.EnableLevels;
-			LevelPlotStyle = _vmLean.LevelPlotStyleValue;
-
-			ShowSentimentBox = _vmLean.ShowSentimentBox;
-
-			FloodingType = _vmLean.FloodingTypeValue;
-
-			MenuHeader = _vmLean.MenuHeader;
 		}
 
-		private Swings _swings;
-
 		private readonly VmLean _vmLean;
+
+		private IDisposable? _swingSubscription;
+
+		private Swings Swings => _vmLean.Swings;
 
 		public bool IsSwingEnabled
 		{
 			get;
 			set
 			{
-				_swings.IsSwingEnabled = _vmLean.IsSwingEnabled = value;
+				Swings.IsSwingEnabled = _vmLean.IsSwingEnabled = value;
 
 				this.RaiseAndSetIfChanged(ref field, value);
 			}
@@ -53,7 +37,7 @@ public partial class VmLean
             get;
             set
             {
-				_swings.ShowLines = _vmLean.ShowSwingLines = value;
+				Swings.ShowLines = _vmLean.ShowSwingLines = value;
 
 				this.RaiseAndSetIfChanged(ref field, value);
 			}
@@ -64,7 +48,7 @@ public partial class VmLean
 			get;
 			set
 			{
-				_swings.ShowLabels = _vmLean.ShowSwingLabels = value;
+				Swings.ShowLabels = _vmLean.ShowSwingLabels = value;
 
 				this.RaiseAndSetIfChanged(ref field, value);
 			}
@@ -136,12 +120,15 @@ public partial class VmLean
 			}
 		}
 
-		public LevelPlotStyle LevelPlotStyle
+		public string? LevelPlotStyle
 		{
 			get;
 			set
 			{
-				_vmLean.LevelPlotStyleValue = value;
+				if (Enum.TryParse<LevelPlotStyle>(value, out var levelPlotStyle))
+				{
+					_vmLean.LevelPlotStyleValue = levelPlotStyle;
+				}
 
 				this.RaiseAndSetIfChanged(ref field, value);
 			}
@@ -158,18 +145,21 @@ public partial class VmLean
 			}
 		}
 
-		public FloodingType FloodingType
+		public string? FloodingType
 		{
 			get;
 			set
 			{
-				_vmLean.FloodingTypeValue = value;
+				if (Enum.TryParse<FloodingType>(value, out var flodingType))
+				{
+					_vmLean.FloodingTypeValue = flodingType;
+				}
 
 				this.RaiseAndSetIfChanged(ref field, value);
 			}
 		}
 
-		[DisallowNull]
+        [DisallowNull]
 		public string? MenuHeader
 		{
 			get;
@@ -179,6 +169,48 @@ public partial class VmLean
 
 				this.RaiseAndSetIfChanged(ref field, value);
 			}
+		}
+
+        public void Initialize()
+        {
+			_swingSubscription?.Dispose();
+			
+			MenuHeader = _vmLean.MenuHeader;
+
+			SwingStrength = _vmLean.SwingStrength;
+			IsSwingEnabled = _vmLean.IsSwingEnabled;
+			ShowSwingLines = _vmLean.ShowSwingLines;
+			ShowSwingLabels = _vmLean.ShowSwingLabels;
+			SwingDtbAtrMultiplier = _vmLean.SwingDtbAtrMultiplier;
+
+			EnableLevels = _vmLean.EnableLevels;
+			ShowLevel1Lines = _vmLean.ShowLevel1Lines;
+			ShowLevel2Lines = _vmLean.ShowLevel2Lines;
+			ShowLevel3Lines = _vmLean.ShowLevel3Lines;
+			LevelPlotStyle = _vmLean.LevelPlotStyleValue.ToString();
+
+			ShowSentimentBox = _vmLean.ShowSentimentBox;
+
+			FloodingType = _vmLean.FloodingTypeValue.ToString();
+
+			var swingStrengthStream = this
+				.WhenAnyValue(viewModel => viewModel.SwingStrength)
+				.DistinctUntilChanged()
+				.Select(swingStrength => Unit.Default);
+
+			_swingSubscription = this
+				.WhenAnyValue(viewModel => viewModel.SwingDtbAtrMultiplier)
+				.DistinctUntilChanged()
+				.Select(swingDtbAtrMultiplier => Unit.Default)
+				.Merge(swingStrengthStream)
+				.Throttle(TimeSpan.FromSeconds(0.75), RxApp.TaskpoolScheduler)
+				.ObserveOn(RxApp.MainThreadScheduler)
+				.Subscribe(OnSwingParameterChanged);
+		}
+
+		private void OnSwingParameterChanged(Unit unit)
+		{
+			_vmLean.ReinitializeSwings();
 		}
 	}
 }

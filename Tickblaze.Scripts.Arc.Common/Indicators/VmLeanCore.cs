@@ -16,7 +16,7 @@ public partial class VmLeanCore : ChildIndicator
 
 		InitializeMacdBb();
 		
-		InitializeSwings();
+		InitializeSwings(false);
 
 		IsInitialized = true;
 	}

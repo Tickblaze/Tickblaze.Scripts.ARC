@@ -261,9 +261,9 @@ public partial class MtfFilter : Indicator
 			return Trend.None;
 		}
 
-		var histogramValue = _vmLeanCore.Histogram.GetLast();
+		var histogramValue = _vmLeanCore.Histogram[barIndex];
 
-		return histogramValue.EpsilonCompare(0).ToTrend();
+		return histogramValue.ApproxCompareTo(0).ToTrend();
 	}
 
 	private Trend GetBbAndHistogramToZeroLineTrend(int barIndex)
@@ -273,14 +273,14 @@ public partial class MtfFilter : Indicator
 			return Trend.None;
 		}
 
-		var bbValue = _vmLeanCore.Macd.Signal.GetLast();
-		var histogramValue = _vmLeanCore.Histogram.GetLast();
+		var bbValue = _vmLeanCore.Macd.Signal[barIndex];
+		var histogramValue = _vmLeanCore.Histogram[barIndex];
 
-		if (bbValue.EpsilonGreaterThan(0) && histogramValue.EpsilonGreaterThan(0))
+		if (bbValue.ApproxGreaterThan(0) && histogramValue.ApproxGreaterThan(0))
 		{
 			return Trend.Up;
 		}
-		else if (bbValue.EpsilonLessThan(0) && histogramValue.EpsilonLessThan(0))
+		else if (bbValue.ApproxLessThan(0) && histogramValue.ApproxLessThan(0))
 		{
 			return Trend.Down;
 		}
@@ -295,15 +295,15 @@ public partial class MtfFilter : Indicator
 			return Trend.None;
 		}
 
-		var bbValue = _vmLeanCore.Macd.Signal.GetLast();
-		var upperBandValue = _vmLeanCore.BollingerBands.Upper.GetLast();
-		var lowerBandValue = _vmLeanCore.BollingerBands.Lower.GetLast();
+		var bbValue = _vmLeanCore.Macd.Signal[barIndex];
+		var upperBandValue = _vmLeanCore.BollingerBands.Upper[barIndex];
+		var lowerBandValue = _vmLeanCore.BollingerBands.Lower[barIndex];
 
-		if (bbValue.EpsilonGreaterThan(upperBandValue))
+		if (bbValue.ApproxGreaterThan(upperBandValue))
 		{
 			return Trend.Up;
 		}
-		else if (bbValue.EpsilonLessThan(lowerBandValue))
+		else if (bbValue.ApproxLessThan(lowerBandValue))
 		{
 			return Trend.Down;
 		}
@@ -318,12 +318,12 @@ public partial class MtfFilter : Indicator
 			return Trend.None;
 		}
 
-		var bbValue = _vmLeanCore.Macd.Signal.GetLast();
-		var upperBandValue = _vmLeanCore.BollingerBands.Upper.GetLast();
-		var lowerBandValue = _vmLeanCore.BollingerBands.Lower.GetLast();
+		var bbValue = _vmLeanCore.Macd.Signal[barIndex];
+		var upperBandValue = _vmLeanCore.BollingerBands.Upper[barIndex];
+		var lowerBandValue = _vmLeanCore.BollingerBands.Lower[barIndex];
 		var middleValue = (upperBandValue + lowerBandValue) / 2.0;
 
-		return bbValue.EpsilonCompare(middleValue).ToTrend();
+		return bbValue.ApproxCompareTo(middleValue).ToTrend();
 	}
 
 	private Trend GetBbToZeroLineTrend(int barIndex)
@@ -333,9 +333,9 @@ public partial class MtfFilter : Indicator
 			return Trend.None;
 		}
 
-		var bbValue = _vmLeanCore.Macd.Signal.GetLastOrDefault(0);
+		var bbValue = _vmLeanCore.Macd.Signal[barIndex];
 
-		return bbValue.EpsilonCompare(0).ToTrend();
+		return bbValue.ApproxCompareTo(0).ToTrend();
 	}
 
 	private Trend GetFastMaToSlowMaTrend(int barIndex)
@@ -345,10 +345,10 @@ public partial class MtfFilter : Indicator
 			return Trend.None;
 		}
 
-		var fastMaValue = _fastMa.Result.GetLast();
-		var slowMaValue = _slowMa.Result.GetLast();
+		var fastMaValue = _fastMa[barIndex];
+		var slowMaValue = _slowMa[barIndex];
 
-		return fastMaValue.EpsilonCompare(slowMaValue).ToTrend();
+		return fastMaValue.ApproxCompareTo(slowMaValue).ToTrend();
 	}
 
 	private Trend GetCloseToFastMaTrend(int barIndex)
@@ -358,10 +358,10 @@ public partial class MtfFilter : Indicator
 			return Trend.None;
 		}
 
-		var closeValue = _bars.Close.GetLast();
-		var fastMaValue = _fastMa.Result.GetLast();
+		var fastMaValue = _fastMa[barIndex];
+		var closeValue = _bars.Close[barIndex];
 
-		return closeValue.EpsilonCompare(fastMaValue).ToTrend();
+		return closeValue.ApproxCompareTo(fastMaValue).ToTrend();
 	}
 
 	private Trend GetCloseToSlowMaTrend(int barIndex)
@@ -371,10 +371,10 @@ public partial class MtfFilter : Indicator
 			return Trend.None;
 		}
 
-		var closeValue = _bars.Close.GetLast();
-		var slowMaValue = _slowMa.Result.GetLast();
+		var slowMaValue = _slowMa[barIndex];
+		var closeValue = _bars.Close[barIndex];
 
-		return closeValue.EpsilonCompare(slowMaValue).ToTrend();
+		return closeValue.ApproxCompareTo(slowMaValue).ToTrend();
 	}
 
 	private Trend GetHighLowToFastMaTrend(int barIndex)
@@ -384,15 +384,15 @@ public partial class MtfFilter : Indicator
 			return Trend.None;
 		}
 
-		var lowValue = _bars.Low.GetLast();
-		var highValue = _bars.High.GetLast();
-		var fastMaValue = _fastMa.Result.GetLast();
+		var lowValue = _bars.Low[barIndex];
+		var highValue = _bars.High[barIndex];
+		var fastMaValue = _fastMa[barIndex];
 
-		if (lowValue.EpsilonGreaterThan(fastMaValue))
+		if (lowValue.ApproxGreaterThan(fastMaValue))
 		{
 			return Trend.Up;
 		}
-		else if (highValue.EpsilonLessThan(fastMaValue))
+		else if (highValue.ApproxLessThan(fastMaValue))
 		{
 			return Trend.Down;
 		}
@@ -402,20 +402,15 @@ public partial class MtfFilter : Indicator
 
 	private Trend GetHighLowToSlowMaTrend(int barIndex)
 	{
-		if (_bars.Count is 0)
-		{
-			return Trend.None;
-		}
+		var lowValue = _bars.Low[barIndex];
+		var highValue = _bars.High[barIndex];
+		var slowMaValue = _slowMa[barIndex];
 
-		var lowValue = _bars.Low.GetLast();
-		var highValue = _bars.High.GetLast();
-		var slowMaValue = _slowMa.Result.GetLast();
-
-		if (lowValue.EpsilonGreaterThan(slowMaValue))
+		if (lowValue.ApproxGreaterThan(slowMaValue))
 		{
 			return Trend.Up;
 		}
-		else if (highValue.EpsilonLessThan(slowMaValue))
+		else if (highValue.ApproxLessThan(slowMaValue))
 		{
 			return Trend.Down;
 		}
@@ -495,6 +490,7 @@ public partial class MtfFilter : Indicator
 
 		_flooding = new Flooding
 		{
+			IsMtf = true,
 			RenderTarget = this,
 			UpTrendColor = UpTrendColor,
 			DownTrendColor = DownTrendColor,

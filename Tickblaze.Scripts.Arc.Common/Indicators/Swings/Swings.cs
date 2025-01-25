@@ -279,8 +279,8 @@ public class Swings : ChildIndicator
 		var previousLow = Bars.Low[barIndex - 1];
 		var previousHigh = Bars.High[barIndex - 1];
 		
-        var isDownTrend = currentLow.EpsilonLessThan(previousLow);
-		var isUpTrend = currentHigh.EpsilonGreaterThan(previousHigh);
+        var isDownTrend = currentLow.ApproxLessThan(previousLow);
+		var isUpTrend = currentHigh.ApproxGreaterThan(previousHigh);
 
         if (!isUpTrend && !isDownTrend)
         {
@@ -399,13 +399,13 @@ public class Swings : ChildIndicator
         var lookbackLow = GetLookbackLow(barIndex);
         var lookbackHigh = GetLookbackHigh(barIndex);
 
-        var isDownTrend = currentLow.EpsilonLessThan(lookbackLow);
-        var isUpTrend = currentHigh.EpsilonGreaterThan(lookbackHigh);
+        var isDownTrend = currentLow.ApproxLessThan(lookbackLow);
+        var isUpTrend = currentHigh.ApproxGreaterThan(lookbackHigh);
         var isOutsideBar = isUpTrend && isDownTrend;
 
         if (isOutsideBar)
         {
-            _currentTrend = (currentHigh - currentClose).EpsilonCompare(currentClose - currentLow) switch
+            _currentTrend = (currentHigh - currentClose).ApproxCompareTo(currentClose - currentLow) switch
             {
                 > 0 => StrictTrend.Up,
                 < 0 => StrictTrend.Down,
@@ -478,8 +478,8 @@ public class Swings : ChildIndicator
         var currentTrendPrice = GetTrendPrice(currentTrend, barIndex);
         var currentLabel = GetIncomingSwingLabel(currentTrend, barIndex, currentTrendPrice);
 
-        if (currentTrend is StrictTrend.Up && currentEndPrice.EpsilonLessThanOrEquals(currentTrendPrice)
-            || currentTrend is StrictTrend.Down && currentEndPrice.EpsilonGreaterThanOrEquals(currentTrendPrice))
+        if (currentTrend is StrictTrend.Up && currentEndPrice.ApproxLessThanOrEquals(currentTrendPrice)
+            || currentTrend is StrictTrend.Down && currentEndPrice.ApproxGreaterThanOrEquals(currentTrendPrice))
         {
             var updatedSwing = new SwingLine
             {

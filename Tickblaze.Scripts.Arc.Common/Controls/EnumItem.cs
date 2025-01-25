@@ -8,7 +8,7 @@ public partial class EnumItem : ReactiveObject
 {
 	[Reactive]
 	[AllowNull]
-	private object _value;
+	private string _name;
 
 	[Reactive]
 	[AllowNull]

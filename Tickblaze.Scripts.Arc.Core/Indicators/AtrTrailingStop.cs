@@ -180,7 +180,7 @@ public partial class AtrTrailingStop : Indicator
         {
             StopDots[barIndex] = ReverseDots[barIndex] = Bars.Close[barIndex];
 
-            CurrentTrend = currentClose.EpsilonGreaterThanOrEquals(currentOpen) ? StrictTrend.Up : StrictTrend.Down;
+            CurrentTrend = currentClose.ApproxGreaterThanOrEquals(currentOpen) ? StrictTrend.Up : StrictTrend.Down;
         }
 		else
 		{
@@ -199,8 +199,8 @@ public partial class AtrTrailingStop : Indicator
         var previousClose = Bars.Close[previousBarIndex];
         var previousTrailingStop = StopDots[previousBarIndex];
 
-        var isTrendBreak = previousTrend is StrictTrend.Down && previousClose.EpsilonGreaterThan(previousTrailingStop)
-            || previousTrend is StrictTrend.Up && previousClose.EpsilonLessThan(previousTrailingStop);
+        var isTrendBreak = previousTrend is StrictTrend.Down && previousClose.ApproxGreaterThan(previousTrailingStop)
+            || previousTrend is StrictTrend.Up && previousClose.ApproxLessThan(previousTrailingStop);
 
         if (isTrendBreak)
         {

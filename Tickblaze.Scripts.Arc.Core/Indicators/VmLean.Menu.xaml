@@ -34,10 +34,12 @@
 				IsEnabled="{Binding IsSwingEnabled, Mode=OneWay}" />
 			<common:NumericMenuItem
 				NumericInputMode="Decimal"
+				Interval="0.5"
 				Header="Swing DTB ATR Multiplier"
 				IsEnabled="{Binding IsSwingEnabled, Mode=OneWay}"
 				Value="{Binding SwingDtbAtrMultiplier, Mode=TwoWay}" />
 			<common:NumericMenuItem
+				Interval="1"
 				Minimum="1"
 				Maximum="200"
 				Header="Swing Strength"

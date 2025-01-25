@@ -27,7 +27,7 @@ public static class EnumerationExtensions
 
 	public static Trend ToTrend(this double @double)
 	{
-		return @double.EpsilonCompare(0).ToTrend();
+		return @double.ApproxCompareTo(0).ToTrend();
 	}
 
 	public static StrictTrend ToStrictTrend(this Trend trend)

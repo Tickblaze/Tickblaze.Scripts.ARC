@@ -96,9 +96,9 @@ public partial class VmLean
 		}
 	}
 
-	private Swings InitializeSwings()
+	private Swings InitializeSwings(bool forceReinitialization)
 	{
-		_vmLeanCore.InitializeSwings();
+		_vmLeanCore.InitializeSwings(forceReinitialization);
 
 		Swings.DotSize = SwingDotSize;
 		Swings.ShowDots = ShowSwingDots;
@@ -116,6 +116,15 @@ public partial class VmLean
 		Swings.DownLabelColor = SwingDownLabelColor;
 
 		return Swings;
+	}
+
+	private void ReinitializeSwings()
+	{
+		using var lockScope = _lock.EnterScope();
+
+		InitializeSwings(true);
+
+		InitializeFlooding(true);
 	}
 
 	private void RenderSwings(IDrawingContext drawingContext)

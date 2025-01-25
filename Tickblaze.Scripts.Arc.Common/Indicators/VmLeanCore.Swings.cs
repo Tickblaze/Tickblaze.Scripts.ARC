@@ -19,7 +19,7 @@ public partial class VmLeanCore
 
 	public double SwingDtbAtrMultiplier { get; set; }
 
-	public void InitializeSwings()
+	public void InitializeSwings(bool forceReinitialization)
 	{
 		_swingDeviationAtr = new AverageTrueRange
 		{
@@ -37,9 +37,16 @@ public partial class VmLeanCore
 			SwingDtbDeviation = SwingDeviationAtr.Map(atr => SwingDtbAtrMultiplier * atr),
 			SwingDeviation = SwingDeviationAtr.Map(atr => SwingDeviationAtrMultiplier * atr),
 		};
+
+		if (forceReinitialization)
+		{
+			_swingDeviationAtr.Reinitialize(this);
+
+			Swings.Reinitialize(this);
+		}
 	}
 
-	private void CalculateSwings()
+	public void CalculateSwings()
 	{
 		Swings.Calculate();
 	}

@@ -8,16 +8,20 @@ public partial class VmLean : Indicator
 {
 	public VmLean()
 	{
+		_menuViewModel = new(this);
+
 		Name = "VM Lean";
 
 		ShortName = "VML";
 	}
 
+	private readonly Lock _lock = new();
+
 	[AllowNull]
 	private VmLeanCore _vmLeanCore;
 
 	[AllowNull]
-	private MenuViewModel _menuViewModel;
+	private readonly MenuViewModel _menuViewModel;
 
 	private const string _menuResourceName = "Tickblaze.Scripts.Arc.Core.Indicators.VmLean.Menu.xaml";
 
@@ -47,6 +51,8 @@ public partial class VmLean : Indicator
 
 	protected override void Initialize()
 	{
+		using var lockScope = _lock.EnterScope();
+
 		_vmLeanCore = new VmLeanCore
 		{
 			Bars = Bars,
@@ -62,21 +68,23 @@ public partial class VmLean : Indicator
 			SwingDeviationAtrMultiplier = SwingDeviationAtrMultiplier,
 		};
 
-		_vmLeanCore.Reinitialize();
+		_vmLeanCore.Reinitialize(this);
 
-		InitializeSwings();
+		InitializeSwings(false);
 
 		InitializeMacdBb();
 
-		InitializeFlooding();
+		InitializeFlooding(false);
 
 		InitializePriceExcursions();
 
-		_menuViewModel = new(this);
+		_menuViewModel.Initialize();
 	}
 
 	protected override void Calculate(int barIndex)
 	{
+		using var lockScope = _lock.EnterScope();
+
 		// Todo: document this.
 		ZeroLine[barIndex] = 0.0;
 
@@ -95,8 +103,6 @@ public partial class VmLean : Indicator
 	{
 		RenderFlooding(drawingContext);
 
-		RenderMacdBb(drawingContext);
-		
 		RenderPriceExcursions(drawingContext);
 
 		RenderSentimentBox(drawingContext);
