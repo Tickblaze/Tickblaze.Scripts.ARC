@@ -62,10 +62,6 @@ public partial class VmLean : Indicator
 			BandMultiplier = BandMultiplier,
 			MacdSlowPeriod = MacdSlowPeriod,
 			MacdFastPeriod = MacdFastPeriod,
-
-			SwingStrength = SwingStrength,
-			SwingDtbAtrMultiplier = SwingDtbAtrMultiplier,
-			SwingDeviationAtrMultiplier = SwingDeviationAtrMultiplier,
 		};
 
 		_vmLeanCore.Reinitialize(this);

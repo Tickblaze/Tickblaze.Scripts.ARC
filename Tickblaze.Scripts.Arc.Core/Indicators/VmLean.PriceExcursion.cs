@@ -86,52 +86,74 @@ public partial class VmLean
 			return;
 		}
 
-		var lastBarIndex = Chart.LastVisibleBarIndex;
-		var firstBarIndex = Chart.FirstVisibleBarIndex;
-
-		var barIndexes = LevelPlotStyleValue switch
-		{
-			LevelPlotStyle.StraightLines => [firstBarIndex, lastBarIndex],
-			LevelPlotStyle.DynamicLines => Enumerable.Range(firstBarIndex, lastBarIndex - firstBarIndex),
-			_ => throw new UnreachableException(),
-		};
-
 		if (ShowLevel1Lines)
 		{
-			DrawPriceExcursionLevel(drawingContext, barIndexes, 1, Level1LineColor);
+			DrawPriceExcursionLevel(drawingContext, 1, Level1LineColor);
 		}
 
 		if (ShowLevel2Lines)
 		{
-			DrawPriceExcursionLevel(drawingContext, barIndexes, 2, Level2LineColor);
+			DrawPriceExcursionLevel(drawingContext, 2, Level2LineColor);
 		}
 
 		if (ShowLevel3Lines)
 		{
-			DrawPriceExcursionLevel(drawingContext, barIndexes, 3, Level3LineColor);
+			DrawPriceExcursionLevel(drawingContext, 3, Level3LineColor);
 		}
 	}
 
-	private void DrawPriceExcursionLevel(IDrawingContext drawingContext
-		, IEnumerable<int> barIndexes, int levelMultiplier, Color levelLineColor)
+	private void DrawPriceExcursionLevel(IDrawingContext drawingContext, int levelMultiplier, Color levelLineColor)
     {
-		ReadOnlySpan<int> levelSignums = [-1, 1];
+        if (LevelPlotStyleValue is LevelPlotStyle.StraightLines)
+        {
+            DrawStraightPriceExcursionLevel(drawingContext, levelMultiplier, levelLineColor);
+        }
 
-		foreach (var levelSignum in levelSignums)
+		if (LevelPlotStyleValue is LevelPlotStyle.DynamicLines)
 		{
-			var levelApiPoints = barIndexes
-				.Select(barIndex => new Point
-				{
-					BarIndex = barIndex,
-					Price = levelSignum * levelMultiplier * PriceExcursion[barIndex],
-				})
-				.Select(this.GetApiPoint);
-
-			drawingContext.DrawPolygon(levelApiPoints, default, levelLineColor, LevelLineThickness, LevelLineStyle);
+			DrawDynamicExcursionLevel(drawingContext, levelMultiplier, levelLineColor);
 		}
     }
 
-	public enum LevelPlotStyle
+    private void DrawDynamicExcursionLevel(IDrawingContext drawingContext, int levelMultiplier, Color levelLineColor)
+    {
+        ReadOnlySpan<int> levelSignums = [-1, 1];
+
+		var lastBarIndex = Chart.LastVisibleBarIndex;
+		var firstBarIndex = Chart.FirstVisibleBarIndex;
+
+		foreach (var levelSignum in levelSignums)
+        {
+            var levelApiPoints = Enumerable
+				.Range(firstBarIndex, lastBarIndex - firstBarIndex)
+				.Select(barIndex => new ApiPoint
+				{
+					X = Chart.GetXCoordinateByBarIndex(barIndex),
+					Y = ChartScale.GetYCoordinateByValue(levelSignum * levelMultiplier * PriceExcursion[barIndex]),
+				});
+
+            drawingContext.DrawPolygon(levelApiPoints, default, levelLineColor, LevelLineThickness, LevelLineStyle);
+        }
+    }
+
+    private void DrawStraightPriceExcursionLevel(IDrawingContext drawingContext, int levelMultiplier, Color levelLineColor)
+    {
+		ReadOnlySpan<int> levelSignums = [-1, 1];
+
+		var leftX = Chart.GetLeftX();
+        var rightX = Chart.GetRightX();
+
+		foreach (var levelSignum in levelSignums)
+		{
+			var lastPrice = levelSignum * levelMultiplier * PriceExcursion[Chart.LastVisibleBarIndex];
+			
+			var lastPriceY = ChartScale.GetYCoordinateByValue(lastPrice);
+
+			drawingContext.DrawHorizontalLine(leftX, lastPriceY, rightX, levelLineColor);
+		}
+    }
+
+    public enum LevelPlotStyle
 	{
 		[DisplayName("Dynamic Lines")]
 		DynamicLines,

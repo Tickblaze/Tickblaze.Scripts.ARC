@@ -8,9 +8,6 @@ public partial class VmLean
 	[AllowNull]
 	private Swings Swings => _vmLeanCore.Swings;
 
-	[Parameter("Enable Swing Calculations", GroupName = "Swing Structure Parameters", Description = "Whether swings are enabled")]
-	public bool IsSwingEnabled { get; set; }
-
 	[NumericRange(MinValue = 1, MaxValue = 200)]
 	[Parameter("Swing Strength", GroupName = "Swing Structure Parameters", Description = "Bar lookback to calculate swing high or low")]
 	public int SwingStrength { get; set; } = 3;
@@ -98,6 +95,10 @@ public partial class VmLean
 
 	private Swings InitializeSwings(bool forceReinitialization)
 	{
+		_vmLeanCore.SwingStrength = SwingStrength;
+		_vmLeanCore.SwingDtbAtrMultiplier = SwingDtbAtrMultiplier;
+		_vmLeanCore.SwingDeviationAtrMultiplier = SwingDeviationAtrMultiplier;
+
 		_vmLeanCore.InitializeSwings(forceReinitialization);
 
 		Swings.DotSize = SwingDotSize;
@@ -108,7 +109,6 @@ public partial class VmLean
 		Swings.ShowLabels = ShowSwingLabels;
 		Swings.IsDtbLabelColorEnabled = true;
 		Swings.UpLineColor = SwingUpLineColor;
-		Swings.IsSwingEnabled = IsSwingEnabled;
 		Swings.UpLabelColor = SwingUpLabelColor;
 		Swings.DownLineColor = SwingDownLineColor;
 		Swings.LineThickness = SwingLineThickness;

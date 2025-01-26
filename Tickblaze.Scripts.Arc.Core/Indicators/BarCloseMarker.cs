@@ -1,13 +1,8 @@
-﻿using Tickblaze.Scripts.Api.Models;
-using Tickblaze.Scripts.Arc.Common;
+﻿using Tickblaze.Scripts.Arc.Common;
 using Tickblaze.Scripts.BarTypes;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
-// Todo: RenkoBXT part.
-// Todo: price markers support.
-// Todo: parameter descriptions.
-// Todo: fix realtime check.
 public partial class BarCloseMarker : Indicator
 {
 	public BarCloseMarker()
@@ -19,44 +14,44 @@ public partial class BarCloseMarker : Indicator
 		Name = "Bar Close Marker";
 	}
 
+	private Bar? _lastBar;
 	private double _lastOpen;
 	private double _lastClose;
-	private double _potentialLow;
-	private double _potentialHigh;
-
+	
 	private RenkoBxt? _renkoBxt;
 
-	private Bar? _lastBar;
+	private double _potentialLow;
+	private double _potentialHigh;
 
 	private Color _markerLowSolidColor;
 	private Color _markerHighSolidColor;
 
-	[Parameter("Marker Type")]
+	[Parameter("Marker Type", Description = "Type of the marker")]
 	public MarkerType MarkerTypeValue { get; set; } = MarkerType.ExtendedLines;
 
-	[Parameter("Display Shadow", GroupName = "Visuals")]
-	public bool ShowShadows { get; set; } = true;
-	
-	[Parameter("Text Font", GroupName = "Visuals")]
-	public Font TextFont { get; set; } = new("Arial", 12);
-
 	[NumericRange(MinValue = 1)]
-	[Parameter("Marker Width", GroupName = "Visuals")]
+	[Parameter("Marker Width", GroupName = "Visuals", Description = "Width of the marker")]
 	public int MarkerThickness { get; set; } = 2;
 
-	[Parameter("Bar Close High Color", GroupName = "Visuals")]
+	[Parameter("Display Shadow", GroupName = "Visuals", Description = "Whether shadows are shown")]
+	public bool ShowShadows { get; set; } = true;
+	
+	[Parameter("Text Font", GroupName = "Visuals", Description = "Font of the text")]
+	public Font TextFont { get; set; } = new("Arial", 12);
+
+	[Parameter("Bar Close High Color", GroupName = "Visuals", Description = "Color of the bar close high")]
 	public Color MarkerHighColor { get; set; } = DrawingColor.Lime.With(0.5f);
 
-	[Parameter("Current Price Color", GroupName = "Visuals")]
+	[Parameter("Current Price Color", GroupName = "Visuals", Description = "Color of the current price")]
 	public Color CurrentPriceColor { get; set; } = Color.Black.With(opacity: 0.5f);
 
-	[Parameter("Bar Close Low Color", GroupName = "Visuals")]
+	[Parameter("Bar Close Low Color", GroupName = "Visuals", Description = "Color of the bar close low")]
 	public Color MarkerLowColor { get; set; } = Color.Red.With(opacity: 0.5f);
 
-	[Parameter("Top Shadow Color", GroupName = "Visuals")]
+	[Parameter("Top Shadow Color", GroupName = "Visuals", Description = "Color of the top shadow")]
 	public Color TopShadowColor { get; set; } = DrawingColor.Lime.With(0.1f);
 
-	[Parameter("Bottom Shadow Color", GroupName = "Visuals")]
+	[Parameter("Bottom Shadow Color", GroupName = "Visuals", Description = "Color of the bottom shadow")]
 	public Color BottomShadowColor { get; set; } = Color.Red.With(opacity: 0.1f);
 
     protected override Parameters GetParameters(Parameters parameters)

@@ -21,17 +21,6 @@ public partial class VmLean
 
 		private Swings Swings => _vmLean.Swings;
 
-		public bool IsSwingEnabled
-		{
-			get;
-			set
-			{
-				Swings.IsSwingEnabled = _vmLean.IsSwingEnabled = value;
-
-				this.RaiseAndSetIfChanged(ref field, value);
-			}
-		}
-
 		public bool ShowSwingLines
         {
             get;
@@ -178,7 +167,6 @@ public partial class VmLean
 			MenuHeader = _vmLean.MenuHeader;
 
 			SwingStrength = _vmLean.SwingStrength;
-			IsSwingEnabled = _vmLean.IsSwingEnabled;
 			ShowSwingLines = _vmLean.ShowSwingLines;
 			ShowSwingLabels = _vmLean.ShowSwingLabels;
 			SwingDtbAtrMultiplier = _vmLean.SwingDtbAtrMultiplier;

@@ -104,7 +104,6 @@ public partial class SwingStructure : Indicator
 			Bars = Bars,
 			ShowDots = false,
 			RenderTarget = this,
-			IsSwingEnabled = true,
 			LabelFont = LabelFont,
 			UpLineColor = UpLineColor,
 			UpLabelColor = UpLineColor,

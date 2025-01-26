@@ -15,8 +15,6 @@ public class Swings : ChildIndicator
 
 	private readonly DrawingPartDictionary<Point, SwingLine> _pendingSwings = [];
 
-    public bool IsSwingEnabled { get; set; }
-
     public required int SwingStrength { get; init; }
 
     public bool ShowDots { get; set; }
@@ -520,7 +518,7 @@ public class Swings : ChildIndicator
 			throw new InvalidOperationException(nameof(OnRender));
 		}
 
-		if (!IsSwingEnabled || !ShowLines && !ShowDots && !ShowLabels)
+		if (!ShowLines && !ShowDots && !ShowLabels)
         {
             return;
         }

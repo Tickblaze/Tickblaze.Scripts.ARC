@@ -22,9 +22,6 @@
 		</MenuItem.Header>
 		<MenuItem Header="Swing Structure">
 			<common:OnOffMenuItem
-				Header="Enable Swing Structure"
-				IsOn="{Binding IsSwingEnabled, Mode=TwoWay}" />
-			<common:OnOffMenuItem
 				Header="Show Swing Lines"
 				IsOn="{Binding ShowSwingLines, Mode=TwoWay}"
 				IsEnabled="{Binding IsSwingEnabled, Mode=OneWay}" />

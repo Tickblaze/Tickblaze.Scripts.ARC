@@ -2,15 +2,19 @@
 
 public static class SymbolScriptExtensions
 {
-    public static bool IsNewSession(this SymbolScript symbolScript, int barIndex)
+	public static bool IsNewSession(this SymbolScript symbolScript, int barIndex, bool firstBarResult = false)
     {
         ArgumentNullException.ThrowIfNull(symbolScript);
 
         var bars = symbolScript.Bars;
         var exchangeCalendar = bars.Symbol.ExchangeCalendar;
 
-        if (barIndex is 0
-            || bars[barIndex] is var currentBar && currentBar is null
+		if (barIndex is 0)
+		{
+			return firstBarResult;
+		}
+
+        if (bars[barIndex] is var currentBar && currentBar is null
             || bars[barIndex - 1] is var previousBar && previousBar is null)
         {
             return false;
