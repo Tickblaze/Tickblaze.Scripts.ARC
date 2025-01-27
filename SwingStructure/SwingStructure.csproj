@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<LangVersion>preview</LangVersion>
+		<TargetFramework>net9.0-windows</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Include="..\Tickblaze.Scripts.Arc.Core\GlobalUsings.cs" Link="GlobalUsings.cs" />
+	  <Compile Include="..\Tickblaze.Scripts.Arc.Core\Indicators\SwingStructure.cs" Link="SwingStructure.cs" />
+	  <Compile Include="..\Tickblaze.Scripts.Arc.Core\Indicators\SwingStructure.MenuViewModel.cs" Link="SwingStructure.MenuViewModel.cs" />
+	  <Compile Include="..\Tickblaze.Scripts.Arc.Core\ModuleInitializer.cs" Link="ModuleInitializer.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.47-pre.61" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Tickblaze.Scripts.Arc.Common\Tickblaze.Scripts.Arc.Common.csproj" />
+	</ItemGroup>
+
+</Project>

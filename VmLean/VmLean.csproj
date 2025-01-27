@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<LangVersion>preview</LangVersion>
+		<TargetFramework>net9.0-windows</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Include="..\Tickblaze.Scripts.Arc.Core\GlobalUsings.cs" Link="GlobalUsings.cs" />
+	  <Compile Include="..\Tickblaze.Scripts.Arc.Core\Indicators\VmLean.cs" Link="VmLean.cs" />
+	  <Compile Include="..\Tickblaze.Scripts.Arc.Core\Indicators\VmLean.Flooding.cs" Link="VmLean.Flooding.cs" />
+	  <Compile Include="..\Tickblaze.Scripts.Arc.Core\Indicators\VmLean.Histogram.cs" Link="VmLean.Histogram.cs" />
+	  <Compile Include="..\Tickblaze.Scripts.Arc.Core\Indicators\VmLean.MacdBb.cs" Link="VmLean.MacdBb.cs" />
+	  <Compile Include="..\Tickblaze.Scripts.Arc.Core\Indicators\VmLean.MenuViewModel.cs" Link="VmLean.MenuViewModel.cs" />
+	  <Compile Include="..\Tickblaze.Scripts.Arc.Core\Indicators\VmLean.PriceExcursion.cs" Link="VmLean.PriceExcursion.cs" />
+	  <Compile Include="..\Tickblaze.Scripts.Arc.Core\Indicators\VmLean.SentimentBox.cs" Link="VmLean.SentimentBox.cs" />
+	  <Compile Include="..\Tickblaze.Scripts.Arc.Core\Indicators\VmLean.Swings.cs" Link="VmLean.Swings.cs" />
+	  <Compile Include="..\Tickblaze.Scripts.Arc.Core\ModuleInitializer.cs" Link="ModuleInitializer.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.47-pre.61" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Tickblaze.Scripts.Arc.Common\Tickblaze.Scripts.Arc.Common.csproj" />
+	</ItemGroup>
+
+</Project>

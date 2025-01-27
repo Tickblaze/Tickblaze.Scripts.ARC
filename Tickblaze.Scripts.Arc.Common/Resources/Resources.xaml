@@ -43,10 +43,10 @@
 	<Style x:Key="ToggleButtonOnOffStyle" TargetType="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
 		<Style.Triggers>
 			<Trigger Property="IsChecked" Value="True">
-				<Setter Property="Content" Value="On" />
+				<Setter Property="Content" Value="ON" />
 			</Trigger>
 			<Trigger Property="IsChecked" Value="False">
-				<Setter Property="Content" Value="Off" />
+				<Setter Property="Content" Value="OFF" />
 			</Trigger>
 		</Style.Triggers>
 	</Style>

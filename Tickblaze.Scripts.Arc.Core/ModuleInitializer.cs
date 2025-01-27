@@ -3,12 +3,12 @@ using System.Runtime.CompilerServices;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
-public static class AssemblyReferenceLoader
+public static class ModuleInitializer
 {
 	[ModuleInitializer]
 	public static void LoadReferences()
 	{
-		// Todo; document this.
+		// Todo: document this.
 		var _ = typeof(TiltBehavior);
 	}
 }
