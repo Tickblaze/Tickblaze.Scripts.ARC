@@ -10,6 +10,8 @@ public partial class GapFinder : Indicator
 {
 	public GapFinder()
 	{
+		_menuViewModel = new(this);
+
 		IsOverlay = true;
 		
 		ShortName = "GF";
@@ -26,8 +28,7 @@ public partial class GapFinder : Indicator
 	[AllowNull]
 	private Gaps _brokenGaps;
 	
-	[AllowNull]
-	private MenuViewModel _menuViewModel;
+	private readonly MenuViewModel _menuViewModel;
 
 	private const string _menuResourceName = "Tickblaze.Scripts.Arc.Core.Indicators.GapFinder.Menu.xaml";
 
@@ -151,8 +152,6 @@ public partial class GapFinder : Indicator
 
 	protected override void Initialize()
 	{
-		_menuViewModel = new(this);
-
 		var minGapHeights = GetMinGapHeights();
 
 		_freshGaps = new()
@@ -175,6 +174,8 @@ public partial class GapFinder : Indicator
 			FillColor = BrokenGapColor,
 			MinHeights = minGapHeights,
 		};
+
+		_menuViewModel.Initialize();
 	}
 
 	protected override void Calculate(int barIndex)

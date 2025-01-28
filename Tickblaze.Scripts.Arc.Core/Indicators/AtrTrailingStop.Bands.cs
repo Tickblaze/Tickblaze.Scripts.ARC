@@ -59,6 +59,28 @@ public partial class AtrTrailingStop
 	[Parameter("Band Color 3", GroupName = "Bands", Description = "Color of the band shading 1")]
 	public Color BandColor3 { get; set; } = Color.Red.With(opacity: 0.2f);
 
+	private PlotSeries GetUpperBand(int ordinalNumber)
+	{
+		return ordinalNumber switch
+		{
+			>= 3 when ShowBands3 => _bandUpper3,
+			>= 2 when ShowBands2 => _bandUpper2,
+			>= 1 when ShowBands1 => _bandUpper1,
+			_ => StopDots,
+		};
+	}
+
+	private PlotSeries GetLowerBand(int ordinalNumber)
+	{
+		return ordinalNumber switch
+		{
+			>= 3 when ShowBands3 => _bandLower3,
+			>= 2 when ShowBands2 => _bandLower2,
+			>= 1 when ShowBands1 => _bandLower1,
+			_ => StopDots,
+		};
+	}
+
 	private double GetBandAtr(int barIndex)
 	{
 		var totalAmount = 0.0d;
@@ -117,23 +139,23 @@ public partial class AtrTrailingStop
 				Color = BandColor3,
 				IsVisible = ShowBands3,
 				IsAboveBaseline = true,
-				UpperSeries = _bandUpper3,
-				LowerSeries = _bandUpper2,
+				UpperSeries = GetUpperBand(3),
+				LowerSeries = GetUpperBand(2),
 			},
 			new BandInfo
 			{
 				Color = BandColor2,
 				IsVisible = ShowBands2,
 				IsAboveBaseline = true,
-				UpperSeries = _bandUpper2,
-				LowerSeries = _bandUpper1,
+				UpperSeries = GetUpperBand(2),
+				LowerSeries = GetUpperBand(1),
 			},
 			new BandInfo
 			{
 				Color = BandColor1,
 				IsVisible = ShowBands1,
 				IsAboveBaseline = true,
-				UpperSeries = _bandUpper1,
+				UpperSeries = GetUpperBand(1),
 				LowerSeries = StopDots,
 			},
 			new BandInfo
@@ -141,7 +163,7 @@ public partial class AtrTrailingStop
 				Color = BandColor1,
 				IsVisible = ShowBands1,
 				IsAboveBaseline = false,
-				LowerSeries = _bandLower1,
+				LowerSeries = GetLowerBand(1),
 				UpperSeries = StopDots,
 			},
 			new BandInfo
@@ -149,16 +171,16 @@ public partial class AtrTrailingStop
 				Color = BandColor2,
 				IsVisible = ShowBands2,
 				IsAboveBaseline = false,
-				UpperSeries = _bandLower1,
-				LowerSeries = _bandLower2,
+				UpperSeries = GetLowerBand(1),
+				LowerSeries = GetLowerBand(2),
 			},
 			new BandInfo
 			{
 				Color = BandColor3,
 				IsVisible = ShowBands3,
 				IsAboveBaseline = false,
-				UpperSeries = _bandLower2,
-				LowerSeries = _bandLower3,
+				UpperSeries = GetLowerBand(2),
+				LowerSeries = GetLowerBand(3),
 			}
 		];
 	}

@@ -135,10 +135,10 @@ public partial class MtfFilter : Indicator
 	public int RenkoBxtReversalSize { get; set; } = 14;
 
 	[Parameter("Up-trend Color", GroupName = "Visuals", Description = "Color of the up-trend flooding")]
-	public Color UpTrendColor { get; set; } = Color.Green.With(opacity: 0.9f);
+	public Color UpTrendColor { get; set; } = Color.Green.With(opacity: 0.15f);
 
 	[Parameter("Donw-trend Color", GroupName = "Visuals", Description = "Color of the down-trend flooding")]
-	public Color DownTrendColor { get; set; } = Color.Red.With(opacity: 0.9f);
+	public Color DownTrendColor { get; set; } = Color.Red.With(opacity: 0.15f);
 
 	private BarSeries GetBars()
 	{

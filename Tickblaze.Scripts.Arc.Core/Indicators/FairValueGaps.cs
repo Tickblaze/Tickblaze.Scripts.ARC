@@ -10,6 +10,8 @@ public partial class FairValueGaps : Indicator
 {
 	public FairValueGaps()
 	{
+		_menuViewModel = new(this);
+
 		IsOverlay = true;
 		
 		ShortName = "FVG";
@@ -26,8 +28,7 @@ public partial class FairValueGaps : Indicator
 	[AllowNull]
 	private Gaps _brokenGaps;
 
-	[AllowNull]
-	private MenuViewModel _menuViewModel;
+	private readonly MenuViewModel _menuViewModel;
 
 	private const string _menuResourceName = "Tickblaze.Scripts.Arc.Core.Indicators.FairValueGaps.Menu.xaml";
 	
@@ -124,8 +125,6 @@ public partial class FairValueGaps : Indicator
 
 	protected override void Initialize()
 	{
-		_menuViewModel = new(this);
-
 		var minGapHeights = GetMinGapHeights();
 
 		_freshGaps = new()
@@ -148,6 +147,8 @@ public partial class FairValueGaps : Indicator
 			FillColor = BrokenGapColor,
 			MinHeights = minGapHeights,
 		};
+
+		_menuViewModel.Initialize();
 	}
 
 	protected override void Calculate(int barIndex)

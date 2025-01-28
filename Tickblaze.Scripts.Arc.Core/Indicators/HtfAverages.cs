@@ -247,7 +247,7 @@ public partial class HtfAverages : Indicator
 			Period = barType,
 			SymbolCode = Symbol.Code,
 			Exchange = Symbol.Exchange,
-			StartTimeUtc = startTimeUtc,
+			//StartTimeUtc = startTimeUtc,
 			InstrumentType = Symbol.Type,
 			Contract = Bars.ContractSettings,
 		};
@@ -459,7 +459,10 @@ public partial class HtfAverages : Indicator
 
             drawingContext.DrawHorizontalLine(startLineX, maValueY, endLineX, maPlot.Color);
 
-            drawingContext.DrawText(textStartX, maValueY + VerticalMargin, maValueText, maPlot.Color, LabelFont);
+			if (ShowLabels)
+			{
+				drawingContext.DrawText(textStartX, maValueY + VerticalMargin, maValueText, maPlot.Color, LabelFont);
+			}
         }
     }
 
