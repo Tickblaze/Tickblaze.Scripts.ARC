@@ -34,6 +34,18 @@ public partial class VmLean
 	[Parameter("Flooding Deep Bearish Color", GroupName = "Flooding Visuals", Description = "Color of the bearish flooding")]
 	public Color FloodingDeepBearishColor { get; set; } = DrawingColor.DarkRed;
 
+	private Flooding? GetFlooding()
+	{
+		return FloodingTypeValue switch
+		{
+			FloodingType.None => default,
+			FloodingType.Histogram => _histogramFlooding,
+			FloodingType.Structure => _swingStructureFlooding,
+			FloodingType.Both => _bothFlooding,
+			_ => throw new UnreachableException(),
+		};
+	}
+
 	public void InitializeFlooding(bool forceReinitialization)
 	{
 		var floodingOpacity = FloodingOpacity / 100.0f;
@@ -89,23 +101,26 @@ public partial class VmLean
 		_histogramFlooding.Calculate();
 		
 		_swingStructureFlooding.Calculate();
-	}
 
-	public void RenderFlooding(IDrawingContext drawingContext)
-	{
-		var flooding = FloodingTypeValue switch
+		var flooding = GetFlooding();
+
+		if (flooding is not null)
 		{
-			FloodingType.None => default,
-			FloodingType.Histogram => _histogramFlooding,
-			FloodingType.Structure => _swingStructureFlooding,
-			FloodingType.Both => _bothFlooding,
-			_ => throw new UnreachableException(),
-		};
-
-		flooding?.OnRender(drawingContext);
+			BackgroundColor[barIndex] = flooding.BackgroundColor[barIndex];
+		}
 	}
 
-	public enum FloodingType
+	private void UpdateFloodingType(FloodingType flodingType)
+	{
+		var flooding = GetFlooding();
+		
+		for (var barIndex = 0; barIndex < Bars.Count; barIndex++)
+		{
+			BackgroundColor[barIndex] = flooding?.BackgroundColor[barIndex];
+		}
+	}
+
+    public enum FloodingType
 	{
 		[DisplayName("None")]
 		None,

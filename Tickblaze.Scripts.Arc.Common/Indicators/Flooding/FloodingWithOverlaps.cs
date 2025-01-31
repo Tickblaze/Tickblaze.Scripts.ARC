@@ -34,7 +34,7 @@ public class FloodingWithOverlaps : Flooding
 
 	public required Color OverlapDownTrendColor { get; init; }
 
-    protected override bool TryGetCurrentValues(int barIndex, out Trend currentTrend, out Color currentColor)
+    protected override Color? TryGetCurrentValues(int barIndex)
     {
 		var firstTrend = GetTrend(FirstTrendSeries, barIndex);
 		var secondTrend = GetTrend(SecondTrendSeries, barIndex);
@@ -42,14 +42,10 @@ public class FloodingWithOverlaps : Flooding
 
 		if (aggregatedTrend is 0 or < -2 or > 2)
         {
-			currentTrend = default;
-			currentColor = default;
-
-			return false;
+			return default;
         }
 
-        currentTrend = aggregatedTrend.ToTrend();
-        currentColor = aggregatedTrend switch
+        return aggregatedTrend switch
         {
             -2 => OverlapDownTrendColor,
             -1 => DownTrendColor,
@@ -57,7 +53,5 @@ public class FloodingWithOverlaps : Flooding
             2 => OverlapUpTrendColor,
             _ => throw new UnreachableException(),
         };
-
-		return true;
     }
 }

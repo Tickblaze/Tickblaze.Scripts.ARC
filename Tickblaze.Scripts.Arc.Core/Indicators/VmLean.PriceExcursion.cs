@@ -149,7 +149,7 @@ public partial class VmLean
 			
 			var lastPriceY = ChartScale.GetYCoordinateByValue(lastPrice);
 
-			drawingContext.DrawHorizontalLine(leftX, lastPriceY, rightX, levelLineColor);
+			drawingContext.DrawHorizontalLine(leftX, lastPriceY, rightX, levelLineColor, LevelLineThickness, LevelLineStyle);
 		}
     }
 

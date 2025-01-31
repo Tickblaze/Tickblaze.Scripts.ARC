@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc.Common;
 
@@ -12,6 +13,12 @@ public class Swings : ChildIndicator
 	private StrictTrend _currentTrend;
     
 	private StrictTrend? _previousTrend;
+
+	[AllowNull]
+	private ISeries<double> _swingDeviation;
+
+	[AllowNull]
+	private ISeries<double> _swingDtbDeviation;
 
 	private readonly DrawingPartDictionary<Point, SwingLine> _pendingSwings = [];
 
@@ -45,7 +52,11 @@ public class Swings : ChildIndicator
 
     public required SwingCalculationMode CalculationMode { get; init; }
 
-    private SwingLine LastSwing => _swings.LastDrawingPart;
+	public double SwingDtbAtrMultiplier { get; init; }
+
+	public double SwingDeviationAtrMultiplier { get; init; }
+
+	private SwingLine LastSwing => _swings.LastDrawingPart;
 
     private int BarOffset => CalculationMode is SwingCalculationMode.CurrentBar ? 0 : 1;
 
@@ -57,25 +68,6 @@ public class Swings : ChildIndicator
 
 	[field: AllowNull]
     public ISeries<Trend> TrendBiases => field ??= _trendBiases.AsSeries();
-
-    private ISeries<double> _swingDeviation = default!;
-
-    public ISeries<double> SwingDeviation
-    {
-        get => _swingDeviation;
-        init => _swingDeviation = value;
-    }
-
-    private ISeries<double> _swingDtbDeviation = default!;
-
-    /// <summary>
-    /// Swing Double Top/Bottom Deviation.
-    /// </summary>
-    public ISeries<double> SwingDtbDeviation
-    {
-        get => _swingDtbDeviation;
-        init => _swingDtbDeviation = value;
-    }
 
     private double GetTrendPrice(StrictTrend trend, int barIndex)
     {
@@ -96,7 +88,7 @@ public class Swings : ChildIndicator
         if (_swings is { IsEmpty: false, LastDrawingPart.Trend: StrictTrend.Down })
         {
             var lastLowPrice = LastSwing.EndPoint.Price;
-            var swingDeviation = SwingDeviation[barIndex];
+            var swingDeviation = _swingDeviation[barIndex];
 
             lookbackHigh = Math.Max(lookbackHigh, lastLowPrice + swingDeviation);
         }
@@ -118,7 +110,7 @@ public class Swings : ChildIndicator
         if (_swings is { IsEmpty: false, LastDrawingPart.Trend: StrictTrend.Up })
         {
             var lastHighPrice = LastSwing.EndPoint.Price;
-            var swingDeviation = SwingDeviation[barIndex];
+            var swingDeviation = _swingDeviation[barIndex];
 
             lookbackLow = Math.Min(lookbackLow, lastHighPrice - swingDeviation);
         }
@@ -196,7 +188,7 @@ public class Swings : ChildIndicator
 			return incomingTrend.Map(SwingLabel.HigherHigh, SwingLabel.LowerLow);
 		}
 
-		var incomingDtbDeviation = SwingDtbDeviation[incomingBarIndex];
+		var incomingDtbDeviation = _swingDtbDeviation[incomingBarIndex];
 
 		var priceDelta = incomingPrice - lastSwing.StartPrice;
 
@@ -338,8 +330,34 @@ public class Swings : ChildIndicator
 		_trendBiases.Clear();
 		_pendingSwings.Clear();
 
-        _swingDeviation ??= Bars.Map(bar => 0.0d);
-		_swingDtbDeviation ??= Bars.Map(bar => 0.0d);
+        _swingDeviation = Bars.Map(bar => 0.0d);
+		_swingDtbDeviation = Bars.Map(bar => 0.0d);
+		
+		var averageTrueRange = default(AverageTrueRange);
+
+		if (!SwingDeviationAtrMultiplier.ApproxEquals(0.0d))
+		{
+			averageTrueRange = new AverageTrueRange
+			{
+				Bars = Bars,
+				Period = 256,
+				SmoothingType = MovingAverageType.Simple,
+			};
+
+			_swingDeviation = averageTrueRange.Result.Map(atr => SwingDeviationAtrMultiplier * atr);
+		}
+
+		if (!SwingDtbAtrMultiplier.ApproxEquals(0.0d))
+		{
+			averageTrueRange ??= new AverageTrueRange
+			{
+				Bars = Bars,
+				Period = 256,
+				SmoothingType = MovingAverageType.Simple,
+			};
+
+			_swingDtbDeviation = averageTrueRange.Result.Map(atr => SwingDtbAtrMultiplier * atr);
+		}
 
 		IsInitialized = true;
     }

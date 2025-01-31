@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Windows.Controls;
 using Tickblaze.Scripts.Arc.Common;
+using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
@@ -22,6 +23,9 @@ public partial class SwingStructure : Indicator
 	[AllowNull]
 	private Swings _swings;
 
+	[AllowNull]
+	private AverageTrueRange _swingDeviationAtr;
+
 	private readonly MenuViewModel _menuViewModel;
 
 	private const string _menuResourceName = "Tickblaze.Scripts.Arc.Core.Indicators.SwingStructure.Menu.xaml";
@@ -32,6 +36,14 @@ public partial class SwingStructure : Indicator
 	[NumericRange(MinValue = 1, MaxValue = 256)]
 	[Parameter("Swing Strength", Description = "Number of bars used to identify a swing high or low")]
 	public int SwingStrength { get; set; } = 1;
+
+	[NumericRange(MaxValue = double.MaxValue, Step = 0.1)]
+	[Parameter("Swing Deviation Multiplier", Description = "ATR multipler of the minimum deviation required for a trend change")]
+	public double SwingDeviationAtrMultiplier { get; set; }
+
+	[NumericRange(MaxValue = double.MaxValue, Step = 0.1)]
+	[Parameter("Swing Double Top/Bottom ATR Multiplier", Description = "ATR multiplier of the maximum deviation ignored for a double tops or bottoms recognition")]
+	public double SwingDtbAtrMultiplier { get; set; }
 
 	[Parameter("Show Lines", Description = "Whether swing lines are shown")]
 	public bool ShowSwingLines { get; set; } = true;
@@ -116,6 +128,8 @@ public partial class SwingStructure : Indicator
 			DownLabelColor = DownLineColor,
 			IsDtbLabelColorEnabled = false,
 			CalculationMode = CalculationMode,
+			SwingDtbAtrMultiplier = SwingDtbAtrMultiplier,
+			SwingDeviationAtrMultiplier = SwingDeviationAtrMultiplier,
 		};
 
 		if (forceReinitialization)

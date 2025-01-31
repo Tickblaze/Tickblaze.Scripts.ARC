@@ -7,7 +7,6 @@ using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
-// Todo: multi panel extension.
 public partial class MtfFilter : Indicator
 {
     public MtfFilter()
@@ -500,21 +499,19 @@ public partial class MtfFilter : Indicator
 
 	protected override void Calculate(int barIndex)
     {
-		var barIndex2 = _bars.Count - 1;
-
 		_slowMa.Calculate();
 		
 		_fastMa.Calculate();
 
 		_vmLeanCore.Calculate();
 
-		_flooding.Calculate();
+		BackgroundColor[barIndex] = _flooding.BackgroundColor[barIndex];
 	}
 
-    public override void OnRender(IDrawingContext drawingContext)
+    public override void OnRender(IDrawingContext context)
     {
-		_flooding.OnRender(drawingContext);
-	}
+        base.OnRender(context);
+    }
 
     public enum BarType
 	{

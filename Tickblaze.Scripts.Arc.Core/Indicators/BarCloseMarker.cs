@@ -139,9 +139,9 @@ public partial class BarCloseMarker : Indicator
 		}
 		else
 		{
-			_potentialHigh = Bars.Open[barIndex] - barSizeInPoints;
+			_potentialLow = Bars.Open[barIndex] - barSizeInPoints;
 
-			_potentialLow = Bars.Low[barIndex] + reversalSizeInPoints;
+			_potentialHigh = Bars.Low[barIndex] + reversalSizeInPoints;
 		}
     }
 

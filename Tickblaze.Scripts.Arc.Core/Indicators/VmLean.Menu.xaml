@@ -20,30 +20,6 @@
 				Foreground="Lime"
 				Text="{Binding MenuHeader}" />
 		</MenuItem.Header>
-		<MenuItem Header="Swing Structure">
-			<common:OnOffMenuItem
-				Header="Show Swing Lines"
-				IsOn="{Binding ShowSwingLines, Mode=TwoWay}"
-				IsEnabled="{Binding IsSwingEnabled, Mode=OneWay}" />
-			<common:OnOffMenuItem
-				Header="Show Swing Labels"
-				IsOn="{Binding ShowSwingLabels, Mode=TwoWay}"
-				IsEnabled="{Binding IsSwingEnabled, Mode=OneWay}" />
-			<common:NumericMenuItem
-				NumericInputMode="Decimal"
-				Interval="0.5"
-				Header="Swing DTB ATR Multiplier"
-				IsEnabled="{Binding IsSwingEnabled, Mode=OneWay}"
-				Value="{Binding SwingDtbAtrMultiplier, Mode=TwoWay}" />
-			<common:NumericMenuItem
-				Interval="1"
-				Minimum="1"
-				Maximum="200"
-				Header="Swing Strength"
-				NumericInputMode="Numbers"
-				Value="{Binding SwingStrength, Mode=TwoWay}"
-				IsEnabled="{Binding IsSwingEnabled, Mode=OneWay}" />
-		</MenuItem>
 		<MenuItem Header="Excursion Levels">
 			<common:OnOffMenuItem
 				Header="Enable Levels"
@@ -66,9 +42,6 @@
 				IsEnabled="{Binding EnableLevels, Mode=OneWay}"
 				SelectedEnum="{Binding LevelPlotStyle, Mode=TwoWay}" />
 		</MenuItem>
-		<common:OnOffMenuItem
-			Header="Show Sentiment Box"
-			IsOn="{Binding ShowSentimentBox, Mode=TwoWay}" />
 		<common:EnumMenuItem
 			Header="Flooding Type"
 			EnumType="{x:Type arc:VmLean+FloodingType}"

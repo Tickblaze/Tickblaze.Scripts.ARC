@@ -19,7 +19,7 @@
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.47-pre.61" />
+		<PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.47-pre.63" />
 	</ItemGroup>
 	
 	<ItemGroup>

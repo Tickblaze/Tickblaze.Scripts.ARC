@@ -1,8 +1,5 @@
 ﻿using ReactiveUI;
 using System.Diagnostics.CodeAnalysis;
-using System.Reactive;
-using System.Reactive.Linq;
-using Tickblaze.Scripts.Arc.Common;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
@@ -16,54 +13,6 @@ public partial class VmLean
 		}
 
 		private readonly VmLean _vmLean;
-
-		private IDisposable? _swingSubscription;
-
-		private Swings Swings => _vmLean.Swings;
-
-		public bool ShowSwingLines
-        {
-            get;
-            set
-            {
-				Swings.ShowLines = _vmLean.ShowSwingLines = value;
-
-				this.RaiseAndSetIfChanged(ref field, value);
-			}
-		}
-
-		public bool ShowSwingLabels
-		{
-			get;
-			set
-			{
-				Swings.ShowLabels = _vmLean.ShowSwingLabels = value;
-
-				this.RaiseAndSetIfChanged(ref field, value);
-			}
-		}
-
-		public double SwingDtbAtrMultiplier
-		{
-			get;
-			set
-			{
-				_vmLean.SwingDtbAtrMultiplier = value;
-
-				this.RaiseAndSetIfChanged(ref field, value);
-			}
-		}
-
-		public int SwingStrength
-		{
-			get;
-			set
-			{
-				_vmLean.SwingStrength = value;
-
-				this.RaiseAndSetIfChanged(ref field, value);
-			}
-		}
 
 		public bool EnableLevels
         {
@@ -123,28 +72,18 @@ public partial class VmLean
 			}
 		}
 
-		public bool ShowSentimentBox
-		{
-			get;
-			set
-			{
-				_vmLean.ShowSentimentBox = value;
-
-				this.RaiseAndSetIfChanged(ref field, value);
-			}
-		}
-
 		public string? FloodingType
 		{
 			get;
 			set
 			{
-				if (Enum.TryParse<FloodingType>(value, out var flodingType))
-				{
-					_vmLean.FloodingTypeValue = flodingType;
+				if (Enum.TryParse<FloodingType>(value, out var flodingType)
+					&& !flodingType.EnumEquals(_vmLean.FloodingTypeValue))
+                {
+					_vmLean.UpdateFloodingType(flodingType);
 				}
 
-				this.RaiseAndSetIfChanged(ref field, value);
+                this.RaiseAndSetIfChanged(ref field, value);
 			}
 		}
 
@@ -162,14 +101,7 @@ public partial class VmLean
 
         public void Initialize()
         {
-			_swingSubscription?.Dispose();
-			
 			MenuHeader = _vmLean.MenuHeader;
-
-			SwingStrength = _vmLean.SwingStrength;
-			ShowSwingLines = _vmLean.ShowSwingLines;
-			ShowSwingLabels = _vmLean.ShowSwingLabels;
-			SwingDtbAtrMultiplier = _vmLean.SwingDtbAtrMultiplier;
 
 			EnableLevels = _vmLean.EnableLevels;
 			ShowLevel1Lines = _vmLean.ShowLevel1Lines;
@@ -177,28 +109,7 @@ public partial class VmLean
 			ShowLevel3Lines = _vmLean.ShowLevel3Lines;
 			LevelPlotStyle = _vmLean.LevelPlotStyleValue.ToString();
 
-			ShowSentimentBox = _vmLean.ShowSentimentBox;
-
 			FloodingType = _vmLean.FloodingTypeValue.ToString();
-
-			var swingStrengthStream = this
-				.WhenAnyValue(viewModel => viewModel.SwingStrength)
-				.DistinctUntilChanged()
-				.Select(swingStrength => Unit.Default);
-
-			_swingSubscription = this
-				.WhenAnyValue(viewModel => viewModel.SwingDtbAtrMultiplier)
-				.DistinctUntilChanged()
-				.Select(swingDtbAtrMultiplier => Unit.Default)
-				.Merge(swingStrengthStream)
-				.Throttle(TimeSpan.FromSeconds(0.75), RxApp.TaskpoolScheduler)
-				.ObserveOn(RxApp.MainThreadScheduler)
-				.Subscribe(OnSwingParameterChanged);
-		}
-
-		private void OnSwingParameterChanged(Unit unit)
-		{
-			_vmLean.ReinitializeSwings();
 		}
 	}
 }

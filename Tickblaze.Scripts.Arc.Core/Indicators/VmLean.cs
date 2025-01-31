@@ -42,8 +42,6 @@ public partial class VmLean : Indicator
 
 	protected override Parameters GetParameters(Parameters parameters)
 	{
-		HideSwingParameters(parameters);
-
 		HidePriceExcursionParameters(parameters);
 
 		return parameters;
@@ -81,7 +79,6 @@ public partial class VmLean : Indicator
 	{
 		using var lockScope = _lock.EnterScope();
 
-		// Todo: document this.
 		ZeroLine[barIndex] = 0.0;
 
 		_vmLeanCore.Calculate();
@@ -97,12 +94,6 @@ public partial class VmLean : Indicator
 
     public override void OnRender(IDrawingContext drawingContext)
 	{
-		RenderFlooding(drawingContext);
-
 		RenderPriceExcursions(drawingContext);
-
-		RenderSentimentBox(drawingContext);
-
-		// RenderSwings(drawingContext);
 	}
 }

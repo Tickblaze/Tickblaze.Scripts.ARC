@@ -33,9 +33,9 @@ public partial class VmLeanCore
 			Bars = Bars,
 			RenderTarget = RenderTarget,
 			SwingStrength = SwingStrength,
+			SwingDtbAtrMultiplier = SwingDtbAtrMultiplier,
 			CalculationMode = SwingCalculationMode.CurrentBar,
-			SwingDtbDeviation = SwingDeviationAtr.Map(atr => SwingDtbAtrMultiplier * atr),
-			SwingDeviation = SwingDeviationAtr.Map(atr => SwingDeviationAtrMultiplier * atr),
+			SwingDeviationAtrMultiplier = SwingDeviationAtrMultiplier,
 		};
 
 		if (forceReinitialization)
