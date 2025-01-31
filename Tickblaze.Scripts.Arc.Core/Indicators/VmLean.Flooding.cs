@@ -104,14 +104,13 @@ public partial class VmLean
 
 		var flooding = GetFlooding();
 
-		if (flooding is not null)
-		{
-			BackgroundColor[barIndex] = flooding.BackgroundColor[barIndex];
-		}
+		BackgroundColor[barIndex] = flooding?.BackgroundColor[barIndex];
 	}
 
 	private void UpdateFloodingType(FloodingType flodingType)
 	{
+		FloodingTypeValue = flodingType;
+
 		var flooding = GetFlooding();
 		
 		for (var barIndex = 0; barIndex < Bars.Count; barIndex++)

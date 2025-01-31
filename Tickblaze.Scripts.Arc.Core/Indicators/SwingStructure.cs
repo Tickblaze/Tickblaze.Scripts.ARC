@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Windows.Controls;
 using Tickblaze.Scripts.Arc.Common;
-using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
@@ -22,9 +21,6 @@ public partial class SwingStructure : Indicator
 
 	[AllowNull]
 	private Swings _swings;
-
-	[AllowNull]
-	private AverageTrueRange _swingDeviationAtr;
 
 	private readonly MenuViewModel _menuViewModel;
 
