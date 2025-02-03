@@ -7,15 +7,13 @@ public partial class VmLean
 {
 	private Macd Macd => _vmLeanCore.Macd;
 
-	private BollingerBands BollingerBands => _vmLeanCore.BollingerBands;
-
-	[NumericRange(MinValue = 1)]
-	[Parameter("Bollinger Bands Period", GroupName = "MACDBB Parameters", Description = "Period of the Bollinger Bands")]
-	public int BandPeriod { get; set; } = 10;
-
 	[NumericRange(MaxValue = double.MaxValue, Step = 0.5)]
 	[Parameter("Bollinger Bands Std. Dev. Multiplier", GroupName = "MACDBB Parameters", Description = "Std. dev. multiplier of the Bollinger Bands")]
 	public double BandMultiplier { get; set; } = 1.0;
+	
+	[NumericRange(MinValue = 1)]
+	[Parameter("Bollinger Bands Period", GroupName = "MACDBB Parameters", Description = "Period of the Bollinger Bands")]
+	public int BandPeriod { get; set; } = 10;
 
 	[NumericRange(MinValue = 1)]
 	[Parameter("MACD Fast EMA Period", GroupName = "MACDBB Parameters", Description = "Period of the fast MACD EMA")]
@@ -24,13 +22,6 @@ public partial class VmLean
 	[NumericRange(MinValue = 1)]
 	[Parameter("MACD Slow EMA Period", GroupName = "MACDBB Parameters", Description = "Period of the slow MACD EMA")]
 	public int MacdSlowPeriod { get; set; } = 26;
-
-	//[NumericRange(MinValue = 1)]
-	//[Parameter("MACD Dot Size", GroupName = "MACDBB Visuals", Description = "Size of the MACD dots")]
-	//public int MacdDotSize { get; set; } = 6;
-
-	//[Parameter("MACD Dots Rim Color", GroupName = "MACDBB Visuals", Description = "Color of the MACD dots rim")]
-	//public Color MacdDotRimColor { get; set; } = Color.Black;
 
 	[Parameter("Bollinger Bands Channel Color", GroupName = "MACDBB Visuals", Description = "Color of the Bollinger Bands channel")]
 	public Color BbChannelColor { get; set; } = DrawingColor.DodgerBlue.With(opacity: 0.2f);
@@ -69,10 +60,12 @@ public partial class VmLean
 
 	private void CalculateMacdBb(int barIndex)
 	{
-		var currentValue = MacdConnector[barIndex] = MacdDots[barIndex] = Macd.Signal[barIndex];
+		var currentValue = MacdConnector[barIndex] = MacdDots[barIndex] = Macd.Result[barIndex];
+		
 		var previousValue = MacdDots.GetAtOrDefault(barIndex - 1, currentValue);
-		var upperBandValue = BandUpper[barIndex] = BollingerBands.Upper[barIndex];
-		var lowerBandValue = BandLower[barIndex] = BollingerBands.Lower[barIndex];
+		
+		var upperBandValue = BandUpper[barIndex] = _vmLeanCore.UpperBand[barIndex];
+		var lowerBandValue = BandLower[barIndex] = _vmLeanCore.LowerBand[barIndex];
 
 		MacdDots.Colors[barIndex] = currentValue.CompareTo(previousValue) switch
 		{

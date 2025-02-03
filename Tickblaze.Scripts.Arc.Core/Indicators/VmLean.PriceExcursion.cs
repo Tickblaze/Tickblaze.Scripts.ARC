@@ -12,9 +12,6 @@ public partial class VmLean
 	[AllowNull]
 	private SimpleMovingAverage _priceExcursion;
 
-	[AllowNull]
-	private AverageTrueRange _priceExcursionAtr;
-
 	private PlotSeries PriceExcursion => _priceExcursion.Result;
 
 	public bool EnableLevels { get; set; } = true;
@@ -67,15 +64,13 @@ public partial class VmLean
 
 	public void InitializePriceExcursions()
 	{
-		_priceExcursionAtr = new(256, MovingAverageType.Simple);
+		var priceExcursionAtr = new AverageTrueRange(256, MovingAverageType.Simple);
 
-		_priceExcursion = new(_priceExcursionAtr.Result, 65);
+		_priceExcursion = new(priceExcursionAtr.Result, 65);
 	}
 
 	private void CalculatePriceExcursions(int barIndex)
 	{
-		_priceExcursionAtr.Calculate();
-
 		_priceExcursion.Calculate();
 	}
 
@@ -111,11 +106,11 @@ public partial class VmLean
 
 		if (LevelPlotStyleValue is LevelPlotStyle.DynamicLines)
 		{
-			DrawDynamicExcursionLevel(drawingContext, levelMultiplier, levelLineColor);
+			DrawDynamicPriceExcursionLevel(drawingContext, levelMultiplier, levelLineColor);
 		}
     }
 
-    private void DrawDynamicExcursionLevel(IDrawingContext drawingContext, int levelMultiplier, Color levelLineColor)
+    private void DrawDynamicPriceExcursionLevel(IDrawingContext drawingContext, int levelMultiplier, Color levelLineColor)
     {
         ReadOnlySpan<int> levelSignums = [-1, 1];
 

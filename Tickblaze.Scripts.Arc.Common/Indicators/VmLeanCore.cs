@@ -25,7 +25,7 @@ public partial class VmLeanCore : ChildIndicator
 	{
 		CalculateHistogram(barIndex);
 
-		CalculateMacdBb();
+		CalculateMacdBb(barIndex);
 
 		CalculateSwings();
 	}

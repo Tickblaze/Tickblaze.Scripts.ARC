@@ -5,6 +5,9 @@ namespace Tickblaze.Scripts.Arc.Common;
 
 public partial class VmLeanCore
 {
+	[AllowNull]
+	private StandardDeviation _standardDeviation;
+
 	public int BandPeriod { get; set; }
 
 	public double BandMultiplier { get; set; }
@@ -17,10 +20,16 @@ public partial class VmLeanCore
 	public Macd Macd { get; private set; }
 
 	[AllowNull]
-	public BollingerBands BollingerBands { get; private set; }
-	
+	public Series<double> LowerBand { get; private set; }
+
+	[AllowNull]
+	public Series<double> UpperBand { get; private set; }
+
 	private void InitializeMacdBb()
 	{
+		LowerBand = [];
+		UpperBand = [];
+
 		Macd = new Macd
 		{
 			Source = Bars.Close,
@@ -29,19 +38,20 @@ public partial class VmLeanCore
 			SlowPeriod = MacdSlowPeriod,
         };
 
-		BollingerBands = new BollingerBands
+		_standardDeviation = new StandardDeviation
 		{
 			Period = BandPeriod,
-			Source = Macd.Signal,
-			Multiplier = BandMultiplier,
+			Source = Macd.Result,
 			SmoothingType = MovingAverageType.Simple,
 		};
 	}
 
-	private void CalculateMacdBb()
+	private void CalculateMacdBb(int barIndex)
     {
-		Macd.Calculate();
+		var macdAverage = Macd.Signal[barIndex];
+		var standardDeviation = _standardDeviation[barIndex];
 
-		BollingerBands.Calculate();
+		LowerBand[barIndex] = macdAverage - BandMultiplier * standardDeviation;
+		UpperBand[barIndex] = macdAverage + BandMultiplier * standardDeviation;
 	}
 }

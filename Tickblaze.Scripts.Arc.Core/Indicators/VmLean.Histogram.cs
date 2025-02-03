@@ -18,17 +18,11 @@ public partial class VmLean
 	{
 		var currentValue = Histogram[barIndex] = _vmLeanCore.Histogram[barIndex];
 
-		if (currentValue > 0)
+		Histogram.Colors[barIndex] = currentValue.CompareTo(0) switch
 		{
-			Histogram.Colors[barIndex] = HistogramUpColor;
-		}
-		else if (currentValue < 0)
-		{
-			Histogram.Colors[barIndex] = HistogramDownColor;
-		}
-		else
-		{
-			Histogram.Colors[barIndex] = Histogram.Colors.GetAtOrDefault(barIndex - 1, Color.Transparent);
-		}
+			> 0 => HistogramUpColor,
+			< 0 => HistogramDownColor,
+			0 => Histogram.Colors.GetAtOrDefault(barIndex - 1, Color.Transparent),
+		};
 	}
 }

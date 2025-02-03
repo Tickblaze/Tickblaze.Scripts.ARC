@@ -158,6 +158,11 @@ public partial class FairValueGaps : Indicator
 			return;
 		}
 
+		if (Bars[barIndex].Time.Day == 21)
+		{
+
+		}
+
 		CalculateFreshGaps(barIndex);
 
 		CalculateTestedGaps(barIndex);
@@ -231,13 +236,9 @@ public partial class FairValueGaps : Indicator
 		{
 			var gap = _testedGaps.GetGapAt(gapIndex);
 
-			gapIndex--;
-
 			if (lastBar.Low < gap.StartPrice && gap.IsSupport
 				|| lastBar.High > gap.EndPrice && gap.IsResistance)
 			{
-				gapIndex++;
-				
 				gap.EndBarIndex = barIndex;
 
 				_testedGaps.RemoveAt(gapIndex);

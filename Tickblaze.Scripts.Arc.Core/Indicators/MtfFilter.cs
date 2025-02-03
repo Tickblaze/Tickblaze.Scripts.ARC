@@ -295,8 +295,8 @@ public partial class MtfFilter : Indicator
 		}
 
 		var bbValue = _vmLeanCore.Macd.Signal[barIndex];
-		var upperBandValue = _vmLeanCore.BollingerBands.Upper[barIndex];
-		var lowerBandValue = _vmLeanCore.BollingerBands.Lower[barIndex];
+		var upperBandValue = _vmLeanCore.UpperBand[barIndex];
+		var lowerBandValue = _vmLeanCore.LowerBand[barIndex];
 
 		if (bbValue.ApproxGreaterThan(upperBandValue))
 		{
@@ -318,8 +318,8 @@ public partial class MtfFilter : Indicator
 		}
 
 		var bbValue = _vmLeanCore.Macd.Signal[barIndex];
-		var upperBandValue = _vmLeanCore.BollingerBands.Upper[barIndex];
-		var lowerBandValue = _vmLeanCore.BollingerBands.Lower[barIndex];
+		var upperBandValue = _vmLeanCore.UpperBand[barIndex];
+		var lowerBandValue = _vmLeanCore.LowerBand[barIndex];
 		var middleValue = (upperBandValue + lowerBandValue) / 2.0;
 
 		return bbValue.ApproxCompareTo(middleValue).ToTrend();
