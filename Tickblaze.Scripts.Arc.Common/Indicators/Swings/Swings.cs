@@ -330,8 +330,8 @@ public class Swings : ChildIndicator
 		_trendBiases.Clear();
 		_pendingSwings.Clear();
 
-        _swingDeviation = Bars.Map(bar => 0.0d);
-		_swingDtbDeviation = Bars.Map(bar => 0.0d);
+        _swingDeviation = Bars.Select(bar => 0.0d);
+		_swingDtbDeviation = Bars.Select(bar => 0.0d);
 		
 		var averageTrueRange = default(AverageTrueRange);
 
@@ -344,7 +344,7 @@ public class Swings : ChildIndicator
 				SmoothingType = MovingAverageType.Simple,
 			};
 
-			_swingDeviation = averageTrueRange.Result.Map(atr => SwingDeviationAtrMultiplier * atr);
+			_swingDeviation = averageTrueRange.Result.Select(atr => SwingDeviationAtrMultiplier * atr);
 		}
 
 		if (!SwingDtbAtrMultiplier.ApproxEquals(0.0d))
@@ -356,7 +356,7 @@ public class Swings : ChildIndicator
 				SmoothingType = MovingAverageType.Simple,
 			};
 
-			_swingDtbDeviation = averageTrueRange.Result.Map(atr => SwingDtbAtrMultiplier * atr);
+			_swingDtbDeviation = averageTrueRange.Result.Select(atr => SwingDtbAtrMultiplier * atr);
 		}
 
 		IsInitialized = true;

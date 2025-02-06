@@ -164,14 +164,10 @@ public partial class MtfFilter : Indicator
 				ReversalSize = RenkoBxtReversalSize,
 			};
 
-		var barSeriesRequest = new BarSeriesRequest
+		var barSeriesRequest = new BarSeriesInfo
 		{
 			BarType = barType,
-			SymbolCode = Symbol.Code,
 			Period = barTypeSettings,
-			Exchange = Symbol.Exchange,
-			InstrumentType = Symbol.Type,
-			Contract = Bars.ContractSettings,
 		};
 
 		return GetBars(barSeriesRequest);
@@ -189,7 +185,7 @@ public partial class MtfFilter : Indicator
 
 	private ISeries<Trend>[] GetTrendSeriesCollection()
 	{
-		var barIndexes = _bars.Map((barIndex, bar) => barIndex);
+		var barIndexes = _bars.Select((barIndex, bar) => barIndex);
 
 		var trendSelectors = new List<Func<int, Trend>>();
 
@@ -249,7 +245,7 @@ public partial class MtfFilter : Indicator
 		}
 
 		return trendSelectors
-			.Select(selector => barIndexes.Map(selector))
+			.Select(selector => barIndexes.Select(selector))
 			.ToArray();
 	}
 

@@ -2,7 +2,7 @@
 
 namespace Tickblaze.Scripts.Arc.Common;
 
-public class ReadOnlySeries<TItem> : ISeries<TItem>
+public sealed class ReadOnlySeries<TItem> : ISeries<TItem>
 {
     public ReadOnlySeries(IReadOnlyList<TItem> items)
     {
@@ -13,9 +13,9 @@ public class ReadOnlySeries<TItem> : ISeries<TItem>
 
 	public int Count => _items.Count;
 
-    public TItem? this[int index] => _items[index];
+    public TItem this[int index] => _items[index];
 
-	public IEnumerator<TItem?> GetEnumerator()
+	public IEnumerator<TItem> GetEnumerator()
     {
 		return _items.GetEnumerator();
     }

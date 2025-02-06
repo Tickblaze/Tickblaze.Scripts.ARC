@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Tickblaze.Scripts.Arc.Common;
 using Tickblaze.Scripts.Indicators;
 

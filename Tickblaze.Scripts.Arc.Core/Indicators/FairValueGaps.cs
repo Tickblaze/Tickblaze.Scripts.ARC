@@ -111,13 +111,13 @@ public partial class FairValueGaps : Indicator
 	{
 		if (GapMeasurementValue is GapMeasurement.Tick)
 		{
-			return Bars.Map(bar => GapTickCount * Symbol.TickSize);
+			return Bars.Select(bar => GapTickCount * Symbol.TickSize);
 		}
 		else if (GapMeasurementValue is GapMeasurement.Atr)
 		{
 			var atr = new AverageTrueRange(AtrPeriod, MovingAverageType.Simple);
 
-			return atr.Result.Map(atr => AtrMultiple * atr);
+			return atr.Result.Select(atr => AtrMultiple * atr);
 		}
 
 		throw new UnreachableException();

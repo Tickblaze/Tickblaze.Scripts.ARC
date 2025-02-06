@@ -45,7 +45,7 @@ public class DrawingPartDictionary<TDrawingPartKey, TDrawingPart> : ISeries<TDra
     {
 		var componentIndex = _drawingParts.Values
 			.AsSeries()
-			.Map(component => component.Boundary.StartBarIndex)
+			.Select(component => component.Boundary.StartBarIndex)
 			.BinarySearch(visibleBoundary.EndBarIndex);
 
 		if (componentIndex < 0)
@@ -116,7 +116,7 @@ public class DrawingPartDictionary<TDrawingPartKey, TDrawingPart> : ISeries<TDra
 
 		var insertionIndex = _drawingParts.Values
 			.AsSeries()
-			.Map(component => component.Boundary.StartBarIndex)
+			.Select(component => component.Boundary.StartBarIndex)
 			.BinarySearch(startBarIndex);
 
         if (insertionIndex < 0)
