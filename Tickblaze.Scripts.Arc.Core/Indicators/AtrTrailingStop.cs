@@ -40,6 +40,7 @@ public partial class AtrTrailingStop : Indicator
 	[Parameter("ATR Period", Description = "Period of the Average True Range")]
 	public int AtrPeriod { get; set; } = 10;
 
+	[NumericRange(MaxValue = double.MaxValue, Step = DoubleStep)]
 	[Parameter("ATR Multiplier", Description = "Multiplier of the Average True Range")]
 	public double AtrMultiplier { get; set; } = 2.5;
 
@@ -49,6 +50,7 @@ public partial class AtrTrailingStop : Indicator
 	[Parameter("Show Stop Line", GroupName = "Visuals", Description = "Whether stop line is shown")]
 	public bool ShowStopLine { get; set; } = true;
 
+	[NumericRange(MinValue = ThicknessMin, MaxValue = ThicknessMax)]
 	[Parameter("Stop Line Thickness", GroupName = "Visuals", Description = "Thickness of the stop line")]
 	public int StopLineThickness { get; set; } = 1;
 
@@ -58,6 +60,7 @@ public partial class AtrTrailingStop : Indicator
 	[Parameter("Show Markers", GroupName = "Visuals", Description = "Whether markers are shown")]
 	public bool ShowMarkers { get; set; }
 
+	[NumericRange(MinValue = 1, MaxValue = 20)]
 	[Parameter("Marker Size", GroupName = "Visuals", Description = "Size of the marker")]
 	public int MarkerSize { get; set; } = 10;
 

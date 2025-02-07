@@ -35,7 +35,7 @@ public partial class MtfFilter : Indicator
 	[Parameter("Bollinger Band Period", Description = "Period of the Bollinger Band")]
 	public int BandPeriod { get; set; } = 10;
 
-	[NumericRange(MaxValue = double.MaxValue, Step = 0.5)]
+	[NumericRange(MaxValue = double.MaxValue, Step = DoubleStep)]
 	[Parameter("Bollinger Band Std. Dev. Multiplier", Description = "Std. dev. multiplier of the Bollinger Band")]
 	public double BandMultiplier { get; set; } = 1.0;
 
@@ -47,15 +47,15 @@ public partial class MtfFilter : Indicator
 	[Parameter("MACD Slow EMA Period", Description = "Period of the slow MACD EMA")]
 	public int MacdSlowPeriod { get; set; } = 26;
 
-	[NumericRange(MinValue = 1, MaxValue = 200)]
+	[NumericRange(MinValue = Swings.SwingStrengthMin, MaxValue = Swings.SwingStrengthMax)]
 	[Parameter("Swing Strength", Description = "Bar lookback to calculate swing high or low")]
 	public int SwingStrength { get; set; } = 3;
 
-	[NumericRange(MaxValue = double.MaxValue, Step = 0.1)]
+	[NumericRange(MaxValue = double.MaxValue, Step = DoubleStep)]
 	[Parameter("Swing Deviation Multiplier", Description = "ATR multipler of the minimum deviation required for a trend change")]
 	public double SwingDeviationAtrMultiplier { get; set; }
 
-	[NumericRange(MaxValue = double.MaxValue, Step = 0.1)]
+	[NumericRange(MaxValue = double.MaxValue, Step = DoubleStep)]
 	[Parameter("Swing Double Top/Bottom ATR Multiplier", Description = "ATR multiplier of the maximum deviation ignored for a double tops or bottoms recognition")]
 	public double SwingDtbAtrMultiplier { get; set; }
 
@@ -268,7 +268,7 @@ public partial class MtfFilter : Indicator
 			return Trend.None;
 		}
 
-		var bbValue = _vmLeanCore.Macd.Signal[barIndex];
+		var bbValue = _vmLeanCore.Macd.Result[barIndex];
 		var histogramValue = _vmLeanCore.Histogram[barIndex];
 
 		if (bbValue.ApproxGreaterThan(0) && histogramValue.ApproxGreaterThan(0))
@@ -290,7 +290,7 @@ public partial class MtfFilter : Indicator
 			return Trend.None;
 		}
 
-		var bbValue = _vmLeanCore.Macd.Signal[barIndex];
+		var bbValue = _vmLeanCore.Macd.Result[barIndex];
 		var upperBandValue = _vmLeanCore.UpperBand[barIndex];
 		var lowerBandValue = _vmLeanCore.LowerBand[barIndex];
 
@@ -313,7 +313,7 @@ public partial class MtfFilter : Indicator
 			return Trend.None;
 		}
 
-		var bbValue = _vmLeanCore.Macd.Signal[barIndex];
+		var bbValue = _vmLeanCore.Macd.Result[barIndex];
 		var upperBandValue = _vmLeanCore.UpperBand[barIndex];
 		var lowerBandValue = _vmLeanCore.LowerBand[barIndex];
 		var middleValue = (upperBandValue + lowerBandValue) / 2.0;
@@ -328,7 +328,7 @@ public partial class MtfFilter : Indicator
 			return Trend.None;
 		}
 
-		var bbValue = _vmLeanCore.Macd.Signal[barIndex];
+		var bbValue = _vmLeanCore.Macd.Result[barIndex];
 
 		return bbValue.ApproxCompareTo(0).ToTrend();
 	}

@@ -14,14 +14,9 @@ public partial class BarCloseMarker : Indicator
 		Name = "Bar Close Marker";
 	}
 
-	private Bar? _lastBar;
-	private double _lastOpen;
-	private double _lastClose;
-	
 	private RenkoBxt? _renkoBxt;
-
-	private double _potentialLow;
-	private double _potentialHigh;
+	
+	private int _currentBarIndex;
 
 	private Color _markerLowSolidColor;
 	private Color _markerHighSolidColor;
@@ -29,7 +24,7 @@ public partial class BarCloseMarker : Indicator
 	[Parameter("Marker Type", Description = "Type of the marker")]
 	public MarkerType MarkerTypeValue { get; set; } = MarkerType.ExtendedLines;
 
-	[NumericRange(MinValue = 1)]
+	[NumericRange(MinValue = ThicknessMin, MaxValue = ThicknessMax)]
 	[Parameter("Marker Width", GroupName = "Visuals", Description = "Width of the marker")]
 	public int MarkerThickness { get; set; } = 2;
 
@@ -54,7 +49,11 @@ public partial class BarCloseMarker : Indicator
 	[Parameter("Bottom Shadow Color", GroupName = "Visuals", Description = "Color of the bottom shadow")]
 	public Color BottomShadowColor { get; set; } = Color.Red.With(opacity: 0.1f);
 
-    protected override Parameters GetParameters(Parameters parameters)
+	public PlotSeries PotentialHigh { get; init; } = new("Potential High", Color.Transparent, isVisible: false);
+
+	public PlotSeries PotentialLow { get; init; } = new("Potential High", Color.Transparent, isVisible: false);
+
+	protected override Parameters GetParameters(Parameters parameters)
     {
 		if (MarkerTypeValue is MarkerType.None)
 		{
@@ -90,14 +89,12 @@ public partial class BarCloseMarker : Indicator
 
     protected override void Initialize()
     {
-		_lastBar = default;
-		_lastOpen = default;
-		_lastClose = default;
+		_currentBarIndex = -1;
 
 		_renkoBxt = Bars.BarType as RenkoBxt;
 
-		_markerLowSolidColor = MarkerLowColor.With(opacity: 1.0f);
-		_markerHighSolidColor = MarkerHighColor.With(opacity: 1.0f);
+		PotentialLow.Color = _markerLowSolidColor = MarkerLowColor.With(opacity: 1.0f);
+		PotentialHigh.Color = _markerHighSolidColor = MarkerHighColor.With(opacity: 1.0f);
 	}
 
     protected override void Calculate(int barIndex)
@@ -108,6 +105,7 @@ public partial class BarCloseMarker : Indicator
 		{
 			CalculateRenkoBxtPotentialHighLow(barIndex);
 		}
+
 		if (barTypeSettings.Type is BarType.Range)
 		{
 			CalculateRangePotentialHighLow(barIndex);
@@ -121,9 +119,7 @@ public partial class BarCloseMarker : Indicator
 			return;
 		}
 
-		_lastBar = Bars[barIndex]!;
-		_lastOpen = _lastBar.Open;
-		_lastClose = _lastBar.Close;
+		_currentBarIndex = barIndex;
 
 		var tickSize = Bars.Symbol.TickSize;
 		var barSizeInPoints = _renkoBxt.BarSize * tickSize;
@@ -133,57 +129,65 @@ public partial class BarCloseMarker : Indicator
 
 		if (isUpTrend)
 		{
-			_potentialHigh = Bars.Open[barIndex] + barSizeInPoints;
+			PotentialLow[barIndex] = Symbol.RoundToTick(Bars.High[barIndex] - reversalSizeInPoints);
 
-			_potentialLow = Bars.High[barIndex] - reversalSizeInPoints;
+			PotentialHigh[barIndex] = Symbol.RoundToTick(Bars.Open[barIndex] + barSizeInPoints);
 		}
 		else
 		{
-			_potentialLow = Bars.Open[barIndex] - barSizeInPoints;
-
-			_potentialHigh = Bars.Low[barIndex] + reversalSizeInPoints;
+			PotentialLow[barIndex] = Symbol.RoundToTick(Bars.Open[barIndex] - barSizeInPoints);
+			
+			PotentialHigh[barIndex] = Symbol.RoundToTick(Bars.Low[barIndex] + reversalSizeInPoints);
 		}
-    }
+	}
 
     private void CalculateRangePotentialHighLow(int barIndex)
 	{
-		var bar = Bars[barIndex]!;
+		var bar = Bars[barIndex];
 		var barTypeSettings = Bars.Period;
 		var tickSize = Bars.Symbol.TickSize;
 		
-		var rangeDelta = barTypeSettings.Size * tickSize;
-		var currentDelta = Math.Abs(bar.Close - bar.Open);
+		var currentDelta = bar.High - bar.Low;
 
-		if (currentDelta.ApproxGreaterThanOrEquals(rangeDelta))
+		var rangeDelta = barTypeSettings.Size * tickSize;
+
+		var remainingDelta = rangeDelta - currentDelta;
+
+		if (remainingDelta.ApproxLessThanOrEquals(0))
 		{
 			return;
 		}
 
-		_lastBar = bar;
-		_lastOpen = _lastBar.Open;
-		_lastClose = _lastBar.Close;
-
-		_potentialLow = Math.Round(_lastOpen - rangeDelta, Symbol.Decimals);
-		_potentialHigh = Math.Round(_lastOpen + rangeDelta, Symbol.Decimals);
+		_currentBarIndex = barIndex;
+		
+		PotentialLow[barIndex] = Symbol.RoundToTick(bar.Low - remainingDelta);
+		
+		PotentialHigh[barIndex] = Symbol.RoundToTick(bar.High + remainingDelta);
 	}
 
 	public override void OnRender(IDrawingContext context)
     {
-		if (_lastBar is null)
+		if (_currentBarIndex is -1)
 		{
 			return;
 		}
 
-		var lastCloseY = ChartScale.GetYCoordinateByValue(_lastClose);
-		var potentialLowY = ChartScale.GetYCoordinateByValue(_potentialLow);
-		var potentialHighY = ChartScale.GetYCoordinateByValue(_potentialHigh);
-
-		var candleLow = Math.Min(_lastOpen, _lastClose);
+		var currentOpen = Bars.Open[_currentBarIndex];
+		var currentClose = Bars.Close[_currentBarIndex];
+		var currentCloseY = ChartScale.GetYCoordinateByValue(currentClose);
+		
+		var candleLow = Math.Min(currentOpen, currentClose);
 		var candleLowY = ChartScale.GetYCoordinateByValue(candleLow);
+		
+		var potentialLow = PotentialLow.GetLastOrDefault();
+		var potentialLowY = ChartScale.GetYCoordinateByValue(potentialLow);
 
-		var candleHigh = Math.Max(_lastOpen, _lastClose);
+		var candleHigh = Math.Max(currentOpen, currentClose);
 		var candleHighY = ChartScale.GetYCoordinateByValue(candleHigh);
 
+		var potentialHigh = PotentialHigh.GetLastOrDefault();
+		var potentialHighY = ChartScale.GetYCoordinateByValue(potentialHigh);
+		
 		var absoluteBarWidth = Chart.GetAbsoluteBarWidth();
 		var barCenterX = Chart.GetXCoordinateByBarIndex(Bars.Count - 1);
 		var barStartX = barCenterX - absoluteBarWidth / 2.0;
@@ -198,7 +202,7 @@ public partial class BarCloseMarker : Indicator
 		if (MarkerTypeValue is MarkerType.ExtendedLines)
 		{
 			context.DrawHorizontalRay(barStartX, potentialLowY, HorizontalDirection.Right, MarkerLowColor, MarkerThickness);
-			context.DrawHorizontalRay(barStartX, lastCloseY, HorizontalDirection.Right, CurrentPriceColor, MarkerThickness);
+			context.DrawHorizontalRay(barStartX, currentCloseY, HorizontalDirection.Right, CurrentPriceColor, MarkerThickness);
 			context.DrawHorizontalRay(barStartX, potentialHighY, HorizontalDirection.Right, MarkerHighColor, MarkerThickness);
 
 			context.DrawHorizontalLine(barStartX, potentialLowY, barEndX, _markerLowSolidColor, MarkerThickness);
@@ -207,8 +211,8 @@ public partial class BarCloseMarker : Indicator
 
 		if (MarkerTypeValue is MarkerType.Price)
 		{
-			var potentialLowText = _potentialLow.ToString();
-			var potentialHighText = _potentialHigh.ToString();
+			var potentialLowText = potentialLow.ToString();
+			var potentialHighText = potentialHigh.ToString();
 			var potentialLowTextSize = context.MeasureText(potentialLowText, TextFont);
 			var potentialHighTextSize = context.MeasureText(potentialHighText, TextFont);
 

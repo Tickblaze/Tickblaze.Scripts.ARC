@@ -21,7 +21,7 @@ public partial class VmLean
 	[Parameter("Level Line Style", GroupName = "Price Excursion Visuals", Description = "Line style of the level lines")]
 	public LineStyle LevelLineStyle { get; set; } = LineStyle.Solid;
 
-	[NumericRange(MinValue = 1)]
+	[NumericRange(MinValue = ThicknessMin, MaxValue = ThicknessMax)]
 	[Parameter("Level Line Thickness", GroupName = "Price Excursion Visuals", Description = "Thickness of the level lines")]
 	public int LevelLineThickness { get; set; } = 3;
 

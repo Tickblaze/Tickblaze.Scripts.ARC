@@ -41,14 +41,17 @@ public partial class AtrTrailingStop
 	[Parameter("Show Bands 3", GroupName = "Bands", Description = "Whether bands 3 are shown")]
 	public bool ShowBands3 { get; set; }
 
+	[NumericRange(MinValue = DoublePositiveMin, MaxValue = double.MaxValue, Step = DoubleStep)]
 	[Parameter("Band Multiplier 1", GroupName = "Bands", Description = "Multiplier for the bands 1")]
-	public double BandMultiplier1 { get; set; } = 1;
+	public double BandMultiplier1 { get; set; } = 1.0;
 
+	[NumericRange(MinValue = DoublePositiveMin, MaxValue = double.MaxValue, Step = DoubleStep)]
 	[Parameter("Band Multiplier 2", GroupName = "Bands", Description = "Multiplier for the bands 2")]
-	public double BandMultiplier2 { get; set; } = 2;
-	
+	public double BandMultiplier2 { get; set; } = 2.0;
+
+	[NumericRange(MinValue = DoublePositiveMin, MaxValue = DoublePositiveMin, Step = DoubleStep)]
 	[Parameter("Band Multiplier 3", GroupName = "Bands", Description = "Multiplier for the bands 3")]
-	public double BandMultiplier3 { get; set; } = 3;
+	public double BandMultiplier3 { get; set; } = 3.0;
 	
 	[Parameter("Band Color 1", GroupName = "Bands", Description = "Color of the band shading 1")]
 	public Color BandColor1 { get; set; } = Color.Blue.With(opacity: 0.2f);
@@ -86,6 +89,7 @@ public partial class AtrTrailingStop
 		var totalAmount = 0.0d;
 		
 		var startBarIndex = Math.Max(0, barIndex - BandAtrPeriod + 1);
+
 		var summandCount = barIndex - startBarIndex + 1;
 
 		for (var index = startBarIndex; index <= barIndex; index++)

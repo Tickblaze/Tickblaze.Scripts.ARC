@@ -75,9 +75,4 @@ public static class CollectionExtensions
 
 		items.Add(item);
 	}
-
-	public static ISeries<TItem> AsSeries<TItem>(this IReadOnlyList<TItem> items)
-	{
-		return new ReadOnlySeries<TItem>(items);
-	}
 }

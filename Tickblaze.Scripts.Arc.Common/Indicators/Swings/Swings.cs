@@ -22,6 +22,10 @@ public class Swings : ChildIndicator
 
 	private readonly DrawingPartDictionary<Point, SwingLine> _pendingSwings = [];
 
+	public const int SwingStrengthMin = 1;
+
+	public const int SwingStrengthMax = 256;
+
     public required int SwingStrength { get; init; }
 
     public bool ShowDots { get; set; }

@@ -1,5 +1,4 @@
 ﻿using Tickblaze.Scripts.Arc.Common;
-using Tickblaze.Scripts.Indicators;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
@@ -7,7 +6,7 @@ public partial class VmLean
 {
 	private Macd Macd => _vmLeanCore.Macd;
 
-	[NumericRange(MaxValue = double.MaxValue, Step = 0.5)]
+	[NumericRange(MaxValue = double.MaxValue, Step = DoubleStep)]
 	[Parameter("Bollinger Bands Std. Dev. Multiplier", GroupName = "MACDBB Parameters", Description = "Std. dev. multiplier of the Bollinger Bands")]
 	public double BandMultiplier { get; set; } = 1.0;
 	
@@ -48,7 +47,7 @@ public partial class VmLean
 	public PlotSeries BandUpper { get; set; } = new(Color.Black, LineStyle.Solid, 3);
 
 	[Plot("MACD Connector")]
-	public PlotSeries MacdConnector { get; set; } = new(DrawingColor.CornflowerBlue, LineStyle.Solid, 8);
+	public PlotSeries MacdConnector { get; set; } = new(DrawingColor.CornflowerBlue, LineStyle.Solid, 9);
 
 	[Plot("MACD Dots")]
 	public PlotSeries MacdDots { get; set; } = new(Color.Transparent, PlotStyle.Dot, 6);
@@ -63,6 +62,8 @@ public partial class VmLean
 		var currentValue = MacdConnector[barIndex] = MacdDots[barIndex] = Macd.Result[barIndex];
 		
 		var previousValue = MacdDots.GetAtOrDefault(barIndex - 1, currentValue);
+
+		BandAverage[barIndex] = _vmLeanCore.Macd.Signal[barIndex];
 
 		var upperBandValue = BandUpper[barIndex] = _vmLeanCore.UpperBand[barIndex];
 		var lowerBandValue = BandLower[barIndex] = _vmLeanCore.LowerBand[barIndex];

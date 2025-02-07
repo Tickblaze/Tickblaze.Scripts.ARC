@@ -48,49 +48,49 @@ public partial class LeadersAndLaggers : Indicator
 	[Parameter("Font", GroupName = "Info Box", Description = "Font of the info box text")]
 	public Font TextFont { get; set; } = new("Arial", 12);
 
-	[Parameter("Instrument 2", GroupName = "Instruments", Description = "Symbol representing Instrument 2. Futures contract must be in MM-YY format")]
+	[Parameter("Instrument 2", GroupName = "Instruments", Description = "Symbol representing Instrument 2")]
 	public SymbolInfo? Symbol2 { get; set; }
 
-	[Parameter("Instrument 3", GroupName = "Instruments", Description = "Symbol representing Instrument 3. Futures contract must be in MM-YY format")]
+	[Parameter("Instrument 3", GroupName = "Instruments", Description = "Symbol representing Instrument 3")]
 	public SymbolInfo? Symbol3 { get; set; }
 
-	[Parameter("Instrument 4", GroupName = "Instruments", Description = "Symbol representing Instrument 4. Futures contract must be in MM-YY format")]
+	[Parameter("Instrument 4", GroupName = "Instruments", Description = "Symbol representing Instrument 4")]
 	public SymbolInfo? Symbol4 { get; set; }
 
-	[Parameter("Instrument 5", GroupName = "Instruments", Description = "Symbol representing Instrument 5. Futures contract must be in MM-YY format")]
+	[Parameter("Instrument 5", GroupName = "Instruments", Description = "Symbol representing Instrument 5")]
 	public SymbolInfo? Symbol5 { get; set; }
 
-	[Parameter("Instrument 6", GroupName = "Instruments", Description = "Symbol representing Instrument 6. Futures contract must be in MM-YY format")]
+	[Parameter("Instrument 6", GroupName = "Instruments", Description = "Symbol representing Instrument 6")]
 	public SymbolInfo? Symbol6 { get; set; }
 
-	[Parameter("Instrument 7", GroupName = "Instruments", Description = "Symbol representing Instrument 7. Futures contract must be in MM-YY format")]
+	[Parameter("Instrument 7", GroupName = "Instruments", Description = "Symbol representing Instrument 7")]
 	public SymbolInfo? Symbol7 { get; set; }
 
-	[Parameter("Instrument 8", GroupName = "Instruments", Description = "Symbol representing Instrument 8. Futures contract must be in MM-YY format")]
+	[Parameter("Instrument 8", GroupName = "Instruments", Description = "Symbol representing Instrument 8")]
 	public SymbolInfo? Symbol8 { get; set; }
 
-	[Parameter("Instrument 9", GroupName = "Instruments", Description = "Symbol representing Instrument 9. Futures contract must be in MM-YY format")]
+	[Parameter("Instrument 9", GroupName = "Instruments", Description = "Symbol representing Instrument 9")]
 	public SymbolInfo? Symbol9 { get; set; }
 
-	[Parameter("Instrument 10", GroupName = "Instruments", Description = "Symbol representing Instrument 10. Futures contract must be in MM-YY format")]
+	[Parameter("Instrument 10", GroupName = "Instruments", Description = "Symbol representing Instrument 10")]
 	public SymbolInfo? Symbol10 { get; set; }
 
-	[Parameter("Instrument 11", GroupName = "Instruments", Description = "Symbol representing Instrument 11. Futures contract must be in MM-YY format")]
+	[Parameter("Instrument 11", GroupName = "Instruments", Description = "Symbol representing Instrument 11")]
 	public SymbolInfo? Symbol11 { get; set; }
 
-	[Parameter("Instrument 12", GroupName = "Instruments", Description = "Symbol representing Instrument 12. Futures contract must be in MM-YY format")]
+	[Parameter("Instrument 12", GroupName = "Instruments", Description = "Symbol representing Instrument 12")]
 	public SymbolInfo? Symbol12 { get; set; }
 
-	[Parameter("Instrument 13", GroupName = "Instruments", Description = "Symbol representing Instrument 13. Futures contract must be in MM-YY format")]
+	[Parameter("Instrument 13", GroupName = "Instruments", Description = "Symbol representing Instrument 13")]
 	public SymbolInfo? Symbol13 { get; set; }
 
-	[Parameter("Instrument 14", GroupName = "Instruments", Description = "Symbol representing Instrument 14. Futures contract must be in MM-YY format")]
+	[Parameter("Instrument 14", GroupName = "Instruments", Description = "Symbol representing Instrument 14")]
 	public SymbolInfo? Symbol14 { get; set; }
 
-	[Parameter("Instrument 15", GroupName = "Instruments", Description = "Symbol representing Instrument 15. Futures contract must be in MM-YY format")]
+	[Parameter("Instrument 15", GroupName = "Instruments", Description = "Symbol representing Instrument 15")]
 	public SymbolInfo? Symbol15 { get; set; }
 
-	[Parameter("Instrument 16", GroupName = "Instruments", Description = "Symbol representing Instrument 16. Futures contract must be in MM-YY format")]
+	[Parameter("Instrument 16", GroupName = "Instruments", Description = "Symbol representing Instrument 16")]
 	public SymbolInfo? Symbol16 { get; set; }
 
 	public PlotSeries Plot1 { get; set; } = new("Plot 1", Color.Red, thickness: 3);

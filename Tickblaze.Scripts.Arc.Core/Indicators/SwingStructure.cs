@@ -29,15 +29,15 @@ public partial class SwingStructure : Indicator
 	[Parameter("Calculation Mode", Description = "Whether to calculate the swing by current or closed bar highs and lows")]
 	public SwingCalculationMode CalculationMode { get; set; }
 
-	[NumericRange(MinValue = 1, MaxValue = 256)]
+	[NumericRange(MinValue = Swings.SwingStrengthMin, MaxValue = Swings.SwingStrengthMax)]
 	[Parameter("Swing Strength", Description = "Number of bars used to identify a swing high or low")]
 	public int SwingStrength { get; set; } = 1;
 
-	[NumericRange(MaxValue = double.MaxValue, Step = 0.1)]
+	[NumericRange(MaxValue = double.MaxValue, Step = DoubleStep)]
 	[Parameter("Swing Deviation Multiplier", Description = "ATR multipler of the minimum deviation required for a trend change")]
 	public double SwingDeviationAtrMultiplier { get; set; }
 
-	[NumericRange(MaxValue = double.MaxValue, Step = 0.1)]
+	[NumericRange(MaxValue = double.MaxValue, Step = DoubleStep)]
 	[Parameter("Swing Double Top/Bottom ATR Multiplier", Description = "ATR multiplier of the maximum deviation ignored for a double tops or bottoms recognition")]
 	public double SwingDtbAtrMultiplier { get; set; }
 
@@ -50,7 +50,7 @@ public partial class SwingStructure : Indicator
 	[Parameter("Down-trend line color", Description = "Color of the down-trending swing line")]
 	public Color DownLineColor { get; set; } = Color.Red;
 
-	[NumericRange(MinValue = 1, MaxValue = 10)]
+	[NumericRange(MinValue = ThicknessMin, MaxValue = ThicknessMax)]
 	[Parameter("Line Thickness", Description = "Thickness of the swing lines")]
 	public int LineThickness { get; set; } = 3;
 

@@ -39,7 +39,7 @@ public partial class FairValueGaps : Indicator
 	[Parameter("FVG in Ticks", Description = "Minimum price delta in ticks needed to create a gap")]
 	public int GapTickCount { get; set; } = 8;
 
-	[NumericRange(MinValue = 0.01d, MaxValue = double.MaxValue, Step = 0.5d)]
+	[NumericRange(MinValue = DoublePositiveMin, MaxValue = double.MaxValue, Step = DoubleStep)]
 	[Parameter("FVG in ATR Multiples", Description = "Minimum price delta in ATR multiples needed to create a gap")]
 	public double AtrMultiple { get; set; } = 0.5d;
 

@@ -47,7 +47,7 @@ public partial class GapFinder : Indicator
 	[Parameter("Gap in Pips", Description = "Minimum price delta in pips = 10 * ticks needed to create a gap")]
 	public int GapPipCount { get; set; } = 20;
 
-	[NumericRange(MinValue = 0.01, MaxValue = double.MaxValue, Step = 0.5d)]
+	[NumericRange(MinValue = DoublePositiveMin, MaxValue = double.MaxValue, Step = DoubleStep)]
 	[Parameter("Gap in ATR Multiples", Description = "Minimum price delta in ATR multiples needed to create a gap")]
 	public double AtrMultiple { get; set; } = 0.5;
 

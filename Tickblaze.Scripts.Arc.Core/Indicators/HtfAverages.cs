@@ -9,12 +9,6 @@ public partial class HtfAverages : Indicator
 {
 	public HtfAverages()
 	{
-		_currentHtfInterval = new()
-		{
-			StartBarIndex = 0,
-			EndBarIndex = 0,
-		};
-
 		IsOverlay = true;
 		
 		ShortName = "HA";
@@ -37,6 +31,9 @@ public partial class HtfAverages : Indicator
 	private const string _autoMaLabel = "<auto>";
 
 	[AllowNull]
+	private Interval _currentHtfInterval;
+
+	[AllowNull]
 	private int[] _maPeriods;
 
 	[AllowNull]
@@ -44,8 +41,6 @@ public partial class HtfAverages : Indicator
 
 	[AllowNull]
 	private HtfPlotSeries[] _maPlots;
-
-	private Interval _currentHtfInterval;
 
 	[AllowNull]
 	private Indicator?[] _maIndicators;
@@ -206,6 +201,12 @@ public partial class HtfAverages : Indicator
 	protected override void Initialize()
 	{
 		_currentHtfBarIndex = 0;
+
+		_currentHtfInterval = new()
+		{
+			StartBarIndex = 0,
+			EndBarIndex = 0,
+		};
 
 		_maIndicators = new Indicator?[_maCount];
 
@@ -399,16 +400,12 @@ public partial class HtfAverages : Indicator
 			var visibleEndTimeUtc = Bars.Time[Chart.LastVisibleBarIndex];
             var visibleEndSession = exchangeCalendar.GetSession(visibleEndTimeUtc);
 
-            var maPlot = _maPlots[maIndex];
-            var maIndicator = _maIndicators[maIndex];
-
-			if (!maPlot.IsVisible
-				|| visibleEndSession is null
-                || maIndicator?.Plots is not [var maResult])
+			if (visibleEndSession is null)
             {
                 continue;
             }
 
+            var maPlot = _maPlots[maIndex];
             var maValue = maPlot[Chart.LastVisibleBarIndex];
             var maValueY = ChartScale.GetYCoordinateByValue(maValue);
             

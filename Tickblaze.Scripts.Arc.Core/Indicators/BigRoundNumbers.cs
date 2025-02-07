@@ -16,7 +16,7 @@ public partial class BigRoundNumbers : Indicator
 
 	private double _intervalInPoints;
 
-	[NumericRange(MaxValue = double.MaxValue)]
+	[NumericRange(MaxValue = double.MaxValue, Step = 0.5)]
 	[Parameter("Base Price", Description = "Price from which all lines eminate at interval values")]
 	public double BasePrice { get; set; }
 
@@ -35,7 +35,7 @@ public partial class BigRoundNumbers : Indicator
 	[Parameter("Interval in Pips", Description = "Distance between the lines in pips = 10 * ticks")]
 	public int IntervalInPips { get; set; } = 1;
 
-	[NumericRange(MinValue = 1, MaxValue = 10)]
+	[NumericRange(MinValue = ThicknessMin, MaxValue = ThicknessMax)]
 	[Parameter("Level Thickness", GroupName = "Level Visuals", Description = "Thickness of the level line")]
 	public int LevelThickness { get; set; } = 2;
 
