@@ -93,37 +93,39 @@ public partial class LeadersAndLaggers : Indicator
 	[Parameter("Instrument 16", GroupName = "Instruments", Description = "Symbol representing Instrument 16")]
 	public SymbolInfo? Symbol16 { get; set; }
 
-	public PlotSeries Plot1 { get; set; } = new("Plot 1", Color.Red, thickness: 3);
+	public PlotLevel ZeroLine { get; set; } = new("Zero Line", 0.0, Color.Transparent);
+
+	public PlotSeries Plot1 { get; set; } = new("Instrument 1", Color.Red, thickness: 3);
 	
-	public PlotSeries Plot2 { get; set; } = new("Plot 2", Color.Blue, thickness: 3);
+	public PlotSeries Plot2 { get; set; } = new("Instrument 2", Color.Blue, thickness: 3);
 
-	public PlotSeries Plot3 { get; set; } = new("Plot 3", Color.Yellow, thickness: 3);
+	public PlotSeries Plot3 { get; set; } = new("Instrument 3", Color.Yellow, thickness: 3);
 
-	public PlotSeries Plot4 { get; set; } = new("Plot 4", Color.Cyan, thickness: 3);
+	public PlotSeries Plot4 { get; set; } = new("Instrument 4", Color.Cyan, thickness: 3);
 
-	public PlotSeries Plot5 { get; set; } = new("Plot 5", Color.Orange, thickness: 3);
+	public PlotSeries Plot5 { get; set; } = new("Instrument 5", Color.Orange, thickness: 3);
 
-	public PlotSeries Plot6 { get; set; } = new("Plot 6", Color.Black, thickness: 3);
+	public PlotSeries Plot6 { get; set; } = new("Instrument 6", Color.Black, thickness: 3);
 
-	public PlotSeries Plot7 { get; set; } = new("Plot 7", DrawingColor.Magenta, thickness: 3);
+	public PlotSeries Plot7 { get; set; } = new("Instrument 7", DrawingColor.Magenta, thickness: 3);
 
-	public PlotSeries Plot8 { get; set; } = new("Plot 8", Color.Transparent, thickness: 3);
+	public PlotSeries Plot8 { get; set; } = new("Instrument 8", Color.Transparent, thickness: 3);
 
-	public PlotSeries Plot9 { get; set; } = new("Plot 9", Color.Transparent, thickness: 3);
+	public PlotSeries Plot9 { get; set; } = new("Instrument 9", Color.Transparent, thickness: 3);
 
-	public PlotSeries Plot10 { get; set; } = new("Plot 10", Color.Transparent, thickness: 3);
+	public PlotSeries Plot10 { get; set; } = new("Instrument 10", Color.Transparent, thickness: 3);
 
-	public PlotSeries Plot11 { get; set; } = new("Plot 11", Color.Transparent, thickness: 3);
+	public PlotSeries Plot11 { get; set; } = new("Instrument 11", Color.Transparent, thickness: 3);
 
-	public PlotSeries Plot12 { get; set; } = new("Plot 12", Color.Transparent, thickness: 3);
+	public PlotSeries Plot12 { get; set; } = new("Instrument 12", Color.Transparent, thickness: 3);
 
-	public PlotSeries Plot13 { get; set; } = new("Plot 13", Color.Transparent, thickness: 3);
+	public PlotSeries Plot13 { get; set; } = new("Instrument 13", Color.Transparent, thickness: 3);
 
-	public PlotSeries Plot14 { get; set; } = new("Plot 14", Color.Transparent, thickness: 3);
+	public PlotSeries Plot14 { get; set; } = new("Instrument 14", Color.Transparent, thickness: 3);
 
-	public PlotSeries Plot15 { get; set; } = new("Plot 15", Color.Transparent, thickness: 3);
+	public PlotSeries Plot15 { get; set; } = new("Instrument 15", Color.Transparent, thickness: 3);
 
-	public PlotSeries Plot16 { get; set; } = new("Plot 16", Color.Transparent, thickness: 3);
+	public PlotSeries Plot16 { get; set; } = new("Instrument 16", Color.Transparent, thickness: 3);
 
 	private static string GetFormattedSymbolCode(SymbolInfo symbolInfo)
 	{
@@ -138,6 +140,7 @@ public partial class LeadersAndLaggers : Indicator
 
 		return symbolCode;
 	}
+
 	protected override Parameters GetParameters(Parameters parameters)
 	{
 		if (ResetTypeValue is not ResetType.Custom)
@@ -344,6 +347,10 @@ public partial class LeadersAndLaggers : Indicator
 		var boxHeight = 3 * verticalMargin + leadingSymbolTextSize.Height + laggingSymbolTextSize.Height;
 
 		var topLeftPoint = this.GetTopLeft();
+
+		topLeftPoint.X += horizontalMargin;
+		topLeftPoint.Y += verticalMargin;
+
 		var leadingSymbolTextPoint = new ApiPoint
 		{
 			X = topLeftPoint.X + horizontalMargin,

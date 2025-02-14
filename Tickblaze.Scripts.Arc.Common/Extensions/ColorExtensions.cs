@@ -1,6 +1,4 @@
-﻿using System.Security.Cryptography.X509Certificates;
-
-namespace Tickblaze.Scripts.Arc.Common;
+﻿namespace Tickblaze.Scripts.Arc.Common;
 
 public static class ColorExtensions
 {

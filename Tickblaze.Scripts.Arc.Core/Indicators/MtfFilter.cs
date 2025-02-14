@@ -139,6 +139,8 @@ public partial class MtfFilter : Indicator
 	[Parameter("Donw-trend Color", GroupName = "Visuals", Description = "Color of the down-trend flooding")]
 	public Color DownTrendColor { get; set; } = Color.Red.With(opacity: 0.15f);
 
+	public PlotSeries EmptyPlot { get; init; } = new(string.Empty, Color.Transparent);
+
 	private BarSeries GetBars()
 	{
 		if (BarTypeValue is BarType.Chart)
@@ -164,13 +166,13 @@ public partial class MtfFilter : Indicator
 				ReversalSize = RenkoBxtReversalSize,
 			};
 
-		var barSeriesRequest = new BarSeriesInfo
+		var barSeriesInfo = new BarSeriesInfo
 		{
 			BarType = barType,
 			Period = barTypeSettings,
 		};
 
-		return GetBars(barSeriesRequest);
+		return GetBars(barSeriesInfo);
 	}
 
 	private static MovingAverageType GetMovingAverageType(MaType maType)

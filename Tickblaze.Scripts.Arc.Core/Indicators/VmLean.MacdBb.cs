@@ -47,7 +47,7 @@ public partial class VmLean
 	public PlotSeries BandUpper { get; set; } = new(Color.Black, LineStyle.Solid, 3);
 
 	[Plot("MACD Connector")]
-	public PlotSeries MacdConnector { get; set; } = new(DrawingColor.CornflowerBlue, LineStyle.Solid, 9);
+	public PlotSeries MacdConnector { get; set; } = new(DrawingColor.CornflowerBlue, LineStyle.Solid, 2);
 
 	[Plot("MACD Dots")]
 	public PlotSeries MacdDots { get; set; } = new(Color.Transparent, PlotStyle.Dot, 6);

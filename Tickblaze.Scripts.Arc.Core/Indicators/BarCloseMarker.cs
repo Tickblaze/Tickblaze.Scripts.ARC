@@ -99,6 +99,14 @@ public partial class BarCloseMarker : Indicator
 
     protected override void Calculate(int barIndex)
     {
+		if (barIndex is not 0)
+		{
+			var previousBarIndex = barIndex - 1;
+
+			PotentialLow[previousBarIndex] = double.NaN;
+			PotentialHigh[previousBarIndex] = double.NaN;
+		}
+
 		var barTypeSettings = Bars.Period;
 
 		if (_renkoBxt is not null)
