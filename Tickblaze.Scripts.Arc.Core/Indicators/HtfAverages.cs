@@ -163,8 +163,8 @@ public partial class HtfAverages : Indicator
 		return TimeframeValue switch
 		{
 			_ when !string.Equals(maLabel, _autoMaLabel, StringComparison.Ordinal) => maLabel,
-			Timeframe.Day => $"MA {maPeriod} D",
-			_ => $"MA {maPeriod} M",
+			Timeframe.Day => $"MA {maPeriod}D",
+			_ => $"MA {maPeriod}M",
 		};
 	}
 
@@ -229,7 +229,7 @@ public partial class HtfAverages : Indicator
 
 	protected override void Initialize()
 	{
-		_currentHtfBarIndex = 0;
+		_currentHtfBarIndex = -1;
 
 		_currentHtfInterval = new()
 		{
@@ -308,20 +308,21 @@ public partial class HtfAverages : Indicator
 
     protected override void Calculate(int barIndex)
 	{
+		var nextBarIndex = barIndex + 1;
+		
 		var currentClose = Bars.Close[barIndex];
-
+		var currentTimeUtc = Bars.Time[barIndex];
+		
 		var htfBarIndex = _higherTimeframeBars.Count - 1;
-		var isNewHtfBar = !IsHtfEmpty && !_currentHtfBarIndex.Equals(htfBarIndex);
+		var isNewHtfBar = !_currentHtfBarIndex.Equals(htfBarIndex);
 
 		var htfInterval = !isNewHtfBar
 			? _currentHtfInterval
 			: new Interval
 			{
-				StartBarIndex = barIndex,
-				EndBarIndex = barIndex,
+				StartBarIndex = nextBarIndex,
+				EndBarIndex = nextBarIndex,
 			};
-
-		htfInterval.EndBarIndex = barIndex;
 
 		for (var maIndex = 0; maIndex < _maCount; maIndex++)
 		{
@@ -337,14 +338,20 @@ public partial class HtfAverages : Indicator
 
 			maPlot.LastValue = GetMaIncomingValue(maIndex, barIndex, htfBarIndex, maLastValue);
 
-			if (isNewHtfBar
-				&& _higherTimeframeBars[htfBarIndex] is var htfLastBar
-				&& Bars.GetBarIndex(htfLastBar.Time) is var startBarIndex
-				&& startBarIndex is not -1)
+			if (isNewHtfBar)
 			{
-				for (int currentBarIndex = startBarIndex; currentBarIndex <= barIndex; currentBarIndex++)
+				var htfLastBarIndex = Enumerable
+					.Range(_currentHtfBarIndex + 1, htfBarIndex - _currentHtfBarIndex)
+					.LastOrDefault(htfBarIndex => _higherTimeframeBars.Time[htfBarIndex] <= currentTimeUtc, htfBarIndex);
+
+				var htfLastTimeUtc = _higherTimeframeBars.Time[htfLastBarIndex];
+
+				if (Bars.GetBarIndex(htfLastTimeUtc) is var startBarIndex && startBarIndex is not -1)
 				{
-					maPlot[currentBarIndex] = maLastValue;
+					for (int currentBarIndex = startBarIndex; currentBarIndex <= barIndex; currentBarIndex++)
+					{
+						maPlot[currentBarIndex] = maLastValue;
+					}
 				}
 			}
 		}
@@ -355,71 +362,11 @@ public partial class HtfAverages : Indicator
 
     public override void OnRender(IDrawingContext drawingContext)
     {
-		if (_higherTimeframeBars.Count is 0)
+		if (_higherTimeframeBars.Count is not 0 && !ShowMasContinuously)
 		{
-			return;
-		}
-
-		if (ShowMasContinuously)
-		{
-			RenderContinuousMas(drawingContext);
-		}
-		else
-		{
-			RenderDiscontinuousMas(drawingContext);
+			RenderDiscontinuousMas(drawingContext);	
 		}
     }
-
-	private void RenderContinuousMas(IDrawingContext drawingContext)
-	{
-		if (!ShowLabels)
-		{
-			return;
-		}
-
-		for (var maIndex = 0; maIndex < _maCount; maIndex++)
-		{
-			var maPlot = _maPlots[maIndex];
-
-			if (!maPlot.IsVisible)
-			{
-				continue;
-			}
-
-			ApiPoint maLabelApiPoint;
-
-			var maLabelText = GetMaLabel(maIndex);
-			
-			if (AligmentValue is Aligment.Left)
-			{
-				var maLabelX = Chart.GetLeftX();
-				var maLabelPrice = maPlot[Chart.FirstVisibleBarIndex];
-
-				maLabelApiPoint = new ApiPoint
-				{
-					X = maLabelX + HorizontalMargin,
-					Y = ChartScale.GetYCoordinateByValue(maLabelPrice) + VerticalMargin,
-				};
-			}
-			else
-			{
-				var maLabelBarIndex = Chart.LastVisibleBarIndex;
-				var maLabelPrice = maPlot[maLabelBarIndex];
-				var maLabelTextSize = drawingContext.MeasureText(maLabelText, LabelFont);
-
-				maLabelApiPoint = new ApiPoint
-				{
-					X = Chart.GetXCoordinateByBarIndex(maLabelBarIndex) - maLabelTextSize.Width - HorizontalMargin,
-					Y = ChartScale.GetYCoordinateByValue(maLabelPrice) + VerticalMargin,
-				};
-			}
-
-			if (ShowLabels)
-			{
-				drawingContext.DrawText(maLabelApiPoint, maLabelText, maPlot.Color, LabelFont);
-			}
-		}
-	}
 
 	private void RenderDiscontinuousMas(IDrawingContext drawingContext)
     {
@@ -439,9 +386,6 @@ public partial class HtfAverages : Indicator
             var maValue = maPlot[Chart.LastVisibleBarIndex];
             var maValueY = ChartScale.GetYCoordinateByValue(maValue);
             
-			var maLabelText = GetMaLabel(maIndex);
-            var maLabelTextSize = drawingContext.MeasureText(maLabelText, LabelFont);
-
             var visibleStartX = Chart.GetLeftX();
             var visibleEndX = Chart.GetXCoordinateByTime(visibleEndTimeUtc);
             var visibleEndSessionStartX = Chart.GetXCoordinateByTime(visibleEndSession.StartUtcDateTime);
