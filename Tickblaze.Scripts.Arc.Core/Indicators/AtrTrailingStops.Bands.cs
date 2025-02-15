@@ -3,7 +3,7 @@ using Tickblaze.Scripts.Arc.Common;
 
 namespace Tickblaze.Scripts.Arc.Core;
 
-public partial class AtrTrailingStop
+public partial class AtrTrailingStops
 {
 	[AllowNull]
 	private PlotSeries _bandUpper1;

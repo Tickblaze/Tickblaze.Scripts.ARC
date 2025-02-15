@@ -6,15 +6,15 @@ using Tickblaze.Scripts.Indicators;
 namespace Tickblaze.Scripts.Arc.Core;
 
 // Todo: support for custom input series.
-public partial class AtrTrailingStop : Indicator
+public partial class AtrTrailingStops : Indicator
 {
-	public AtrTrailingStop()
+	public AtrTrailingStops()
 	{
 		IsOverlay = true;
 		
 		ShortName = "ATS";
 		
-		Name = "ATR Trailing Stop";
+		Name = "ATR Trailing Stops";
 	}
 
 	private int _currentIndex;
