@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<UseWPF>true</UseWPF>
+		<Nullable>enable</Nullable>
+		<LangVersion>preview</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<TargetFramework>net9.0-windows</TargetFramework>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Common\Common.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Page Remove="SwingStructure.Menu.xaml" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="SwingStructure.Menu.xaml" />
+	</ItemGroup>
+
+</Project>

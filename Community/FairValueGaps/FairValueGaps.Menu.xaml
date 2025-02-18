@@ -1,0 +1,32 @@
+﻿<Menu
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:common="clr-namespace:Tickblaze.Community;assembly=Common"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<Menu.Resources>
+		<x:Static Member="common:ResourceDictionaries.DefaultResources" />
+	</Menu.Resources>
+	
+	<MenuItem
+		BorderThickness="2"
+		Foreground="White"
+		Background="White"
+		BorderBrush="Maroon"
+		Grid.IsSharedSizeScope="True">
+		<MenuItem.Header>
+			<TextBlock
+				FontSize="13"
+				FontWeight="Bold"
+				Foreground="Maroon"
+				Text="{Binding MenuHeader}" />
+		</MenuItem.Header>
+		<common:OnOffMenuItem
+			Header="Show Fresh FVGs"
+			IsOn="{Binding ShowFreshGaps, Mode=TwoWay}" />
+		<common:OnOffMenuItem
+			Header="Show Tested FVGs"
+			IsOn="{Binding ShowTestedGaps, Mode=TwoWay}" />
+		<common:OnOffMenuItem
+			Header="Show Broken FVGs"
+			IsOn="{Binding ShowBrokenGaps, Mode=TwoWay}" />
+	</MenuItem>
+</Menu>
