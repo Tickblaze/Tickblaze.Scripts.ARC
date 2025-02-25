@@ -1,0 +1,50 @@
+﻿<Menu
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:arc="clr-namespace:Tickblaze.Community;assembly=Community"
+	xmlns:common="clr-namespace:Tickblaze.Community;assembly=Common"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<Menu.Resources>
+		<x:Static Member="common:ResourceDictionaries.DefaultResources" />
+	</Menu.Resources>
+	
+	<MenuItem
+		BorderThickness="2"
+		Foreground="White"
+		Background="Black"
+		BorderBrush="Lime"
+		Grid.IsSharedSizeScope="True">
+		<MenuItem.Header>
+			<TextBlock
+				FontSize="13"
+				FontWeight="Bold"
+				Foreground="Lime"
+				Text="{Binding MenuHeader}" />
+		</MenuItem.Header>
+		<MenuItem Header="Excursion Levels">
+			<common:OnOffMenuItem
+				Header="Enable Levels"
+				IsOn="{Binding EnableLevels, Mode=TwoWay}" />
+			<common:OnOffMenuItem
+				Header="Show Level 1"
+				IsOn="{Binding ShowLevel1Lines, Mode=TwoWay}"
+				IsEnabled="{Binding EnableLevels, Mode=OneWay}" />
+			<common:OnOffMenuItem
+				Header="Show Level 2"
+				IsOn="{Binding ShowLevel2Lines, Mode=TwoWay}"
+				IsEnabled="{Binding EnableLevels, Mode=OneWay}" />
+			<common:OnOffMenuItem
+				Header="Show Level 3"
+				IsOn="{Binding ShowLevel3Lines, Mode=TwoWay}"
+				IsEnabled="{Binding EnableLevels, Mode=OneWay}" />
+			<common:EnumMenuItem
+				Header="Level Plot Style"
+				EnumType="{x:Type arc:VmLean+LevelPlotStyle}"
+				IsEnabled="{Binding EnableLevels, Mode=OneWay}"
+				SelectedEnum="{Binding LevelPlotStyle, Mode=TwoWay}" />
+		</MenuItem>
+		<common:EnumMenuItem
+			Header="Flooding Type"
+			EnumType="{x:Type arc:VmLean+FloodingType}"
+			SelectedEnum="{Binding FloodingType, Mode=TwoWay}" />
+	</MenuItem>
+</Menu>

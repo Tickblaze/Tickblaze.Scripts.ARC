@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Tickblaze.Scripts.Arc.Common\Tickblaze.Scripts.Arc.Common.csproj" />
+    <ProjectReference Include="..\Tickblaze.Scripts.Arc.Common\Common.csproj" />
   </ItemGroup>
 
 </Project>
