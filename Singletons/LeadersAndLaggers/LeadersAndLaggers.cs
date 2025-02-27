@@ -95,7 +95,7 @@ public partial class LeadersAndLaggers : Indicator
 	public PlotLevel ZeroLine { get; set; } = new("Zero Line", 0.0, Color.Transparent);
 
 	public PlotSeries Plot1 { get; set; } = new("Instrument 1", Color.Red, thickness: 3);
-	
+
 	public PlotSeries Plot2 { get; set; } = new("Instrument 2", Color.Blue, thickness: 3);
 
 	public PlotSeries Plot3 { get; set; } = new("Instrument 3", Color.Yellow, thickness: 3);
@@ -151,7 +151,7 @@ public partial class LeadersAndLaggers : Indicator
 	}
 
 	protected override void Initialize()
-    {
+	{
 		var currentSymblInfo = new SymbolInfo
 		{
 			SymbolCode = Symbol.Code,
@@ -182,36 +182,36 @@ public partial class LeadersAndLaggers : Indicator
 
 		InitializePlotsCollection();
 
-        InitializeBarsCollection();
-    }
+		InitializeBarsCollection();
+	}
 
-    private void InitializePlotsCollection()
-    {
-        _plotsCollection =
-        [
-            Plot1,
-            Plot2,
-            Plot3,
-            Plot4,
-            Plot5,
-            Plot6,
-            Plot7,
-            Plot8,
-            Plot9,
-            Plot10,
-            Plot11,
-            Plot12,
-            Plot13,
-            Plot14,
-            Plot15,
-            Plot16,
-        ];
+	private void InitializePlotsCollection()
+	{
+		_plotsCollection =
+		[
+			Plot1,
+			Plot2,
+			Plot3,
+			Plot4,
+			Plot5,
+			Plot6,
+			Plot7,
+			Plot8,
+			Plot9,
+			Plot10,
+			Plot11,
+			Plot12,
+			Plot13,
+			Plot14,
+			Plot15,
+			Plot16,
+		];
 
 		_startingValues = [.. Enumerable.Repeat(double.NaN, _plotsCollection.Length)];
 
 		for (var plotIndex = 0; plotIndex < _plotsCollection.Length; plotIndex++)
 		{
-            var plot = _plotsCollection[plotIndex];
+			var plot = _plotsCollection[plotIndex];
 			var symbolInfo = _symbolInfos[plotIndex];
 
 			if (string.IsNullOrEmpty(symbolInfo?.SymbolCode))
@@ -221,36 +221,36 @@ public partial class LeadersAndLaggers : Indicator
 
 			plot.PriceMarker.Formatter = barIndex => GetFormattedSymbolCode(symbolInfo);
 		}
-    }
+	}
 
-    private void InitializeBarsCollection()
-    {
+	private void InitializeBarsCollection()
+	{
 		var barSeriesIndex = 0;
 
-        _barsCollection = new BarSeries[_plotsCollection.Length];
+		_barsCollection = new BarSeries[_plotsCollection.Length];
 
-        _barsCollection[barSeriesIndex] = Bars;
+		_barsCollection[barSeriesIndex] = Bars;
 
-        while (++barSeriesIndex < _plotsCollection.Length)
-        {
-            var symbolInfo = _symbolInfos[barSeriesIndex];
+		while (++barSeriesIndex < _plotsCollection.Length)
+		{
+			var symbolInfo = _symbolInfos[barSeriesIndex];
 
-            if (string.IsNullOrEmpty(symbolInfo?.SymbolCode))
-            {
-                continue;
-            }
+			if (string.IsNullOrEmpty(symbolInfo?.SymbolCode))
+			{
+				continue;
+			}
 
-            var barSeriesInfo = new BarSeriesInfo
-            {
-                Period = Bars.Period,
-                SymbolInfo = symbolInfo
-            };
+			var barSeriesInfo = new BarSeriesInfo
+			{
+				Period = Bars.Period,
+				SymbolInfo = symbolInfo
+			};
 
-            _barsCollection[barSeriesIndex] = GetBars(barSeriesInfo);
-        }
-    }
+			_barsCollection[barSeriesIndex] = GetBars(barSeriesInfo);
+		}
+	}
 
-    protected override void Calculate(int index)
+	protected override void Calculate(int index)
 	{
 		CalculateStartingValues(index);
 
@@ -291,14 +291,14 @@ public partial class LeadersAndLaggers : Indicator
 	}
 
 	private void CalculateStartingValues(int barIndex)
-    {
-		var isResetNeeded = ResetTypeValue is ResetType.ChartStart && barIndex is 1
+	{
+		var isResetNeeded = ResetTypeValue is ResetType.ChartStart && barIndex is 0
 			|| ResetTypeValue is ResetType.Session && this.IsNewSession(barIndex)
 			|| ResetTypeValue is ResetType.Custom && this.IsSteppedThrough(barIndex, StartTime);
-		
+
 		if (isResetNeeded)
 		{
-			for (var barSeriesIndex = 0; barSeriesIndex < _barsCollection.Length; barSeriesIndex++)
+			for (int barSeriesIndex = 0; barSeriesIndex < _barsCollection.Length; barSeriesIndex++)
 			{
 				_startingValues[barSeriesIndex] = double.NaN;
 			}
@@ -308,22 +308,25 @@ public partial class LeadersAndLaggers : Indicator
 		var session = Symbol.ExchangeCalendar.GetSession(currentTimeUtc)!;
 		var sessionStartTimeUtc = session.StartUtcDateTime;
 
-        for (var barSeriesIndex = 0; barSeriesIndex < _barsCollection.Length; barSeriesIndex++)
-        {
+		for (int barSeriesIndex = 0; barSeriesIndex < _barsCollection.Length; barSeriesIndex++)
+		{
 			var startingValue = _startingValues[barSeriesIndex];
-            var barSeries = _barsCollection[barSeriesIndex];
+			var barSeries = _barsCollection[barSeriesIndex];
+
+			var isBarTimeInSession = Bars.Period.Source is SourceBarType.Day
+				|| barSeries is not null
+				&& barSeries.Time.GetLastOrDefault(DateTime.MinValue) >= sessionStartTimeUtc;
 
 			if (barSeries is not null
-				&& double.IsNaN(startingValue)
-				&& barSeries.Time.GetLastOrDefault(DateTime.MinValue) is var barTimeUtc
-				&& barTimeUtc >= sessionStartTimeUtc)
-            {
+				&& isBarTimeInSession
+				&& double.IsNaN(startingValue))
+			{
 				_startingValues[barSeriesIndex] = barSeries.Open.GetLastOrDefault(double.NaN);
-            }
-        }
-    }
+			}
+		}
+	}
 
-    public override void OnRender(IDrawingContext context)
+	public override void OnRender(IDrawingContext context)
 	{
 		if (!ShowBox)
 		{
@@ -337,7 +340,7 @@ public partial class LeadersAndLaggers : Indicator
 		var laggingSymbol = _symbolInfos[_laggingInstrumentIndex]!;
 
 		var leadingText = "Leading: " + GetFormattedSymbolCode(leadingSymbol);
-		var laggingText = "Lagging: " + GetFormattedSymbolCode(laggingSymbol); 
+		var laggingText = "Lagging: " + GetFormattedSymbolCode(laggingSymbol);
 
 		var leadingSymbolTextSize = context.MeasureText(leadingText, TextFont);
 		var laggingSymbolTextSize = context.MeasureText(laggingText, TextFont);

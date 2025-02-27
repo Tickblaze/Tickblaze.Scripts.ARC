@@ -292,10 +292,10 @@ public partial class LeadersAndLaggers : Indicator
 
 	private void CalculateStartingValues(int barIndex)
     {
-		var isResetNeeded = ResetTypeValue is ResetType.ChartStart && barIndex is 1
+		var isResetNeeded = ResetTypeValue is ResetType.ChartStart && barIndex is 0
 			|| ResetTypeValue is ResetType.Session && this.IsNewSession(barIndex)
 			|| ResetTypeValue is ResetType.Custom && this.IsSteppedThrough(barIndex, StartTime);
-		
+
 		if (isResetNeeded)
 		{
 			for (int barSeriesIndex = 0; barSeriesIndex < _barsCollection.Length; barSeriesIndex++)
@@ -313,10 +313,13 @@ public partial class LeadersAndLaggers : Indicator
 			var startingValue = _startingValues[barSeriesIndex];
             var barSeries = _barsCollection[barSeriesIndex];
 
+			var isBarTimeInSession = Bars.Period.Source is SourceBarType.Day
+				|| barSeries is not null
+				&& barSeries.Time.GetLastOrDefault(DateTime.MinValue) >= sessionStartTimeUtc;
+
 			if (barSeries is not null
-				&& double.IsNaN(startingValue)
-				&& barSeries.Time.GetLastOrDefault(DateTime.MinValue) is var barTimeUtc
-				&& barTimeUtc >= sessionStartTimeUtc)
+				&& isBarTimeInSession
+				&& double.IsNaN(startingValue))
             {
 				_startingValues[barSeriesIndex] = barSeries.Open.GetLastOrDefault(double.NaN);
             }
