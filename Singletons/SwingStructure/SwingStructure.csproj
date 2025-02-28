@@ -20,7 +20,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Page Include="..\..\Community\SwingStructure.Menu.xaml" Link="SwingStructure.Menu.xaml" />
+		<EmbeddedResource Include="..\..\Community\SwingStructure.Menu.xaml" Link="SwingStructure.Menu.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>
