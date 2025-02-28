@@ -9,15 +9,18 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Page Remove="SwingStructure.Menu.xaml" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<EmbeddedResource Include="SwingStructure.Menu.xaml" />
+		<Compile Include="..\..\Community\GlobalUsings.cs" Link="GlobalUsings.cs" />
+		<Compile Include="..\..\Community\SwingStructure.cs" Link="SwingStructure.cs" />
+		<Compile Include="..\..\Community\SwingStructure.MenuViewModel.cs" Link="SwingStructure.MenuViewModel.cs" />
+		<Compile Include="..\..\Community\ModuleInitializer.cs" Link="ModuleInitializer.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.53" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Page Include="..\..\Community\SwingStructure.Menu.xaml" Link="SwingStructure.Menu.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>

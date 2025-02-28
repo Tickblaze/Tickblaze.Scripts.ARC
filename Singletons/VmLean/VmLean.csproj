@@ -9,15 +9,23 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Page Remove="VmLean.Menu.xaml" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<EmbeddedResource Include="VmLean.Menu.xaml" />
+		<Compile Include="..\..\Community\GlobalUsings.cs" Link="GlobalUsings.cs" />
+		<Compile Include="..\..\Community\VmLean.cs" Link="VmLean.cs" />
+		<Compile Include="..\..\Community\VmLean.Flooding.cs" Link="VmLean.Flooding.cs" />
+		<Compile Include="..\..\Community\VmLean.Histogram.cs" Link="VmLean.Histogram.cs" />
+		<Compile Include="..\..\Community\VmLean.MacdBb.cs" Link="VmLean.MacdBb.cs" />
+		<Compile Include="..\..\Community\VmLean.MenuViewModel.cs" Link="VmLean.MenuViewModel.cs" />
+		<Compile Include="..\..\Community\VmLean.PriceExcursion.cs" Link="VmLean.PriceExcursion.cs" />
+		<Compile Include="..\..\Community\VmLean.Swings.cs" Link="VmLean.Swings.cs" />
+		<Compile Include="..\..\Community\ModuleInitializer.cs" Link="ModuleInitializer.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.53" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Page Include="..\..\Community\VmLean.Menu.xaml" Link="VmLean.Menu.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>

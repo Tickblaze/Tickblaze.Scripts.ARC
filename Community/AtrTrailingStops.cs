@@ -139,8 +139,8 @@ public partial class AtrTrailingStops : Indicator
 
 		var markerDeltaAtr = 0.3 * _markerDeltaAtr[previousIndex];
 		var markerPrice = previousTrend is StrictTrend.Up
-			? Bars.Low[previousIndex] - markerDeltaAtr
-			: Bars.High[previousIndex] + markerDeltaAtr;
+			? Bars.High[previousIndex] + markerDeltaAtr
+			: Bars.Low[previousIndex] - markerDeltaAtr;
 
 		var markerPoint = new Point(previousIndex, markerPrice);
 
@@ -295,14 +295,12 @@ public partial class AtrTrailingStops : Indicator
 			var trend = _trends[markerPoint.BarIndex];
 			
 			var markerColor = trend.Map(BearishColor, BullishColor);
-			var markerText = trend.Map("5", "6");
-			var markerOffsetSignum = trend.Map(-1, 1);
+			var markerText = trend.Map("6", "5");
 			var markerTextSize = drawingContext.MeasureText(markerText, _markerFont);
 
 			point.X -= markerTextSize.Width / 2.0;
-			point.Y -= markerOffsetSignum * VerticalMargin;
 
-			if (trend is StrictTrend.Down)
+			if (trend is StrictTrend.Up)
 			{
 				point.Y -= markerTextSize.Height;
 			}

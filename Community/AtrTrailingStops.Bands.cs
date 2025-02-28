@@ -48,7 +48,7 @@ public partial class AtrTrailingStops
 	[Parameter("Band Multiplier 2", GroupName = "Bands", Description = "Multiplier for the bands 2")]
 	public double BandMultiplier2 { get; set; } = 2.0;
 
-	[NumericRange(MinValue = DoublePositiveMin, MaxValue = DoublePositiveMin, Step = DoubleStep)]
+	[NumericRange(MinValue = DoublePositiveMin, MaxValue = double.MaxValue, Step = DoubleStep)]
 	[Parameter("Band Multiplier 3", GroupName = "Bands", Description = "Multiplier for the bands 3")]
 	public double BandMultiplier3 { get; set; } = 3.0;
 	

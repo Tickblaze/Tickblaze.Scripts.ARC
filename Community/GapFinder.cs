@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Windows.Controls;
 using Tickblaze.Scripts.Indicators;
 
@@ -9,7 +10,13 @@ public partial class GapFinder : Indicator
 {
 	public GapFinder()
 	{
+		var assemblyName = Assembly
+			.GetExecutingAssembly()
+			.GetName();
+
 		_menuViewModel = new(this);
+		
+		_menuResourceName = assemblyName.Name + ".GapFinder.Menu.xaml";
 
 		IsOverlay = true;
 		
@@ -27,9 +34,9 @@ public partial class GapFinder : Indicator
 	[AllowNull]
 	private Gaps _brokenGaps;
 	
-	private readonly MenuViewModel _menuViewModel;
+	private readonly string _menuResourceName;
 
-	private const string _menuResourceName = "GapFinder.GapFinder.Menu.xaml";
+	private readonly MenuViewModel _menuViewModel;
 
 	[Parameter("Gap Measurement Type", Description = "Type of the gap measurement")]
 	public GapMeasurement GapMeasurementValue { get; set; } = GapMeasurement.Atr;

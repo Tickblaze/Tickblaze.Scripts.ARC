@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Windows.Controls;
 
 namespace Tickblaze.Community;
@@ -7,7 +8,13 @@ public partial class VmLean : Indicator
 {
 	public VmLean()
 	{
+		var assemblyName = Assembly
+			.GetExecutingAssembly()
+			.GetName();
+
 		_menuViewModel = new(this);
+
+		_menuResourceName = assemblyName.Name + ".VmLean.Menu.xaml";
 
 		Name = "VM Lean";
 
@@ -20,9 +27,9 @@ public partial class VmLean : Indicator
 	private VmLeanCore _vmLeanCore;
 
 	[AllowNull]
-	private readonly MenuViewModel _menuViewModel;
+	private readonly string _menuResourceName;
 
-	private const string _menuResourceName = "VmLean.VmLean.Menu.xaml";
+	private readonly MenuViewModel _menuViewModel;
 
 	[Parameter("Menu Header", Description = "Header of the menu")]
 	public string MenuHeader { get; set; } = "VM Lean";

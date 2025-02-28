@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Windows.Controls;
 
 namespace Tickblaze.Community;
@@ -7,7 +8,13 @@ public partial class SwingStructure : Indicator
 {
 	public SwingStructure()
 	{
+		var assemblyName = Assembly
+			.GetExecutingAssembly()
+			.GetName();
+
 		_menuViewModel = new(this);
+
+		_menuResourceName = assemblyName.Name + ".SwingStructure.Menu.xaml";
 
 		IsOverlay = true;
 		
@@ -21,9 +28,9 @@ public partial class SwingStructure : Indicator
 	[AllowNull]
 	private Swings _swings;
 
-	private readonly MenuViewModel _menuViewModel;
+	private readonly string _menuResourceName;
 
-	private const string _menuResourceName = "Community.Indicators.SwingStructure.Menu.xaml";
+	private readonly MenuViewModel _menuViewModel;
 
 	[Parameter("Calculation Mode", Description = "Whether to calculate the swing by current or closed bar highs and lows")]
 	public SwingCalculationMode CalculationMode { get; set; }

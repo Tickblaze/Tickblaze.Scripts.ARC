@@ -11,7 +11,7 @@ public partial class HtfAverages
 
         private readonly HtfAverages _htfAverages;
 
-		public Interval LastLevelInterval => _htfAverages._currentHtfInterval;
+		public Interval LastLevelInterval => _htfAverages._htfInterval;
 
 		public double LastValue
 		{

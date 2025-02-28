@@ -9,6 +9,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Compile Include="..\..\Community\GlobalUsings.cs" Link="GlobalUsings.cs" />
+		<Compile Include="..\..\Community\LeadersAndLaggers.cs" Link="LeadersAndLaggers.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.53" />
 	</ItemGroup>
 

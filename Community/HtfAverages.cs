@@ -23,14 +23,14 @@ public partial class HtfAverages : Indicator
 		MaPlot7 = new("MA 7", DrawingColor.Lime, this);
 	}
 
-	private int _currentHtfBarIndex;
+	private int _htfBarIndex;
 
 	private const int _maCount = 7;
 
 	private const string _autoMaLabel = "<auto>";
 
 	[AllowNull]
-	private Interval _currentHtfInterval;
+	private Interval _htfInterval;
 
 	[AllowNull]
 	private int[] _maPeriods;
@@ -45,9 +45,9 @@ public partial class HtfAverages : Indicator
 	private Indicator?[] _maIndicators;
 	
 	[AllowNull]
-	private BarSeries _higherTimeframeBars;
+	private BarSeries _htfBars;
 
-	private bool IsHtfEmpty => _higherTimeframeBars.Count is 0;
+	private bool IsHtfEmpty => _htfBars.Count is 0;
 
 	[Parameter("MA Timeframe", Description = "Timeframe of the MAs")]
 	public Timeframe TimeframeValue { get; set; } = Timeframe.Day;
@@ -186,7 +186,7 @@ public partial class HtfAverages : Indicator
 			var smaPeriod = Math.Min(maPeriod - 1, htfBarIndex);
 
 			var smaSum = Enumerable.Range(0, smaPeriod)
-				.Select(_higherTimeframeBars.Close.Last)
+				.Select(_htfBars.Close.Last)
 				.Append(currentClose)
 				.Sum();
 
@@ -228,9 +228,9 @@ public partial class HtfAverages : Indicator
 
 	protected override void Initialize()
 	{
-		_currentHtfBarIndex = -1;
+		_htfBarIndex = -1;
 
-		_currentHtfInterval = new()
+		_htfInterval = new()
 		{
 			StartBarIndex = 0,
 			EndBarIndex = 0,
@@ -281,7 +281,7 @@ public partial class HtfAverages : Indicator
 			StartTimeUtc = startTimeUtc,
 		};
 
-		_higherTimeframeBars = GetBars(barSeriesInfo);
+		_htfBars = GetBars(barSeriesInfo);
 
 		for (var maIndex = 0; maIndex < _maCount; maIndex++)
 		{
@@ -298,8 +298,8 @@ public partial class HtfAverages : Indicator
 				{
 					Type = maType,
 					Period = maPeriod,
-					Bars = _higherTimeframeBars,
-					Source = _higherTimeframeBars.Close,
+					Bars = _htfBars,
+					Source = _htfBars.Close,
 				};
 			}
 		}
@@ -312,11 +312,11 @@ public partial class HtfAverages : Indicator
 		var currentClose = Bars.Close[barIndex];
 		var currentTimeUtc = Bars.Time[barIndex];
 		
-		var htfBarIndex = _higherTimeframeBars.Count - 1;
-		var isNewHtfBar = !_currentHtfBarIndex.Equals(htfBarIndex);
+		var htfBarIndex = _htfBars.Count - 1;
+		var isNewHtfBar = !_htfBarIndex.Equals(htfBarIndex);
 
 		var htfInterval = !isNewHtfBar
-			? _currentHtfInterval
+			? _htfInterval
 			: new Interval
 			{
 				StartBarIndex = nextBarIndex,
@@ -333,21 +333,29 @@ public partial class HtfAverages : Indicator
 				continue;
 			}
 
+			var maSecondLastValue = maPlot.LastValue;
 			var maLastValue = IsHtfEmpty ? currentClose : maResult[htfBarIndex];
-
+			
 			maPlot.LastValue = GetMaIncomingValue(maIndex, barIndex, htfBarIndex, maLastValue);
 
 			if (isNewHtfBar)
 			{
+				var htfCurrentBarIndex = Math.Max(0, _htfInterval.StartBarIndex);
+				
 				var htfLastBarIndex = Enumerable
-					.Range(_currentHtfBarIndex + 1, htfBarIndex - _currentHtfBarIndex)
-					.LastOrDefault(htfBarIndex => _higherTimeframeBars.Time[htfBarIndex] <= currentTimeUtc, htfBarIndex);
+					.Range(_htfBarIndex + 1, htfBarIndex - _htfBarIndex)
+					.LastOrDefault(htfBarIndex => _htfBars.Time[htfBarIndex] <= currentTimeUtc, htfBarIndex);
 
-				var htfLastTimeUtc = _higherTimeframeBars.Time[htfLastBarIndex];
+				var htfLastTimeUtc = _htfBars.Time[htfLastBarIndex];
 
 				if (Bars.GetBarIndex(htfLastTimeUtc) is var startBarIndex && startBarIndex is not -1)
 				{
-					for (int currentBarIndex = startBarIndex; currentBarIndex <= barIndex; currentBarIndex++)
+					for (var currentBarIndex = htfCurrentBarIndex; currentBarIndex < startBarIndex; currentBarIndex++)
+					{
+						maPlot[currentBarIndex] = maSecondLastValue;
+					}
+
+					for (var currentBarIndex = startBarIndex; currentBarIndex <= barIndex; currentBarIndex++)
 					{
 						maPlot[currentBarIndex] = maLastValue;
 					}
@@ -355,13 +363,13 @@ public partial class HtfAverages : Indicator
 			}
 		}
 
-		_currentHtfInterval = htfInterval;
-		_currentHtfBarIndex = htfBarIndex;
+		_htfInterval = htfInterval;
+		_htfBarIndex = htfBarIndex;
 	}
 
     public override void OnRender(IDrawingContext drawingContext)
     {
-		if (_higherTimeframeBars.Count is not 0 && !ShowMasContinuously)
+		if (_htfBars.Count is not 0 && !ShowMasContinuously)
 		{
 			RenderDiscontinuousMas(drawingContext);	
 		}
