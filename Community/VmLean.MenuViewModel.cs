@@ -58,6 +58,8 @@ public partial class VmLean
 			}
 		}
 
+		public Type LevelPlotStyleType { get; } = typeof(LevelPlotStyle);
+
 		public string? LevelPlotStyle
 		{
 			get;
@@ -71,6 +73,8 @@ public partial class VmLean
 				this.RaiseAndSetIfChanged(ref field, value);
 			}
 		}
+
+		public Type FloodingTypeType { get; } = typeof(FloodingType);
 
 		public string? FloodingType
 		{

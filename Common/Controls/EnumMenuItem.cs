@@ -8,6 +8,7 @@ namespace Tickblaze.Community;
 public class EnumMenuItem : MenuItem
 {
     public static readonly DependencyProperty SelectedEnumProperty = DependencyProperty.Register(nameof(SelectedEnum), typeof(string), typeof(EnumMenuItem));
+	public static readonly DependencyProperty EnumTypeProperty = DependencyProperty.Register(nameof(EnumType), typeof(Type), typeof(EnumMenuItem), new(OnEnumTypeChanged));
 
 	public string? SelectedEnum
     {
@@ -17,21 +18,22 @@ public class EnumMenuItem : MenuItem
 
 	public Type? EnumType
 	{
-		get;
-		set
-		{
-			if (value is { IsEnum: false })
-			{
-				throw new ArgumentException(string.Empty, nameof(value));
-			}
-
-			field = value;
-
-			RegenerateEnums();
-		}
+		get => (Type?) GetValue(EnumTypeProperty);
+		set => SetValue(EnumTypeProperty, value);
 	}
 
 	public ObservableCollection<EnumItem> EnumItems { get; } = [];
+
+	private static void OnEnumTypeChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+	{
+		if (dependencyObject is not EnumMenuItem enumMenuItem
+			|| args.NewValue is not Type { IsEnum: true })
+		{
+			throw new ArgumentException(string.Empty, nameof(args.NewValue));
+		}
+
+		enumMenuItem.RegenerateEnums();
+	}
 
 	private void RegenerateEnums()
 	{

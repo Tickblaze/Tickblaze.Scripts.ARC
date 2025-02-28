@@ -21,11 +21,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <EmbeddedResource Include="VmLean.Menu.xaml" />
+		<PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.53" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.53" />
+		<EmbeddedResource Include="..\..\Community\VmLean.Menu.xaml" Link="VmLean.Menu.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -1,16 +1,21 @@
 ﻿using ReactiveUI;
-using ReactiveUI.SourceGenerators;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Tickblaze.Community;
 
 public partial class EnumItem : ReactiveObject
-{
-	[Reactive]
-	[AllowNull]
-	private string _name;
+{	
+	[field: AllowNull]
+	public string? Name
+	{
+		get;
+		set => this.RaiseAndSetIfChanged(ref field, value);
+	}
 
-	[Reactive]
-	[AllowNull]
-	private string _displayName;
+	[field: AllowNull]
+	public string DisplayName
+	{
+		get;
+		set => this.RaiseAndSetIfChanged(ref field, value);
+	}
 }
