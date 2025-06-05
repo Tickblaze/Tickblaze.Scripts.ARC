@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 
 namespace Tickblaze.Community;
 
@@ -63,4 +64,9 @@ public readonly record struct Rectangle : IBoundable
 		return Math.Max(StartBarIndex, rectangle.StartBarIndex) <= Math.Min(EndBarIndex, rectangle.EndBarIndex)
 			& Math.Max(StartPrice, rectangle.StartPrice) <= Math.Min(EndPrice, rectangle.EndPrice);
 	}
+
+    public override string ToString()
+    {
+        return JsonSerializer.Serialize(new { StartBarIndex, StartPrice, EndBarIndex, EndPrice });
+    }
 }
