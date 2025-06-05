@@ -5,7 +5,7 @@ public class DrawingPart<TBoundable>
 	, IXPositionable<DrawingPart<TBoundable>>
 	where TBoundable : IBoundable, IXPositionable<TBoundable>, IEquatable<TBoundable>
 {
-    public Rectangle Boundary => Key.Boundary;
+    public virtual Rectangle Boundary => Key.Boundary;
 	
 	public required TBoundable Key { get; init; }
 
