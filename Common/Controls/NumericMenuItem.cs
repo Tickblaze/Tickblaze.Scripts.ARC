@@ -6,7 +6,7 @@ namespace Tickblaze.Community;
 
 public class NumericMenuItem : MenuItem
 {
-	public static readonly DependencyProperty ValueProperty = DependencyProperty.Register(nameof(Value), typeof(int), typeof(NumericMenuItem));
+	public static readonly DependencyProperty ValueProperty = DependencyProperty.Register(nameof(Value), typeof(double), typeof(NumericMenuItem));
 	public static readonly DependencyProperty MinimumProperty = DependencyProperty.Register(nameof(Minimum), typeof(double), typeof(NumericMenuItem), new(double.MinValue));
 	public static readonly DependencyProperty MaximumProperty = DependencyProperty.Register(nameof(Maximum), typeof(double), typeof(NumericMenuItem), new(double.MaxValue));
 	public static readonly DependencyProperty IntervalProperty = DependencyProperty.Register(nameof(Interval), typeof(double), typeof(NumericMenuItem), new(1.0d));
