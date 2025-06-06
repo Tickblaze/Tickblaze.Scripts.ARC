@@ -31,4 +31,9 @@ public readonly record struct Point : IBoundable, IXPositionable<Point>
 
         price = Price;
     }
+
+    public override string ToString()
+    {
+        return $"({BarIndex}, {Price})";
+    }
 }
