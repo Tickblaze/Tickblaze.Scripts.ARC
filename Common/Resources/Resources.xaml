@@ -334,7 +334,7 @@
 		</Style.Triggers>
 	</Style>
 
-	<Style TargetType="common:OnOffMenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+	<Style x:Key="{x:Type common:OnOffMenuItem}" TargetType="common:OnOffMenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
 		<Setter Property="VerticalAlignment" Value="Stretch" />
 		<Setter Property="HorizontalAlignment" Value="Stretch" />
 		<Setter Property="HeaderTemplate" Value="{StaticResource ToggleButtonMenuItemHeaderTemplate}" />
