@@ -1,4 +1,4 @@
-﻿<ResourceDictionary
+<ResourceDictionary
 	xmlns:common="clr-namespace:Tickblaze.Community"
 	xmlns:system="clr-namespace:System;assembly=mscorlib"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -432,4 +432,12 @@
 		<Setter Property="HorizontalAlignment" Value="Stretch" />
 		<Setter Property="HeaderTemplate" Value="{StaticResource EnumMenuItemHeaderTemplate}" />
 	</Style>
+
+    <DataTemplate x:Key="ButtonMenuItemHeaderTemplate" DataType="{x:Type common:ButtonMenuItem}">
+        <Button Content="{Binding Header, Mode=OneWay, RelativeSource={RelativeSource AncestorType=common:ButtonMenuItem}}"/>
+    </DataTemplate>
+
+    <Style TargetType="common:ButtonMenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+        <Setter Property="HeaderTemplate" Value="{StaticResource ButtonMenuItemHeaderTemplate}"/>
+    </Style>
 </ResourceDictionary>
