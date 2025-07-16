@@ -277,7 +277,7 @@
 	<system:Double x:Key="MenuHeaderParameterMinWidth">75.0</system:Double>
 	<system:Double x:Key="MenuHeaderParameterMaxWidth">150.0</system:Double>
 
-	<DataTemplate x:Key="ToggleButtonMenuItemHeaderTemplate" DataType="common:ToggleButtonMenuItem">
+	<DataTemplate x:Key="OnOffButtonMenuItemHeaderTemplate" DataType="common:OnOffMenuItem">
 		<Grid>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition
@@ -307,7 +307,6 @@
 				Grid.Row="0"
 				Grid.Column="1"
 				VerticalAlignment="Center"
-				HorizontalContentAlignment="Left"
 				IsChecked="{Binding IsOn, Mode=TwoWay}"
 				Style="{StaticResource ToggleButtonOnOffStyle}"
 				IsThreeState="{Binding IsThreeState, Mode=OneWay}"
@@ -337,7 +336,7 @@
 	<Style x:Key="{x:Type common:OnOffMenuItem}" TargetType="common:OnOffMenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
 		<Setter Property="VerticalAlignment" Value="Stretch" />
 		<Setter Property="HorizontalAlignment" Value="Stretch" />
-		<Setter Property="HeaderTemplate" Value="{StaticResource ToggleButtonMenuItemHeaderTemplate}" />
+		<Setter Property="HeaderTemplate" Value="{StaticResource OnOffButtonMenuItemHeaderTemplate}" />
 	</Style>
 
 	<DataTemplate x:Key="NumericMenuItemHeaderTemplate" DataType="common:NumericMenuItem">
@@ -433,11 +432,37 @@
 		<Setter Property="HeaderTemplate" Value="{StaticResource EnumMenuItemHeaderTemplate}" />
 	</Style>
 
-    <DataTemplate x:Key="ButtonMenuItemHeaderTemplate" DataType="{x:Type common:ButtonMenuItem}">
-        <Button Content="{Binding Header, Mode=OneWay, RelativeSource={RelativeSource AncestorType=common:ButtonMenuItem}}"/>
+    <DataTemplate x:Key="ButtonMenuItemHeaderTemplate" DataType="common:ButtonMenuItem">
+		<Grid>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition
+					Width="Auto"
+					SharedSizeGroup="Labels"
+					MinWidth="{StaticResource MenuHeaderTextMinWidth}"
+					MaxWidth="{StaticResource MenuHeaderTextMaxWidth}" />
+				<ColumnDefinition
+					Width="Auto"
+					SharedSizeGroup="Parameters"
+					MinWidth="{StaticResource MenuHeaderParameterMinWidth}"
+					MaxWidth="{StaticResource MenuHeaderParameterMaxWidth}" />
+				</Grid.ColumnDefinitions>
+
+			<Button
+				DataContext="{Binding ., Mode=OneWay, RelativeSource={RelativeSource AncestorType=common:ButtonMenuItem}}"
+				Grid.Row="0"
+				Grid.Column="1"
+				VerticalAlignment="Stretch"
+				mah:ControlsHelper.CornerRadius="0"
+				Content="{Binding Header, Mode=OneWay}"
+				Padding="{StaticResource DefaultThickness}"
+				Command="{Binding ActionCommand, Mode=OneWay}"
+				MinHeight="{StaticResource DefaultParameterMinHeight}"
+				MaxWidth="{StaticResource MenuHeaderParameterMaxWidth}"
+				CommandParameter="{Binding ActionCommandParameter, Mode=OneWay}" />
+		</Grid>
     </DataTemplate>
 
     <Style TargetType="common:ButtonMenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
-        <Setter Property="HeaderTemplate" Value="{StaticResource ButtonMenuItemHeaderTemplate}"/>
+        <Setter Property="HeaderTemplate" Value="{StaticResource ButtonMenuItemHeaderTemplate}" />
     </Style>
 </ResourceDictionary>
