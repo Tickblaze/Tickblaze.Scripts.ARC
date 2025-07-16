@@ -432,6 +432,25 @@
 		<Setter Property="HeaderTemplate" Value="{StaticResource EnumMenuItemHeaderTemplate}" />
 	</Style>
 
+	<Style x:Key="ButtonMenuItemButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+		<Setter Property="VerticalAlignment" Value="Stretch" />
+		<Setter Property="mah:ControlsHelper.CornerRadius" Value="0" />
+		<Setter Property="Padding" Value="{StaticResource DefaultThickness}" />
+		<Setter Property="MinHeight" Value="{StaticResource DefaultParameterMinHeight}" />
+		<Style.Triggers>
+			<DataTrigger Binding="{Binding SpanLabelColumn}" Value="True">
+				<Setter Property="Grid.Row" Value="0" />
+				<Setter Property="Grid.Column" Value="0" />
+				<Setter Property="Grid.ColumnSpan" Value="2" />
+			</DataTrigger>
+			<DataTrigger Binding="{Binding SpanLabelColumn}" Value="False">
+				<Setter Property="Grid.Row" Value="0" />
+				<Setter Property="Grid.Column" Value="1" />
+				<Setter Property="MaxWidth" Value="{StaticResource MenuHeaderParameterMaxWidth}" />
+			</DataTrigger>
+		</Style.Triggers>
+	</Style>
+	
     <DataTemplate x:Key="ButtonMenuItemHeaderTemplate" DataType="common:ButtonMenuItem">
 		<Grid>
 			<Grid.ColumnDefinitions>
@@ -449,15 +468,9 @@
 
 			<Button
 				DataContext="{Binding ., Mode=OneWay, RelativeSource={RelativeSource AncestorType=common:ButtonMenuItem}}"
-				Grid.Row="0"
-				Grid.Column="1"
-				VerticalAlignment="Stretch"
-				mah:ControlsHelper.CornerRadius="0"
 				Content="{Binding Header, Mode=OneWay}"
-				Padding="{StaticResource DefaultThickness}"
 				Command="{Binding ActionCommand, Mode=OneWay}"
-				MinHeight="{StaticResource DefaultParameterMinHeight}"
-				MaxWidth="{StaticResource MenuHeaderParameterMaxWidth}"
+				Style="{StaticResource ButtonMenuItemButtonStyle}"
 				CommandParameter="{Binding ActionCommandParameter, Mode=OneWay}" />
 		</Grid>
     </DataTemplate>

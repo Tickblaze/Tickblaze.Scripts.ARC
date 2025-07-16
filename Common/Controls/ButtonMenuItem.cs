@@ -7,9 +7,10 @@ namespace Tickblaze.Community;
 public class ButtonMenuItem : MenuItem
 {
     public static readonly DependencyProperty ActionCommandProperty = DependencyProperty.Register(nameof(ActionCommand), typeof(ICommand), typeof(ButtonMenuItem));
+	public static readonly DependencyProperty SpanLabelColumnProperty = DependencyProperty.Register(nameof(SpanLabelColumn), typeof(bool), typeof(ButtonMenuItem));
     public static readonly DependencyProperty ActionCommandParameterProperty = DependencyProperty.Register(nameof(ActionCommandParameter), typeof(object), typeof(ButtonMenuItem));
-    
-    public ICommand ActionCommand
+
+	public ICommand ActionCommand
     {
         get => (ICommand) GetValue(ActionCommandProperty);
         set => SetValue(ActionCommandProperty, value);
@@ -19,5 +20,11 @@ public class ButtonMenuItem : MenuItem
     {
         get => GetValue(ActionCommandParameterProperty);
         set => SetValue(ActionCommandParameterProperty, value);
+    }
+
+    public bool SpanLabelColumn
+    {
+        get => (bool) GetValue(SpanLabelColumnProperty);
+        set => SetValue(SpanLabelColumnProperty, value);
     }
 }
