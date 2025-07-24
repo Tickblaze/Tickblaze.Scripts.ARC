@@ -6,6 +6,10 @@
 		<LangVersion>preview</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<TargetFramework>net9.0-windows</TargetFramework>
+
+		<Deterministic>false</Deterministic>
+		<AssemblyVersion>2.0.0.0</AssemblyVersion>
+		<GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
 	</PropertyGroup>
 
 	<PropertyGroup>

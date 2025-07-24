@@ -8,7 +8,7 @@ public static class ResourceDictionaries
 {
 	public static readonly ResourceDictionary DefaultResources = new()
 	{
-		Source = new Uri("/Common;component/Resources/Resources.xaml", UriKind.Relative),
+		Source = new Uri("/Common;v2.0.0.0;component/Resources/Resources.xaml", UriKind.Relative),
 	};
 
 	public static TResource LoadResource<TResource>(string resourceName)
