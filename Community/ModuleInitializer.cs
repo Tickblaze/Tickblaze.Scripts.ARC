@@ -8,7 +8,8 @@ public static class ModuleInitializer
 	[ModuleInitializer]
 	public static void LoadReferences()
 	{
-		// Todo: document this.
-		var _ = typeof(TiltBehavior);
+		var type = typeof(TiltBehavior);
+
+		Console.Write(type);
 	}
 }
