@@ -22,7 +22,7 @@
 			Header="Show Swing Lines"
 			IsOn="{Binding ShowSwingLines, Mode=TwoWay}" />
 		<common:OnOffMenuItem
-			Header="Show Swing Labes"
+			Header="Show Swing Labels"
 			IsOn="{Binding ShowSwingLabels, Mode=TwoWay}" />
 		<common:NumericMenuItem
 			Minimum="1"	
