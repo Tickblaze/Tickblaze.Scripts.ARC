@@ -1,35 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<UseWPF>true</UseWPF>
-		<Nullable>enable</Nullable>
-		<LangVersion>preview</LangVersion>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<TargetFramework>net10.0-windows</TargetFramework>
-	</PropertyGroup>
+  <PropertyGroup>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<Compile Include="..\..\Community\GlobalUsings.cs" Link="GlobalUsings.cs" />
-		<Compile Include="..\..\Community\VmLean.cs" Link="VmLean.cs" />
-		<Compile Include="..\..\Community\VmLean.Flooding.cs" Link="VmLean.Flooding.cs" />
-		<Compile Include="..\..\Community\VmLean.Histogram.cs" Link="VmLean.Histogram.cs" />
-		<Compile Include="..\..\Community\VmLean.MacdBb.cs" Link="VmLean.MacdBb.cs" />
-		<Compile Include="..\..\Community\VmLean.MenuViewModel.cs" Link="VmLean.MenuViewModel.cs" />
-		<Compile Include="..\..\Community\VmLean.PriceExcursion.cs" Link="VmLean.PriceExcursion.cs" />
-		<Compile Include="..\..\Community\VmLean.Swings.cs" Link="VmLean.Swings.cs" />
-		<Compile Include="..\..\Community\ModuleInitializer.cs" Link="ModuleInitializer.cs" />
-	</ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\Community\GlobalUsings.cs" Link="GlobalUsings.cs"/>
+    <Compile Include="..\..\Community\VmLean.cs" Link="VmLean.cs"/>
+    <Compile Include="..\..\Community\VmLean.Flooding.cs" Link="VmLean.Flooding.cs"/>
+    <Compile Include="..\..\Community\VmLean.Histogram.cs" Link="VmLean.Histogram.cs"/>
+    <Compile Include="..\..\Community\VmLean.MacdBb.cs" Link="VmLean.MacdBb.cs"/>
+    <Compile Include="..\..\Community\VmLean.MenuViewModel.cs" Link="VmLean.MenuViewModel.cs"/>
+    <Compile Include="..\..\Community\VmLean.PriceExcursion.cs" Link="VmLean.PriceExcursion.cs"/>
+    <Compile Include="..\..\Community\VmLean.Swings.cs" Link="VmLean.Swings.cs"/>
+    <Compile Include="..\..\Community\ModuleInitializer.cs" Link="ModuleInitializer.cs"/>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\Community\VmLean.Menu.xaml" Link="VmLean.Menu.xaml"/>
+  </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Tickblaze.Scripts.Api" Version="2.0.0.99" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<EmbeddedResource Include="..\..\Community\VmLean.Menu.xaml" Link="VmLean.Menu.xaml" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\..\Common\Common.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Common\Common.csproj"/>
+  </ItemGroup>
 
 </Project>
